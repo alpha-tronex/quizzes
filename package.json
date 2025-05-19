@@ -12,14 +12,14 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^18.2.13",
-    "@angular/common": "^18.2.13",
-    "@angular/compiler": "^18.2.13",
-    "@angular/core": "^18.2.13",
-    "@angular/forms": "^18.2.13",
-    "@angular/platform-browser": "^18.2.13",
-    "@angular/platform-browser-dynamic": "^18.2.13",
-    "@angular/router": "^18.2.13",
+    "@angular/animations": "^19.2.11",
+    "@angular/common": "^19.2.11",
+    "@angular/compiler": "^19.2.11",
+    "@angular/core": "^19.2.11",
+    "@angular/forms": "^19.2.11",
+    "@angular/platform-browser": "^19.2.11",
+    "@angular/platform-browser-dynamic": "^19.2.11",
+    "@angular/router": "^19.2.11",
     "bcrypt": "^5.0.0",
     "core-js": "^3.6.5",
     "dotenv": "^8.2.0",
@@ -32,13 +32,13 @@
     "passport-local-mongoose": "^6.0.1",
     "rxjs": "^6.6.3",
     "tslib": "^2.0.0",
-    "zone.js": "~0.14.10"
+    "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^18.2.19",
-    "@angular/cli": "^18.2.19",
-    "@angular/compiler-cli": "^18.2.13",
-    "@angular/language-service": "^18.2.13",
+    "@angular-devkit/build-angular": "^19.2.12",
+    "@angular/cli": "^19.2.12",
+    "@angular/compiler-cli": "^19.2.11",
+    "@angular/language-service": "^19.2.11",
     "@types/jasmine": "~3.6.0",
     "@types/jasminewd2": "~2.0.2",
     "@types/node": "^12.11.1",
@@ -53,6 +53,6 @@
     "protractor": "~7.0.0",
     "ts-node": "~9.0.0",
     "tslint": "~6.1.0",
-    "typescript": "~5.4.5"
+    "typescript": "~5.8.3"
   }
 }

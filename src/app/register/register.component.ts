@@ -5,9 +5,10 @@ import { Student } from '../classes/Student';
 import { LoginService } from '../services/login-service';
 
 @Component({
-  selector: 'app-register',
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.css']
+    selector: 'app-register',
+    templateUrl: './register.component.html',
+    styleUrls: ['./register.component.css'],
+    standalone: false
 })
 export class RegisterComponent implements OnInit, OnDestroy {
   student: Student;
