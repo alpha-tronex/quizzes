@@ -23,7 +23,7 @@ const port = 3000;
 const path = require("path");
 
 // Serve Angular app
-app.use(express.static(path.join(__dirname, "../dist"))); // Adjust path to Angular's `dist` folder
+app.use(express.static(path.join(__dirname, "../dist/browser"))); // Adjust path to Angular's `dist` folder
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -58,7 +58,7 @@ const User = new mongoose.model("User", userSchema);
 
 mongoose.connect("mongodb://localhost:27017/userDB");
 app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../dist/index.html")); // Adjust path to Angular's `index.html`
+    res.sendFile(path.join(__dirname, "../dist/browser/index.html")); // Adjust path to Angular's `index.html`
 });
 
 app.route("/api/register")
