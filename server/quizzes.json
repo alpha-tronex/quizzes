@@ -1,0 +1,53 @@
+{
+  "quizzes": [
+    {
+      "questionNum": 0,
+      "questionType": "multichoice",
+      "question": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea ommodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+      "instructions": "Please select all that apply:",
+      "answer1": "uis beta exercitation ullamco laboris nisi ut aliquip ex ea",
+      "answer2": "aute irure dolor in reprehenderit in voluptate velit esse cillum dolore",
+      "answer3": "consectetur adipiscing elit",
+      "answer4": "dolor in reprehenderit in voluptate velit",
+      "correct": [
+        1,
+        4
+      ],
+      "selection": [
+        0
+      ]
+    },
+    {
+      "questionNum": 1,
+      "questionType": "onechoice",
+      "question": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea ommodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+      "instructions": "Please select the correct answer:",
+      "answer1": "uis gamma exercitation ullamco laboris nisi ut aliquip ex ea",
+      "answer2": "aute irure dolor in reprehenderit in voluptate velit esse cillum dolore",
+      "answer3": "consectetur adipiscing elit",
+      "answer4": "dolor in reprehenderit in voluptate velit",
+      "correct": [
+        2
+      ],
+      "selection": [
+        0
+      ]
+    },
+    {
+      "questionNum": 2,
+      "questionType": "truefalse",
+      "question": "Lorem delta dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea ommodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+      "instructions": "Please select the correct answer:",
+      "answer1": "True",
+      "answer2": "False",
+      "answer3": "",
+      "answer4": "",
+      "correct": [
+        1
+      ],
+      "selection": [
+        0
+      ]
+    }
+  ]
+}

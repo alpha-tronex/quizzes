@@ -1,0 +1,20 @@
+<!-- Masthead-->
+<section class="masthead bg-primary text-white text-center">
+  <div class="container d-flex align-items-center flex-column">
+      <!-- Masthead Avatar Image-->
+      <img class="masthead-avatar mb-5" src="assets/img/avataaars.svg" alt="happy child taking the quiz" />
+      <!-- Masthead Heading-->
+      <h1 class="masthead-heading mb-0" *ngIf="userName()">Start the Quiz</h1>
+      <p class="masthead-heading mb-0" *ngIf="!userName()" style="font-size: larger;">{{thanksPhrase}}</p>
+      <!-- Icon Divider-->
+      <div class="divider-custom divider-light">
+          <div class="divider-custom-line"></div>
+          <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+          <div class="divider-custom-line"></div>
+      </div>
+      <!-- Masthead Subheading-->
+      <p class="masthead-subheading font-weight-light mb-0" *ngIf="userName()">
+        <button routerLink="../questions" class="btn btn-primary btn-lg">Click to Start</button>
+      </p>
+  </div>
+</section>

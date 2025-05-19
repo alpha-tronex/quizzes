@@ -1,0 +1,76 @@
+<section class="masthead bg-primary text-white text-center">
+  <div class="container" *ngIf="curQuestion">
+    <!-- Contact Section Form-->
+    <p class="question text-left">{{curQuestion.question}}</p>
+    <p class="instructions text-left">{{curQuestion.instructions}}</p>
+    <!-- <div class="card">
+      <div class="card-body"> -->
+        <div class="register-form mt-5">
+        <div class="form-group">
+          <ng-template [ngIf]="this.multichoice">
+            <div class="form-row mb-3">
+              <input type="checkbox" class="col-sm-1 mt-3">
+              <input type="text" class="form-control col-sm-11" id="answer1" value={{curQuestion.answer1}} disabled>
+            </div>
+            <div class="form-row mb-3">
+              <input type="checkbox" class="col-sm-1 mt-3">
+              <input type="text" class="form-control col-sm-11" id="answer2" value={{curQuestion.answer2}} disabled>
+            </div>
+            <div class="form-row mb-3">
+              <input type="checkbox" class="col-sm-1 mt-3">
+              <input type="text" class="form-control col-sm-11" id="answer3" value={{curQuestion.answer3}} disabled>
+            </div>
+            <div class="form-row mb-5">
+              <input type="checkbox" class="col-sm-1 mt-3">
+              <input type="text" class="form-control col-sm-11" id="answer4" value={{curQuestion.answer4}} disabled>
+            </div>
+          </ng-template>
+          <ng-template [ngIf]="this.onechoice">
+            <div class="form-row mb-3">
+              <input type="radio" class="col-sm-1 mt-3">
+              <input type="text" class="form-control col-sm-11" id="answer1" value={{curQuestion.answer1}} disabled>
+            </div>
+            <div class="form-row mb-3">
+              <input type="radio" class="col-sm-1 mt-3">
+              <input type="text" class="form-control col-sm-11" id="answer2" value={{curQuestion.answer2}} disabled>
+            </div>
+            <div class="form-row mb-3">
+              <input type="radio" class="col-sm-1 mt-3">
+              <input type="text" class="form-control col-sm-11" id="answer3" value={{curQuestion.answer3}} disabled>
+            </div>
+            <div class="form-row mb-5">
+              <input type="radio" class="col-sm-1 mt-3">
+              <input type="text" class="form-control col-sm-11" id="answer4" value={{curQuestion.answer4}} disabled>
+            </div>
+          </ng-template>
+          <ng-template [ngIf]="this.truefalse">
+            <div class="form-row mb-3">
+              <input type="radio" class="col-sm-1 mt-3">
+              <input type="text" class="form-control col-sm-11" id="answer1" value={{curQuestion.answer1}} disabled>
+            </div>
+            <div class="form-row mb-3">
+              <input type="radio" class="col-sm-1 mt-3">
+              <input type="text" class="form-control col-sm-11" id="answer2" value={{curQuestion.answer2}} disabled>
+            </div>
+            <div class="form-row mb-3 styleHeight">
+              <!-- <p>0</p> -->
+            </div>
+          </ng-template>
+
+          <div class="form-row mb-5">
+            <button class="btn btn-primary col-sm-4" (click)="goPrevious()"
+              [disabled]="this.curQuestion.questionNum <= 0">previous</button>
+            <button class="btn btn-primary col-sm-4" (click)="submit()">submit</button>
+            <button class="btn btn-primary col-sm-4" (click)="goNext()"
+              [disabled]="this.questions.length <= (this.curQuestion.questionNum + 1)">next</button>
+          </div>
+
+        </div>
+      </div>
+      <!-- </div> -->
+    <!-- </div> -->
+  </div>
+  <div class="container" *ngIf="!curQuestion">
+    <p class="question text-left">Please check again later. Thanks.</p>
+  </div>
+</section>

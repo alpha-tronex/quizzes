@@ -1,0 +1,27 @@
+<section class="masthead bg-primary text-white text-center">
+  <div class="container">
+     <!-- Contact Section Form-->
+     <form class="register-form" >
+      <div class="form-group">
+        <div class="form-row mb-3">
+          <label for="userName">User Name</label>
+          <input type="text" class="form-control" name="uname" [(ngModel)]="student.uname" placeholder="User Name" autocomplete="off">
+        </div>
+        <div class="form-row mb-3">
+          <label for="email">Email</label>
+          <input type="email" class="form-control" name="email" [(ngModel)]="student.email" placeholder="Email" autocomplete="off">
+        </div>
+        <div class="form-row mb-3">
+          <label for="password">Password</label>
+          <input type="password" class="form-control" name="pass" [(ngModel)]="student.pass" placeholder="Password" autocomplete="off">
+        </div>
+        <div class="form-row mb-5">
+          <label for="confirmPass">Confirm Password</label>
+          <input type="password" class="form-control" id="confirmPass" placeholder="Password" autocomplete="off">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" (click)="registerStudent()">Register</button>
+    </form>
+  </div>
+</section>
