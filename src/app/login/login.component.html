@@ -1,7 +1,7 @@
 <section class="masthead bg-primary text-white text-center">
   <div class="container">
     <!-- Contact Section Form-->
-    <form class="register-form">
+    <form class="register-form" (ngSubmit)="loginStudent()">
       <div class="form-group">
         <div class="form-row mb-3">
           <label for="userName">User Name</label>
@@ -13,7 +13,7 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary" (click)="loginStudent()">Login</button>
+      <button type="submit" class="btn btn-primary">Login</button>
     </form>
   </div>
 </section>

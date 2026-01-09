@@ -22,8 +22,19 @@ const port = 3000;
 // filepath: c:\Projects\NODEJS\quizzes\server\server.js
 const path = require("path");
 
-// Serve Angular app
-app.use(express.static(path.join(__dirname, "../dist/browser"))); // Adjust path to Angular's `dist` folder
+// Serve Angular app (support multiple dev/prod layouts)
+const distBrowserPath = path.join(__dirname, "../dist/browser");
+const distPath = path.join(__dirname, "../dist");
+const srcPath = path.join(__dirname, "../src");
+
+if (fs.existsSync(distBrowserPath)) {
+    app.use(express.static(distBrowserPath));
+} else if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+} else {
+    // fallback to serving the source index during development
+    app.use(express.static(srcPath));
+}
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -58,7 +69,15 @@ const User = new mongoose.model("User", userSchema);
 
 mongoose.connect("mongodb://localhost:27017/userDB");
 app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../dist/browser/index.html")); // Adjust path to Angular's `index.html`
+    let indexFile = null;
+    if (fs.existsSync(path.join(distBrowserPath, 'index.html'))) {
+        indexFile = path.join(distBrowserPath, 'index.html');
+    } else if (fs.existsSync(path.join(distPath, 'index.html'))) {
+        indexFile = path.join(distPath, 'index.html');
+    } else {
+        indexFile = path.join(srcPath, 'index.html');
+    }
+    res.sendFile(indexFile);
 });
 
 app.route("/api/register")

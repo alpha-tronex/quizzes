@@ -5,7 +5,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.json",
-    "build": "ng build --prod",
+    "build": "ng build --configuration production",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -30,13 +30,14 @@
     "mongoose-encryption": "^2.0.2",
     "passport": "^0.4.1",
     "passport-local-mongoose": "^6.0.1",
+    "puppeteer": "^24.34.0",
     "rxjs": "^6.6.3",
     "tslib": "^2.0.0",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^19.2.12",
-    "@angular/cli": "^19.2.12",
+    "@angular-devkit/build-angular": "^19.2.11",
+    "@angular/cli": "^19.2.11",
     "@angular/compiler-cli": "^19.2.11",
     "@angular/language-service": "^19.2.11",
     "@types/jasmine": "~3.6.0",

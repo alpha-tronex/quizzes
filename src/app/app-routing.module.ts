@@ -7,20 +7,29 @@ import { RegisterComponent } from './register/register.component';
 import { AccountComponent } from './account/account.component';
 
 
-// const routes: Routes = [
-//   { path: '', redirectTo: '/login', pathMatch: 'full' },
-//   { path: 'home', component: HomeComponent },
-//   { path: 'questions', component: QuestionsComponent },
-//   { path: 'login', component: LoginComponent },
-//   { path: 'register', component: RegisterComponent },
-//   { path: 'account', component: AccountComponent },
-//   { path: '**', redirectTo: '/login', pathMatch: 'full' }
-// ];
-
 const routes: Routes = [
   { path: '', component: HomeComponent }, // Default route
+  { path: 'questions', component: QuestionsComponent },
+  { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
+  { path: 'account', component: AccountComponent },
   { path: '**', redirectTo: '' } // Redirect unknown routes to home
 ];
+
+/* const routes: Routes = [
+   { path: '', redirectTo: '/login', pathMatch: 'full' },
+   { path: 'home', component: HomeComponent },
+   { path: 'questions', component: QuestionsComponent },
+   { path: 'login', component: LoginComponent },
+   { path: 'register', component: RegisterComponent },
+   { path: 'account', component: AccountComponent },
+   { path: '**', redirectTo: '/login', pathMatch: 'full' }
+ ];*/
+
+//const routes: Routes = [
+//  { path: '', component: HomeComponent }, // Default route
+//  { path: '**', redirectTo: '' } // Redirect unknown routes to home
+//];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes, {})],

@@ -11,10 +11,11 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "aot": true,
+            "aot": false,
             "outputPath": {
               "base": "dist"
             },
+            "sourceMap": true,
             "index": "src/index.html",
             "tsConfig": "src/tsconfig.app.json",
             "polyfills": [
@@ -40,7 +41,7 @@
               ],
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false,
+              "sourceMap": true,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
