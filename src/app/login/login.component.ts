@@ -22,13 +22,14 @@ export class LoginComponent implements OnInit, OnDestroy {
       uname: '',
       email: '',
       pass: '',
+      confirmPass: '',
       quizzes: [],
     };
   }
 
   loginStudent(): void {
-    this.subscription = this.loginService.login(this.student).subscribe((foundStudent) => {
-      if (foundStudent) {
+    this.subscription = this.loginService.login(this.student).subscribe((success) => {
+      if (success === 'success') {
         // first, map foundStudent to this.student
 
         // --

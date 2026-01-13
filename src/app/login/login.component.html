@@ -1,19 +1,28 @@
 <section class="masthead bg-primary text-white text-center">
   <div class="container">
     <!-- Contact Section Form-->
-    <form class="register-form" (ngSubmit)="loginStudent()">
+    <form class="register-form" (ngSubmit)="loginStudent()" #loginForm="ngForm" novalidate>
       <div class="form-group">
         <div class="form-row mb-3">
           <label for="userName">User Name</label>
-          <input type="text" class="form-control" name="uname" [(ngModel)]="student.uname" placeholder="User Name" autocomplete="off">
+          <input type="text" class="form-control" name="uname" [(ngModel)]="student.uname" #uname="ngModel" placeholder="User Name" autocomplete="off" required minlength="3" pattern="[A-Za-z0-9]+">
+          <div *ngIf="uname.invalid && (uname.dirty || uname.touched)" class="text-danger mt-1">
+            <div *ngIf="uname.errors?.required">User name is required.</div>
+            <div *ngIf="uname.errors?.minlength">User name must be at least 3 characters.</div>
+            <div *ngIf="uname.errors?.pattern">User name may contain only letters and numbers.</div>
+          </div>
         </div>
         <div class="form-row mb-3">
           <label for="password">Password</label>
-          <input type="password" class="form-control" name="pass" [(ngModel)]="student.pass" placeholder="Password" autocomplete="off">
+          <input type="password" class="form-control" name="pass" [(ngModel)]="student.pass" #pass="ngModel" placeholder="Password" autocomplete="off" required minlength="6">
+          <div *ngIf="pass.invalid && (pass.dirty || pass.touched)" class="text-danger mt-1">
+            <div *ngIf="pass.errors?.required">Password is required.</div>
+            <div *ngIf="pass.errors?.minlength">Password must be at least 6 characters.</div>
+          </div>
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary">Login</button>
+      <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid">Login</button>
     </form>
   </div>
 </section>

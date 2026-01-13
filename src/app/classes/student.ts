@@ -5,5 +5,6 @@ export class Student {
     email: string;
     uname: string;
     pass: string;
+    confirmPass: string;
     quizzes: Quiz[];
 }

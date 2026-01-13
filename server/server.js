@@ -81,34 +81,52 @@ app.get("*", (req, res) => {
 });
 
 app.route("/api/register")
-    .post((req, res) => {
+    .post(async (req, res) => {
         try {
-            bcrypt.hash(req.body.pass, saltRounds, function(err, hash) {
-                const user = new User({
-                    username: req.body.uname,
-                    email: req.body.email,
-                    password: hash
-                });
-                console.log('before save');
+            const { uname, email, pass } = req.body || {};
 
-                user.save((err) => {
-                    if (err) return console.error(err);
-    
-                    console.log('username: ' + user.username);
-                    console.log('email: ' + user.email);
-                    console.log('password: ' + user.password);
-    
-                    console.log('after save');
-                    // res.end('done');
-                    res.status(200).send(JSON.stringify("success"));
-                })
-    
+            // basic validation
+            const validationErrors = [];
+            if (!uname || typeof uname !== 'string' || uname.trim().length < 3) {
+                validationErrors.push('username must be at least 3 characters');
+            } else if (!/^[A-Za-z0-9]+$/.test(uname)) {
+                validationErrors.push('username may contain only letters and numbers');
+            }
+
+            if (!email || typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email)) {
+                validationErrors.push('invalid email address');
+            }
+
+            if (!pass || typeof pass !== 'string' || pass.length < 6) {
+                validationErrors.push('password must be at least 6 characters');
+            }
+
+            if (validationErrors.length) {
+                return res.status(400).json({ errors: validationErrors });
+            }
+
+            // ensure username/email uniqueness
+            const existing = await User.findOne({ $or: [{ username: uname }, { email: email }] });
+            if (existing) {
+                return res.status(409).json({ error: 'username or email already in use' });
+            }
+
+            const hash = await bcrypt.hash(pass, saltRounds);
+            const user = new User({
+                username: uname,
+                email: email,
+                password: hash
             });
+            console.log('before save');
 
+            await user.save();
 
+            console.log('username: ' + user.username);
+            console.log('email: ' + user.email);
 
-           // mongoose.connection.close();
-            
+            console.log('after save');
+            res.status(200).json('success');
+
         } catch (err) {
             console.log('err' + err);
             res.status(500).send(err);
@@ -116,7 +134,7 @@ app.route("/api/register")
     })
 
 app.route("/api/login")
-    .post((req,res) => {
+    .post(async (req,res) => {
     try {
         console.log("uname: " + req.body.uname);
         console.log("pass: " + req.body.pass);
@@ -125,35 +143,27 @@ app.route("/api/login")
         const pass = req.body.pass;
 
         // cannot query password field if it is encrypted
-        User.findOne({username: uname}, (err, foundUser) => {
-            console.log("foundUser: " + foundUser);
-            console.log("err: " + err);
-            if (err) { 
-                console.log(err);
-                res.status(500).send(err);
-                console.log(err);
-            } 
-            
-            if (foundUser) {
-                console.log("in if (foundUser)");
-                bcrypt.compare(pass, foundUser.password, function(err, result) {
-                    console.log('result: ' + result);
-                    console.log('err: ' + err);
-                    if (result === true) {
-                        res.status(200).send(JSON.stringify(foundUser));
-                        console.log("status 200 success");
-                    }
-                    console.log("in crypto");
-                });
-            } else {
-                res.status(200).send(JSON.stringify("fail"));
-                console.log("status 200 nothing found");
-            }
-                
-        });
+        const foundUser = await User.findOne({username: uname});
+        console.log("foundUser: " + foundUser);
 
-        //mongoose.connection.close();
-        //return;
+        if (!foundUser) {
+            res.status(200).send(JSON.stringify('fail'));
+            console.log("status 200 nothing found");
+            return;
+        }
+
+        console.log("in if (foundUser)");
+        bcrypt.compare(pass, foundUser.password, function(err, result) {
+            console.log('result: ' + result);
+            console.log('err: ' + err);
+            if (result === true) {
+                res.status(200).send(JSON.stringify('success'));
+                console.log("status 200 success");
+            } else {
+                res.status(200).send(JSON.stringify('fail'));
+            }
+            console.log("in crypto");
+        });
 
     } catch (err) {
         console.log('err' + err);
