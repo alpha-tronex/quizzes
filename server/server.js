@@ -68,17 +68,6 @@ const User = new mongoose.model("User", userSchema);
 //mongoose.set("useCreateIndex", true);
 
 mongoose.connect("mongodb://localhost:27017/userDB");
-app.get("*", (req, res) => {
-    let indexFile = null;
-    if (fs.existsSync(path.join(distBrowserPath, 'index.html'))) {
-        indexFile = path.join(distBrowserPath, 'index.html');
-    } else if (fs.existsSync(path.join(distPath, 'index.html'))) {
-        indexFile = path.join(distPath, 'index.html');
-    } else {
-        indexFile = path.join(srcPath, 'index.html');
-    }
-    res.sendFile(indexFile);
-});
 
 app.route("/api/register")
     .post(async (req, res) => {
@@ -179,8 +168,26 @@ app.route("/api/logout")
 
 app.route("/api/quiz")
     .get((req,res) => {
+        console.log('loading questions');
         const jsonData = fs.readFileSync(__dirname + '/quizzes.json');
         res.send(jsonData);
+});
+
+// Serve Angular app for any other GET request (must be after API routes)
+app.get("*", (req, res) => {
+    // If the request is for API, skip (shouldn't happen because APIs are defined above)
+    if (req.path && req.path.startsWith('/api/')) {
+        return res.status(404).send('Not Found');
+    }
+    let indexFile = null;
+    if (fs.existsSync(path.join(distBrowserPath, 'index.html'))) {
+        indexFile = path.join(distBrowserPath, 'index.html');
+    } else if (fs.existsSync(path.join(distPath, 'index.html'))) {
+        indexFile = path.join(distPath, 'index.html');
+    } else {
+        indexFile = path.join(srcPath, 'index.html');
+    }
+    res.sendFile(indexFile);
 });
 
 // app.route("/api/register")

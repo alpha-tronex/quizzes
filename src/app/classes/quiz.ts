@@ -1,17 +1,18 @@
 export class Quiz {
     id: number;
-    type: QuizType;
+    title: string;
     questions: Question[];
     grade: string;
 }
 
-export class QuizType {
-    id: number;
-    type: string;
+export enum QuestionType {
+    TreuFalse = 'TreuFalse',
+    MultipleChoice = 'MultipleChoice',
+    SingleAnswer = 'SingleAnswer'
 }
 export class Question {
     questionNum: number;
-    questionType: string;
+    questionType: QuestionType;
     question: string;
     instructions: string;
     answer1: string;

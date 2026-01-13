@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Question } from '../classes/quiz';
+import { Question, QuestionType } from '../classes/quiz';
 // tslint:disable-next-line: import-blacklist
 import { Observable, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
@@ -58,17 +58,17 @@ export class QuestionsComponent implements OnInit {
 
   setQuestionType() {
     switch (this.curQuestion.questionType) {
-      case 'multichoice':
+      case QuestionType.MultipleChoice:
         this.multichoice = true;
         this.onechoice = false;
         this.truefalse = false;
         break;
-      case 'onechoice':
+      case QuestionType.SingleAnswer:
         this.onechoice = true;
         this.multichoice = false;
         this.truefalse = false;
         break;
-      case 'truefalse':
+      case QuestionType.TreuFalse:
           this.truefalse = true;
           this.multichoice = false;
           this.onechoice = false;
