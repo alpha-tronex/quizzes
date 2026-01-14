@@ -1,45 +1,68 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, Subject, throwError } from 'rxjs';
-import { catchError, retry } from 'rxjs/operators';
-import { Student } from '../classes/student';
+import { catchError, retry, tap } from 'rxjs/operators';
+import { User } from '../classes/users';
 
 @Injectable()
 export class LoginService {
-  loggedInStudentChange: Subject<Student> = new Subject<Student>();
-  loggedInStudent: Student;
+  //loggedInStudentChange: Subject<User> = new Subject<User>();
+  user: User;
   http: HttpClient;
 
   constructor(http?: HttpClient) {
     this.http = http;
+    /*
     this.loggedInStudentChange.subscribe((student) => {
       this.loggedInStudent = student;
     });
+    */
   }
 
   get userName(): string {
-    if (!this.loggedInStudent) {
+    if (!this.user) {
       return '';
     }
-    return this.loggedInStudent.uname;
+    return this.user.uname;
   }
 
-  login(student): Observable<any> {
-    return this.http.post<any>('/api/login', student).pipe(
+  isAdmin(): boolean {
+    return this.user && this.user.type === 'admin';
+  }
+
+  isStudent(): boolean {
+    return this.user && this.user.type === 'student';
+  }
+
+  
+  login(user): Observable<User> {
+    return this.http.post<User>('/api/login', user).pipe(
       // retry(3),
+      tap(response => {
+        this.user = response;
+        console.log('Username:', this.user.uname);
+      }),
       catchError(this.handleError)
     );
   }
 
-  register(student): Observable<any> {
-    console.log(student);
-    return this.http.post<any>('/api/register', JSON.stringify(student),
+  register(user): Observable<User> {
+    console.log(user);
+    return this.http.post<User>('/api/register', JSON.stringify(user),
     { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) }).pipe(
       // retry(3),
+      tap(response => {
+        this.user = response;
+        console.log('Registered user:', this.user.uname);
+      }),
       catchError(this.handleError)
     );
   }
 
+  logout(): void {
+    this.user = null;
+  }
+  
   handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       // A client-side or network error occurred. Handle it accordingly.

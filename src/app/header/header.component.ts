@@ -26,7 +26,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   logOff() {
-    this.loginService.loggedInStudentChange.next(null);
+    //this.loginService.loggedInStudentChange.next(null);
+    this.loginService.logout();
     alert('Thank you for visiting!');
     // take to home page
     this.router.navigate(['home']);

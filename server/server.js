@@ -21,6 +21,7 @@ const port = 3000;
 
 // filepath: c:\Projects\NODEJS\quizzes\server\server.js
 const path = require("path");
+const { type } = require("os");
 
 // Serve Angular app (support multiple dev/prod layouts)
 const distBrowserPath = path.join(__dirname, "../dist/browser");
@@ -52,7 +53,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 const userSchema = new mongoose.Schema ({
     username: String,
     email: String,
-    password: String
+    password: String,
+    type: String    
 });
 // userSchema.plugin(passportLocalMongoose); //will help us to hash and salt password and save users into mongodb database
 // const secret = "pointMeInTheDirectionOfAlbuquerque";
@@ -104,7 +106,8 @@ app.route("/api/register")
             const user = new User({
                 username: uname,
                 email: email,
-                password: hash
+                password: hash,
+                type: 'student'
             });
             console.log('before save');
 
@@ -114,7 +117,15 @@ app.route("/api/register")
             console.log('email: ' + user.email);
 
             console.log('after save');
-            res.status(200).json('success');
+            const userObj = {
+                id: user._id,
+                uname: user.username,
+                email: user.email,
+                pass: '', // Don't send the hashed password
+                confirmPass: '',
+                type: user.type
+            };
+            res.status(200).json(userObj);
 
         } catch (err) {
             console.log('err' + err);
@@ -136,9 +147,7 @@ app.route("/api/login")
         console.log("foundUser: " + foundUser);
 
         if (!foundUser) {
-            res.status(200).send(JSON.stringify('fail'));
-            console.log("status 200 nothing found");
-            return;
+            return res.status(401).json({ error: 'Invalid credentials' });
         }
 
         console.log("in if (foundUser)");
@@ -146,10 +155,18 @@ app.route("/api/login")
             console.log('result: ' + result);
             console.log('err: ' + err);
             if (result === true) {
-                res.status(200).send(JSON.stringify('success'));
+                const userObj = {
+                    id: foundUser._id,
+                    uname: foundUser.username,
+                    email: foundUser.email,
+                    pass: '', // Don't send the hashed password
+                    confirmPass: '',
+                    type: foundUser.type
+                };
+                res.status(200).json(userObj);
                 console.log("status 200 success");
             } else {
-                res.status(200).send(JSON.stringify('fail'));
+                res.status(401).json({ error: 'Invalid credentials' });
             }
             console.log("in crypto");
         });

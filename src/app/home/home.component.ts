@@ -19,7 +19,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.thanksPhrase = 'Thank you for visiting the quiz master.';
 
     if (!this.loginService.userName) {
-      this.loginService.loggedInStudentChange.next(null);
+      //this.loginService.loggedInStudentChange.next(null);
     }
   }
 

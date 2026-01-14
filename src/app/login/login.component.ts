@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Student } from '../classes/student';
+import { Admin, User } from '../classes/users';
 import { Router } from '@angular/router';
 import { LoginService } from '../services/login-service';
 
@@ -11,33 +11,28 @@ import { LoginService } from '../services/login-service';
     standalone: false
 })
 export class LoginComponent implements OnInit, OnDestroy {
-  student: Student;
+  user: User;
   subscription: Subscription;
 
   constructor(private router: Router, private loginService: LoginService) {}
 
   ngOnInit() {
-    this.student = {
-      id: 0,
+    this.user = {
+      id: '',
       uname: '',
       email: '',
       pass: '',
       confirmPass: '',
-      quizzes: [],
+      type: ''
     };
   }
 
-  loginStudent(): void {
-    this.subscription = this.loginService.login(this.student).subscribe((success) => {
-      if (success === 'success') {
-        // first, map foundStudent to this.student
-
-        // --
-        this.loginService.loggedInStudentChange.next(this.student);
-        this.router.navigate(['home']);
-      } else {
-        alert('unable to login');
-      }
+  login(): void {
+    this.subscription = this.loginService.login(this.user).subscribe((user) => {
+      this.user = user;
+      this.router.navigate(['home']);
+    }, (error) => {
+      alert('unable to login: ' + error);
     });
   }
 

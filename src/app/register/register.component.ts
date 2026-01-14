@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
-import { Student } from '../classes/student';
+import { User } from '../classes/users';
 import { LoginService } from '../services/login-service';
 
 @Component({
@@ -11,33 +11,29 @@ import { LoginService } from '../services/login-service';
     standalone: false
 })
 export class RegisterComponent implements OnInit, OnDestroy {
-  student: Student;
+  user: User;
   subscription: Subscription;
   serverErrors: string[] = [];
 
   constructor(private router: Router, private loginService: LoginService) { }
 
   ngOnInit() {
-    this.student = {
-      id: 0,
+    this.user = {
+      id: '',
       uname: '',
       email: '',
       pass: '',
       confirmPass: '',
-      quizzes: []
+      type: ''
     };
   }
 
   registerStudent(): void {
     this.serverErrors = [];
-    this.subscription = this.loginService.register(this.student).subscribe(
-      (success) => {
-        if (success === 'success') {
-          this.loginService.loggedInStudentChange.next(this.student);
-          this.router.navigate(['home']);
-        } else {
-          alert('unable to register');
-        }
+    this.subscription = this.loginService.register(this.user).subscribe(
+      (user) => {
+        this.user = user;
+        this.router.navigate(['home']);
       },
       (err) => {
         // err may be an object like { errors: [...] } or a string
