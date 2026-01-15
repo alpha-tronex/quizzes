@@ -1,28 +1,42 @@
 <section class="masthead bg-primary text-white text-center">
   <div class="container">
-    <!-- Contact Section Form-->
-    <form class="register-form" (ngSubmit)="login()" #loginForm="ngForm" novalidate>
-      <div class="form-group">
-        <div class="form-row mb-3">
-          <label for="userName">User Name</label>
-          <input type="text" class="form-control" name="uname" [(ngModel)]="user.uname" #uname="ngModel" placeholder="User Name" autocomplete="off" required minlength="3" pattern="[A-Za-z0-9]+">
-          <div *ngIf="uname.invalid && (uname.dirty || uname.touched)" class="text-danger mt-1">
-            <div *ngIf="uname.errors?.required">User name is required.</div>
-            <div *ngIf="uname.errors?.minlength">User name must be at least 3 characters.</div>
-            <div *ngIf="uname.errors?.pattern">User name may contain only letters and numbers.</div>
+    <h2 class="mb-4">Login</h2>
+    
+    <div class="card text-dark">
+      <div class="card-body">
+        <form (ngSubmit)="login()" #loginForm="ngForm" novalidate>
+          <div class="row text-start">
+            <div class="col-md-6 offset-md-3">
+              <div *ngIf="serverErrors?.length" class="alert alert-danger">
+                <ul class="mb-0">
+                  <li *ngFor="let err of serverErrors">{{ err }}</li>
+                </ul>
+              </div>
+              
+              <div class="form-group mb-3">
+                <label for="userName">User Name</label>
+                <input type="text" class="form-control" name="uname" [(ngModel)]="user.uname" #uname="ngModel" placeholder="User Name" autocomplete="off" required minlength="3" pattern="[A-Za-z0-9]+">
+                <div *ngIf="uname.invalid && (uname.dirty || uname.touched)" class="text-danger mt-1">
+                  <small *ngIf="uname.errors?.required">User name is required.</small>
+                  <small *ngIf="uname.errors?.minlength">User name must be at least 3 characters.</small>
+                  <small *ngIf="uname.errors?.pattern">User name may contain only letters and numbers.</small>
+                </div>
+              </div>
+              
+              <div class="form-group mb-3">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" name="pass" [(ngModel)]="user.pass" #pass="ngModel" placeholder="Password" autocomplete="off" required minlength="6">
+                <div *ngIf="pass.invalid && (pass.dirty || pass.touched)" class="text-danger mt-1">
+                  <small *ngIf="pass.errors?.required">Password is required.</small>
+                  <small *ngIf="pass.errors?.minlength">Password must be at least 6 characters.</small>
+                </div>
+              </div>
+              
+              <button type="submit" class="btn btn-primary w-100" [disabled]="loginForm.invalid">Login</button>
+            </div>
           </div>
-        </div>
-        <div class="form-row mb-3">
-          <label for="password">Password</label>
-          <input type="password" class="form-control" name="pass" [(ngModel)]="user.pass" #pass="ngModel" placeholder="Password" autocomplete="off" required minlength="6">
-          <div *ngIf="pass.invalid && (pass.dirty || pass.touched)" class="text-danger mt-1">
-            <div *ngIf="pass.errors?.required">Password is required.</div>
-            <div *ngIf="pass.errors?.minlength">Password must be at least 6 characters.</div>
-          </div>
-        </div>
+        </form>
       </div>
-
-      <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid">Login</button>
-    </form>
+    </div>
   </div>
 </section>

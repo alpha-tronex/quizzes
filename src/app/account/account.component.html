@@ -1,3 +1,172 @@
-<p>
-  account works!
-</p>
+<section class="masthead bg-primary text-white text-center">
+  <div class="container">
+    <h2 class="mb-4">Account Information</h2>
+    
+    <div *ngIf="user" class="card text-dark">
+      <div class="card-body">
+        <!-- Display Mode -->
+        <div *ngIf="!editMode">
+          <div class="row mb-3">
+            <div class="col-md-6 text-start">
+              <h5>Personal Information</h5>
+              <hr>
+              <p><strong>User ID:</strong> {{ user.id }}</p>
+              <p><strong>First Name:</strong> {{ user.fname }}</p>
+              <p><strong>Last Name:</strong> {{ user.lname }}</p>
+              <p><strong>Username:</strong> {{ user.uname }}</p>
+            </div>
+            <div class="col-md-6 text-start">
+              <h5>Contact Information</h5>
+              <hr>
+              <p><strong>Email:</strong> {{ user.email }}</p>
+              <p><strong>Phone:</strong> {{ user.phone }}</p>
+            </div>
+          </div>
+          
+          <div class="row mb-3 text-start" *ngIf="user.address">
+            <div class="col-12">
+              <h5>Address</h5>
+              <hr>
+              <p *ngIf="user.address.street1"><strong>Street:</strong> {{ user.address.street1 }}</p>
+              <p *ngIf="user.address.street2"><strong>Street:</strong> {{ user.address.street2 }}</p>
+              <p *ngIf="user.address.street3"><strong>Street:</strong> {{ user.address.street3 }}</p>
+              <p *ngIf="user.address.city"><strong>City:</strong> {{ user.address.city }}</p>
+              <p *ngIf="user.address.state"><strong>State:</strong> {{ user.address.state }}</p>
+              <p *ngIf="user.address.zipCode"><strong>Zip Code:</strong> {{ user.address.zipCode }}</p>
+              <p *ngIf="user.address.country"><strong>Country:</strong> {{ user.address.country }}</p>
+            </div>
+          </div>
+          
+          <div class="row text-start">
+            <div class="col-12">
+              <h5>Account Details</h5>
+              <hr>
+              <p><strong>Account Type:</strong> <span class="badge" [ngClass]="user.type === 'admin' ? 'bg-danger' : 'bg-success'">{{ user.type | uppercase }}</span></p>
+            </div>
+          </div>
+          
+          <button class="btn btn-primary mt-3" (click)="toggleEditMode()">Edit Information</button>
+        </div>
+        
+        <!-- Edit Mode -->
+        <form *ngIf="editMode" (ngSubmit)="saveChanges()" #editForm="ngForm">
+          <div *ngIf="serverErrors?.length" class="alert alert-danger">
+            <ul class="mb-0">
+              <li *ngFor="let err of serverErrors">{{ err }}</li>
+            </ul>
+          </div>
+          
+          <div class="row text-start">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="fname">First Name</label>
+                <input type="text" class="form-control" name="fname" [(ngModel)]="user.fname" #fname="ngModel" required minlength="2">
+                <div *ngIf="fname.invalid && fname.touched" class="text-danger mt-1">
+                  <small *ngIf="fname.errors?.required">First name is required.</small>
+                  <small *ngIf="fname.errors?.minlength">First name must be at least 2 characters.</small>
+                </div>
+              </div>
+              
+              <div class="form-group mb-3">
+                <label for="lname">Last Name</label>
+                <input type="text" class="form-control" name="lname" [(ngModel)]="user.lname" #lname="ngModel" required minlength="2">
+                <div *ngIf="lname.invalid && lname.touched" class="text-danger mt-1">
+                  <small *ngIf="lname.errors?.required">Last name is required.</small>
+                  <small *ngIf="lname.errors?.minlength">Last name must be at least 2 characters.</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" name="email" [(ngModel)]="user.email" #email="ngModel" required email>
+                <div *ngIf="email.invalid && email.touched" class="text-danger mt-1">
+                  <small *ngIf="email.errors?.required">Email is required.</small>
+                  <small *ngIf="email.errors?.email">Enter a valid email address.</small>
+                </div>
+              </div>
+              
+              <div class="form-group mb-3">
+                <label for="phone">Phone</label>
+                <input type="tel" class="form-control" name="phone" [(ngModel)]="user.phone" #phone="ngModel" required pattern="^[\d\s\-\+\(\)]{10,}$">
+                <div *ngIf="phone.invalid && phone.touched" class="text-danger mt-1">
+                  <small *ngIf="phone.errors?.required">Phone is required.</small>
+                  <small *ngIf="phone.errors?.pattern">Enter a valid phone number (at least 10 digits).</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row text-start">
+            <div class="col-12">
+              <h5>Address</h5>
+              <hr>
+              <div class="form-group mb-3">
+                <label for="street1">Street 1</label>
+                <input type="text" class="form-control" name="street1" [(ngModel)]="user.address.street1" placeholder="Street Address 1">
+              </div>
+              
+              <div class="form-group mb-3">
+                <label for="street2">Street 2</label>
+                <input type="text" class="form-control" name="street2" [(ngModel)]="user.address.street2" placeholder="Street Address 2">
+              </div>
+              
+              <div class="form-group mb-3">
+                <label for="street3">Street 3</label>
+                <input type="text" class="form-control" name="street3" [(ngModel)]="user.address.street3" placeholder="Street Address 3">
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label for="city">City</label>
+                    <input type="text" class="form-control" name="city" [(ngModel)]="user.address.city" placeholder="City">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label for="state">State</label>
+                    <input type="text" class="form-control" name="state" [(ngModel)]="user.address.state" placeholder="State">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label for="zipCode">Zip Code</label>
+                    <input type="text" class="form-control" name="zipCode" [(ngModel)]="user.address.zipCode" placeholder="Zip Code">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label for="country">Country</label>
+                    <input type="text" class="form-control" name="country" [(ngModel)]="user.address.country" placeholder="Country">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-3">
+            <button type="submit" class="btn btn-success me-2" [disabled]="editForm.invalid || saving">Save Changes</button>
+            <button type="button" class="btn btn-secondary" (click)="toggleEditMode()" [disabled]="saving">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <div *ngIf="!user && !loading" class="alert alert-warning mt-3">
+      <p>No user information available. Please log in.</p>
+    </div>
+    
+    <div *ngIf="loading" class="mt-3">
+      <p>Loading user information...</p>
+    </div>
+    
+    <div *ngIf="error" class="alert alert-danger mt-3">
+      <p>{{ error }}</p>
+    </div>
+  </div>
+</section>

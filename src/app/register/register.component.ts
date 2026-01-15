@@ -24,7 +24,11 @@ export class RegisterComponent implements OnInit, OnDestroy {
       email: '',
       pass: '',
       confirmPass: '',
-      type: ''
+      type: '',
+      fname: '',
+      lname: '',
+      phone: '',
+      address: null
     };
   }
 

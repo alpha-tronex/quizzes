@@ -1,45 +1,87 @@
 <section class="masthead bg-primary text-white text-center">
   <div class="container">
-     <!-- Contact Section Form-->
-     <form class="register-form" (ngSubmit)="registerStudent()" #registerForm="ngForm" novalidate>
-      <div *ngIf="serverErrors?.length" class="alert alert-danger">
-        <ul class="mb-0">
-          <li *ngFor="let err of serverErrors">{{ err }}</li>
-        </ul>
+    <h2 class="mb-4">Register</h2>
+    
+    <div class="card text-dark">
+      <div class="card-body">
+        <form (ngSubmit)="registerStudent()" #registerForm="ngForm" novalidate>
+          <div class="row text-start">
+            <div class="col-md-6 offset-md-3">
+              <div *ngIf="serverErrors?.length" class="alert alert-danger">
+                <ul class="mb-0">
+                  <li *ngFor="let err of serverErrors">{{ err }}</li>
+                </ul>
+              </div>
+              
+              <div class="form-group mb-3">
+                <label for="firstName">First Name</label>
+                <input type="text" class="form-control" name="fname" [(ngModel)]="user.fname" #fname="ngModel" placeholder="First Name" autocomplete="off" required minlength="2">
+                <div *ngIf="fname.invalid && (fname.dirty || fname.touched)" class="text-danger mt-1">
+                  <small *ngIf="fname.errors?.required">First name is required.</small>
+                  <small *ngIf="fname.errors?.minlength">First name must be at least 2 characters.</small>
+                </div>
+              </div>
+              
+              <div class="form-group mb-3">
+                <label for="lastName">Last Name</label>
+                <input type="text" class="form-control" name="lname" [(ngModel)]="user.lname" #lname="ngModel" placeholder="Last Name" autocomplete="off" required minlength="2">
+                <div *ngIf="lname.invalid && (lname.dirty || lname.touched)" class="text-danger mt-1">
+                  <small *ngIf="lname.errors?.required">Last name is required.</small>
+                  <small *ngIf="lname.errors?.minlength">Last name must be at least 2 characters.</small>
+                </div>
+              </div>
+              
+              <div class="form-group mb-3">
+                <label for="userName">User Name</label>
+                <input type="text" class="form-control" name="uname" [(ngModel)]="user.uname" #uname="ngModel" placeholder="User Name" autocomplete="off" required minlength="3" pattern="[A-Za-z0-9]+">
+                <div *ngIf="uname.invalid && (uname.dirty || uname.touched)" class="text-danger mt-1">
+                  <small *ngIf="uname.errors?.required">User name is required.</small>
+                  <small *ngIf="uname.errors?.minlength">User name must be at least 3 characters.</small>
+                  <small *ngIf="uname.errors?.pattern">User name may contain only letters and numbers.</small>
+                </div>
+              </div>
+              
+              <div class="form-group mb-3">
+                <label for="phone">Phone</label>
+                <input type="tel" class="form-control" name="phone" [(ngModel)]="user.phone" #phone="ngModel" placeholder="Phone Number" autocomplete="off" required pattern="^[\d\s\-\+\(\)]{10,}$">
+                <div *ngIf="phone.invalid && (phone.dirty || phone.touched)" class="text-danger mt-1">
+                  <small *ngIf="phone.errors?.required">Phone number is required.</small>
+                  <small *ngIf="phone.errors?.pattern">Enter a valid phone number (at least 10 digits).</small>
+                </div>
+              </div>
+              
+              <div class="form-group mb-3">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" name="email" [(ngModel)]="user.email" #email="ngModel" placeholder="Email" autocomplete="off" required email pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$">
+                <div *ngIf="email.invalid && (email.dirty || email.touched)" class="text-danger mt-1">
+                  <small *ngIf="email.errors?.required">Email is required.</small>
+                  <small *ngIf="email.errors?.email">Enter a valid email address.</small>
+                  <small *ngIf="email.errors?.pattern">Email must be in format: example&#64;domain.com</small>
+                </div>
+              </div>
+              
+              <div class="form-group mb-3">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" name="pass" [(ngModel)]="user.pass" #pass="ngModel" placeholder="Password" autocomplete="off" required minlength="6">
+                <div *ngIf="pass.invalid && (pass.dirty || pass.touched)" class="text-danger mt-1">
+                  <small *ngIf="pass.errors?.required">Password is required.</small>
+                  <small *ngIf="pass.errors?.minlength">Password must be at least 6 characters.</small>
+                </div>
+              </div>
+              
+              <div class="form-group mb-3">
+                <label for="confirmPass">Confirm Password</label>
+                <input type="password" class="form-control" name="confirmPass" [(ngModel)]="user.confirmPass" #confirmPass="ngModel" placeholder="Confirm Password" autocomplete="off" required>
+                <div *ngIf="(confirmPass.dirty || confirmPass.touched) && user.pass !== user.confirmPass" class="text-danger mt-1">
+                  <small>Passwords do not match.</small>
+                </div>
+              </div>
+              
+              <button type="submit" class="btn btn-primary w-100" [disabled]="registerForm.invalid || user.pass !== user.confirmPass">Register</button>
+            </div>
+          </div>
+        </form>
       </div>
-      <div class="form-group">
-        <div class="form-row mb-3">
-          <label for="userName">User Name</label>
-          <input type="text" class="form-control" name="uname" [(ngModel)]="user.uname" #uname="ngModel" placeholder="User Name" autocomplete="off" required minlength="3" pattern="[A-Za-z0-9]+">
-          <div *ngIf="uname.invalid && (uname.dirty || uname.touched)" class="text-danger mt-1">
-            <div *ngIf="uname.errors?.required">User name is required.</div>
-            <div *ngIf="uname.errors?.minlength">User name must be at least 3 characters.</div>
-            <div *ngIf="uname.errors?.pattern">User name may contain only letters and numbers.</div>
-          </div>
-        </div>
-        <div class="form-row mb-3">
-          <label for="email">Email</label>
-          <input type="email" class="form-control" name="email" [(ngModel)]="user.email" #email="ngModel" placeholder="Email" autocomplete="off" required email>
-          <div *ngIf="email.invalid && (email.dirty || email.touched)" class="text-danger mt-1">
-            <div *ngIf="email.errors?.required">Email is required.</div>
-            <div *ngIf="email.errors?.email">Enter a valid email address.</div>
-          </div>
-        </div>
-        <div class="form-row mb-3">
-          <label for="password">Password</label>
-          <input type="password" class="form-control" name="pass" [(ngModel)]="user.pass" #pass="ngModel" placeholder="Password" autocomplete="off" required minlength="6">
-          <div *ngIf="pass.invalid && (pass.dirty || pass.touched)" class="text-danger mt-1">
-            <div *ngIf="pass.errors?.required">Password is required.</div>
-            <div *ngIf="pass.errors?.minlength">Password must be at least 6 characters.</div>
-          </div>
-        </div>
-        <div class="form-row mb-5">
-          <label for="confirmPass">Confirm Password</label>
-          <input type="password" class="form-control" id="confirmPass" name="confirmPass" [(ngModel)]="user.confirmPass" #confirmPass="ngModel" placeholder="Password" autocomplete="off" required>
-          <div *ngIf="(confirmPass.dirty || confirmPass.touched) && user.pass !== user.confirmPass" class="text-danger mt-1">Passwords do not match.</div>
-        </div>
-      </div>
-      <button type="submit" class="btn btn-primary" [disabled]="registerForm.invalid || user.pass !== user.confirmPass">Register</button>
-    </form>
+    </div>
   </div>
 </section>

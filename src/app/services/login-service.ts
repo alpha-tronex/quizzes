@@ -35,7 +35,7 @@ export class LoginService {
   }
 
   
-  login(user): Observable<User> {
+  login(user: User): Observable<User> {
     return this.http.post<User>('/api/login', user).pipe(
       // retry(3),
       tap(response => {
@@ -46,7 +46,7 @@ export class LoginService {
     );
   }
 
-  register(user): Observable<User> {
+  register(user: User): Observable<User> {
     console.log(user);
     return this.http.post<User>('/api/register', JSON.stringify(user),
     { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) }).pipe(
@@ -59,10 +59,20 @@ export class LoginService {
     );
   }
 
+  updateUser(user: User): Observable<User> {
+    return this.http.put<User>('/api/user/update', user).pipe(
+      tap(response => {
+        this.user = response;
+        console.log('User updated:', this.user.uname);
+      }),
+      catchError(this.handleError)
+    );
+  }
+
   logout(): void {
     this.user = null;
   }
-  
+
   handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       // A client-side or network error occurred. Handle it accordingly.
