@@ -88,8 +88,8 @@ authRoutes(app, User);
 
 app.route("/api/quiz")
     .get((req,res) => {
-        console.log('loading questions');
-        const jsonData = fs.readFileSync(__dirname + '/quizzes.json');
+        console.log('loading quiz data');
+        const jsonData = fs.readFileSync(__dirname + '/quizzes/quiz_0.json');
         res.send(jsonData);
 });
 

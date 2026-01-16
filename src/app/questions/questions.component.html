@@ -1,6 +1,7 @@
 <section class="masthead bg-primary text-white text-center">
   <div class="container" *ngIf="curQuestion">
-    <h2 class="mb-4">Quiz</h2>
+    <h2 class="mb-2">Quiz</h2>
+    <h2 class="mb-4">{{ quiz.title }}</h2>
     
     <div class="card text-dark">
       <div class="card-body">
@@ -101,14 +102,14 @@
             <div class="row mt-5">
               <div class="col-sm-4">
                 <button class="btn btn-secondary w-100" (click)="goPrevious()"
-                  [style="max-width: 99%;" disabled]="this.curQuestion.questionNum <= 0">Previous</button>
+                  [style="max-width: 99%;"] [disabled]="this.curQuestion.questionNum === 0">Previous</button>
               </div>
               <div class="col-sm-4">
-                <button class="btn btn-primary w-100" (click)="submit()">Submit</button>
+                <button class="btn btn-primary w-100" (click)="submit()" [disabled]="!allAnswered">Submit</button>
               </div>
               <div class="col-sm-4">
                 <button class="btn btn-secondary w-100" (click)="goNext()"
-                  [style="max-width: 99%;" disabled]="this.questions.length <= (this.curQuestion.questionNum + 1)">Next</button>
+                  [style="max-width: 99%;"] [disabled]="this.quiz.questions.length === (this.curQuestion.questionNum + 1)">Next</button>
               </div>
             </div>
           </div>

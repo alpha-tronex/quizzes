@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Question, QuestionType } from '../classes/quiz';
+import { Question, QuestionType, Quiz } from '../classes/quiz';
 // tslint:disable-next-line: import-blacklist
 import { Observable, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
@@ -16,18 +16,24 @@ export class QuestionsComponent implements OnInit {
   onechoice: boolean;
   truefalse: boolean;
   questionType: string;
+  quiz: Quiz;
   curQuestion: Question;
-  questions: Question[] = [];
+  allAnswered: boolean = false;
   http: HttpClient;
 
   constructor(http?: HttpClient) { this.http = http; }
 
   ngOnInit() {
-    this.getQuestions().subscribe(data => {
-      this.questions = data.quizzes;
-      this.curQuestion = this.questions[0];
-      this.setQuestionType();
-    });
+    this.getQuestions().subscribe(
+      (data: Quiz) => {
+        this.quiz = data as Quiz;
+        if (this.quiz && this.quiz.questions.length > 0) {
+          this.curQuestion = this.quiz.questions[0];
+          this.setQuestionType();
+        }
+      },
+      (error) => console.error('Error fetching questions:', error)
+    );
     console.log('questions, questions, questions');
   }
 
@@ -40,42 +46,60 @@ export class QuestionsComponent implements OnInit {
 
   goPrevious() {
     if (this.curQuestion.questionNum > 0) {
-      this.curQuestion = this.questions[this.curQuestion.questionNum - 1];
+      this.curQuestion = this.quiz.questions[this.curQuestion.questionNum - 1];
       this.setQuestionType();
     }
   }
 
   goNext() {
-    if (this.questions.length > this.curQuestion.questionNum) {
-      this.curQuestion = this.questions[this.curQuestion.questionNum + 1];
+    if (this.quiz.questions.length > this.curQuestion.questionNum) {
+      this.curQuestion = this.quiz.questions[this.curQuestion.questionNum + 1];
       this.setQuestionType();
     }
   }
+
+  recordMultichoiceSelection(): void {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    const selectedAnswers: number[] = [];
+
+    checkboxes.forEach((checkbox: Element, index: number) => {
+      const input = checkbox as HTMLInputElement;
+      if (input.checked) {
+        selectedAnswers.push(index + 1);
+      }
+    });
+
+    this.curQuestion.selection = selectedAnswers;
+  }
+
+  recordOnechoiceSelection(): void {
+    const radios = document.querySelectorAll('input[type="radio"]');
+    let selectedAnswer: number | null = null;
+    
+    radios.forEach((radio: Element, index: number) => {
+      const input = radio as HTMLInputElement;
+      if (input.checked) {
+        selectedAnswer = index + 1;
+      }
+    });
+    this.curQuestion.selection = selectedAnswer !== null ? [selectedAnswer] : [];
+  }
+
+  recordTruefalseSelection(value: boolean): void {
+    this.curQuestion.selection = value ? [1] : [2];
+  }   
 
   submit() {
     //
   }
 
   setQuestionType() {
-    switch (this.curQuestion.questionType) {
-      case QuestionType.MultipleChoice:
-        this.multichoice = true;
-        this.onechoice = false;
-        this.truefalse = false;
-        break;
-      case QuestionType.SingleAnswer:
-        this.onechoice = true;
-        this.multichoice = false;
-        this.truefalse = false;
-        break;
-      case QuestionType.TreuFalse:
-          this.truefalse = true;
-          this.multichoice = false;
-          this.onechoice = false;
-        break;
-      default:
-        this.multichoice = false;
-    }
+    if (!this.curQuestion) {
+      return;
+    } 
+    this.multichoice = this.curQuestion.questionType === QuestionType.MultipleChoice;
+    this.onechoice = this.curQuestion.questionType === QuestionType.SingleAnswer;
+    this.truefalse = this.curQuestion.questionType === QuestionType.TreuFalse;
   }
 
   handleError(error: HttpErrorResponse) {
