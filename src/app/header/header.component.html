@@ -13,7 +13,7 @@
               <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" [routerLink]="['register']" *ngIf="!userName()">Register</a></li>
               <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" (click)="logOff()" *ngIf="userName()">log Off</a></li>
               <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" [routerLink]="['account']" *ngIf="userName()">Account</a></li>
-              <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" [routerLink]="['home']" *ngIf="userName()">History</a></li>
+              <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" [routerLink]="['history']" *ngIf="userName()">History</a></li>
           </ul>
       </div>
   </div>

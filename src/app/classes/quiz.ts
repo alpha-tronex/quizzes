@@ -1,14 +1,10 @@
 export class Quiz {
     id: number;
     title: string;
+    completedAt: Date;
     questions: Question[];
-    grade: string;
-}
-
-export enum QuestionType {
-    TreuFalse = 'TreuFalse',
-    MultipleChoice = 'MultipleChoice',
-    SingleAnswer = 'SingleAnswer'
+    score: number;
+    totalQuestions: number;
 }
 export class Question {
     questionNum: number;
@@ -21,4 +17,11 @@ export class Question {
     answer4: string;
     correct: number[];
     selection: number[];
+    isCorrect: boolean | null;
+}
+
+export enum QuestionType {
+    TreuFalse = 'TreuFalse',
+    MultipleChoice = 'MultipleChoice',
+    SingleAnswer = 'SingleAnswer'
 }

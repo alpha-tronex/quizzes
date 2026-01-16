@@ -12,7 +12,9 @@ import { FooterComponent } from './footer/footer.component';
 import { LoginComponent } from './login/login.component';
 import { AccountComponent } from './account/account.component';
 import { RegisterComponent } from './register/register.component';
+import { HistoryComponent } from './history/history.component';
 import { LoginService } from './services/login-service';
+import { QuestionsService } from './services/questions-service';
 
 
 @NgModule({ declarations: [
@@ -23,9 +25,10 @@ import { LoginService } from './services/login-service';
         FooterComponent,
         LoginComponent,
         AccountComponent,
-        RegisterComponent
+        RegisterComponent,
+        HistoryComponent
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         AppRoutingModule,
-        FormsModule], providers: [LoginService, provideHttpClient(withInterceptorsFromDi())] })
+        FormsModule], providers: [LoginService, QuestionsService, provideHttpClient(withInterceptorsFromDi())] })
 export class AppModule { }

@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Question, QuestionType, Quiz } from '../classes/quiz';
-// tslint:disable-next-line: import-blacklist
-import { Observable, throwError } from 'rxjs';
-import { catchError, retry } from 'rxjs/operators';
+import { QuestionsService } from '../services/questions-service';
 
 @Component({
     selector: 'app-questions',
@@ -20,12 +18,11 @@ export class QuestionsComponent implements OnInit {
   curQuestion: Question;
   allAnswered: boolean = false;
   submitted: boolean = false;
-  http: HttpClient;
 
-  constructor(http?: HttpClient) { this.http = http; }
+  constructor(private questionsService: QuestionsService, private router: Router) { }
 
   ngOnInit() {
-    this.getQuestions().subscribe(
+    this.questionsService.getQuiz().subscribe(
       (data: Quiz) => {
         this.quiz = data as Quiz;
         if (this.quiz && this.quiz.questions.length > 0) {
@@ -36,13 +33,6 @@ export class QuestionsComponent implements OnInit {
       (error) => console.error('Error fetching questions:', error)
     );
     console.log('questions, questions, questions');
-  }
-
-  getQuestions(): Observable<any> {
-    return this.http.get<any>('/api/quiz', {observe: 'body', responseType: 'json'}).pipe(
-      retry(3),
-      catchError(this.handleError)
-    );
   }
 
   goPrevious() {
@@ -129,7 +119,43 @@ export class QuestionsComponent implements OnInit {
   acceptResults() {
     // Could navigate to home or show confirmation
     console.log('Results accepted');
-    alert('Thank you for completing the quiz!');
+    // Calculate score
+    let score = 0;
+    this.quiz.questions.forEach(question => {
+      if (this.isQuestionCorrect(question)) {
+        score++;
+      }
+    });
+
+    // Prepare quiz data for saving
+    const quizData = {
+      id: this.quiz.id,
+      title: this.quiz.title,
+      completedAt: new Date(),
+      questions: this.quiz.questions.map(q => ({
+        questionNum: q.questionNum,
+        question: q.question,
+        selection: q.selection,
+        correct: q.correct,
+        isCorrect: this.isQuestionCorrect(q)
+      })),
+      score: score,
+      totalQuestions: this.quiz.questions.length
+    };
+
+    // Save to database
+    this.questionsService.saveQuiz(this.getUsername(), quizData).subscribe(
+      (response) => {
+        console.log('Quiz saved successfully:', response);
+        // Redirect to history page
+        this.router.navigate(['/history']);
+      },
+      (error) => {
+        console.error('Error saving quiz:', error);
+        // Still redirect even if save fails
+        this.router.navigate(['/history']);
+      }
+    );
   }
 
   getAnswerText(question: Question, answerNum: number): string {
@@ -159,6 +185,17 @@ export class QuestionsComponent implements OnInit {
     return sortedSelection.every((val, index) => val === sortedCorrect[index]);
   }
 
+  getUsername(): string {
+    // Get username from localStorage or session
+    // This assumes username is stored after login
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      return user.username || user.uname || '';
+    }
+    return '';
+  }
+
   setQuestionType() {
     if (!this.curQuestion) {
       return;
@@ -166,21 +203,5 @@ export class QuestionsComponent implements OnInit {
     this.multichoice = this.curQuestion.questionType === QuestionType.MultipleChoice;
     this.onechoice = this.curQuestion.questionType === QuestionType.SingleAnswer;
     this.truefalse = this.curQuestion.questionType === QuestionType.TreuFalse;
-  }
-
-  handleError(error: HttpErrorResponse) {
-    if (error.error instanceof ErrorEvent) {
-      // A client-side or network error occurred. Handle it accordingly.
-      console.error('An error occurred:', error.error.message);
-    } else {
-      // The backend returned an unsuccessful response code.
-      // The response body may contain clues as to what went wrong.
-      console.error(
-        `Backend returned code ${error.status}, ` +
-        `body was: ${error.error}`);
-    }
-    // Return an observable with a user-facing error message.
-    return throwError(
-      'Something bad happened; please try again later.');
   }
 }

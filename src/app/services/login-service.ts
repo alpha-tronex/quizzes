@@ -41,6 +41,8 @@ export class LoginService {
       tap(response => {
         this.user = response;
         console.log('Username:', this.user.uname);
+        // Store user in localStorage for access across components
+        localStorage.setItem('currentUser', JSON.stringify(response));
       }),
       catchError(this.handleError)
     );
@@ -71,6 +73,8 @@ export class LoginService {
 
   logout(): void {
     this.user = null;
+    // Clear user from localStorage
+    localStorage.removeItem('currentUser');
   }
 
   handleError(error: HttpErrorResponse) {
