@@ -19,6 +19,7 @@ export class QuestionsComponent implements OnInit {
   quiz: Quiz;
   curQuestion: Question;
   allAnswered: boolean = false;
+  submitted: boolean = false;
   http: HttpClient;
 
   constructor(http?: HttpClient) { this.http = http; }
@@ -58,39 +59,104 @@ export class QuestionsComponent implements OnInit {
     }
   }
 
-  recordMultichoiceSelection(): void {
-    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    const selectedAnswers: number[] = [];
-
-    checkboxes.forEach((checkbox: Element, index: number) => {
-      const input = checkbox as HTMLInputElement;
-      if (input.checked) {
-        selectedAnswers.push(index + 1);
-      }
-    });
-
-    this.curQuestion.selection = selectedAnswers;
-  }
-
-  recordOnechoiceSelection(): void {
-    const radios = document.querySelectorAll('input[type="radio"]');
-    let selectedAnswer: number | null = null;
+  recordMultiChoiceAnswer(answerNum: number) {
+    if (!this.curQuestion.selection) {
+      this.curQuestion.selection = [];
+    }
     
-    radios.forEach((radio: Element, index: number) => {
-      const input = radio as HTMLInputElement;
-      if (input.checked) {
-        selectedAnswer = index + 1;
-      }
-    });
-    this.curQuestion.selection = selectedAnswer !== null ? [selectedAnswer] : [];
+    const index = this.curQuestion.selection.indexOf(answerNum);
+    if (index > -1) {
+      // Answer already selected, remove it (uncheck)
+      this.curQuestion.selection.splice(index, 1);
+    } else {
+      // Answer not selected, add it (check)
+      this.curQuestion.selection.push(answerNum);
+    }
+    this.checkAllAnswered();
   }
 
-  recordTruefalseSelection(value: boolean): void {
-    this.curQuestion.selection = value ? [1] : [2];
-  }   
+  recordSingleAnswer(answerNum: number) {
+    if (!this.curQuestion.selection) {
+      this.curQuestion.selection = [];
+    }
+    // For single choice (onechoice/truefalse), replace the selection with only the selected answer
+    this.curQuestion.selection = [answerNum];
+    this.checkAllAnswered();
+  }
+
+  isAnswerSelected(answerNum: number): boolean {
+    if (!this.curQuestion || !this.curQuestion.selection) {
+      return false;
+    }
+    return this.curQuestion.selection.includes(answerNum);
+  }
+
+  checkAllAnswered() {
+    if (!this.quiz || !this.quiz.questions || this.quiz.questions.length === 0) {
+      this.allAnswered = false;
+      return;
+    }
+    
+    this.allAnswered = this.quiz.questions.every(question => 
+      question.selection && question.selection.length > 0
+    );
+  }
 
   submit() {
-    //
+    if (this.allAnswered) {
+      this.submitted = true;
+      console.log('Quiz submitted:', this.quiz);
+    }
+  }
+
+  retakeQuiz() {
+    // Reset all selections
+    if (this.quiz && this.quiz.questions) {
+      this.quiz.questions.forEach(question => {
+        question.selection = [];
+      });
+    }
+    // Reset state
+    this.submitted = false;
+    this.allAnswered = false;
+    // Go back to first question
+    if (this.quiz && this.quiz.questions.length > 0) {
+      this.curQuestion = this.quiz.questions[0];
+      this.setQuestionType();
+    }
+  }
+
+  acceptResults() {
+    // Could navigate to home or show confirmation
+    console.log('Results accepted');
+    alert('Thank you for completing the quiz!');
+  }
+
+  getAnswerText(question: Question, answerNum: number): string {
+    switch(answerNum) {
+      case 1: return question.answer1;
+      case 2: return question.answer2;
+      case 3: return question.answer3;
+      case 4: return question.answer4;
+      default: return '';
+    }
+  }
+
+  isQuestionCorrect(question: Question): boolean {
+    if (!question.selection || !question.correct) {
+      return false;
+    }
+    
+    // Check if both arrays have the same length and contain the same elements
+    if (question.selection.length !== question.correct.length) {
+      return false;
+    }
+    
+    // Sort both arrays and compare
+    const sortedSelection = [...question.selection].sort();
+    const sortedCorrect = [...question.correct].sort();
+    
+    return sortedSelection.every((val, index) => val === sortedCorrect[index]);
   }
 
   setQuestionType() {

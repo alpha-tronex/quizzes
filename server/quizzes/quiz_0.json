@@ -15,9 +15,7 @@
         1,
         4
       ],
-      "selection": [
-        0
-      ]
+      "selection": []
     },
     {
       "questionNum": 1,
@@ -31,9 +29,7 @@
       "correct": [
         2
       ],
-      "selection": [
-        0
-      ]
+      "selection": []
     },
     {
       "questionNum": 2,
@@ -47,9 +43,7 @@
       "correct": [
         1
       ],
-      "selection": [
-        0
-      ]
+      "selection": []
     }
   ],
   "grade": 0
