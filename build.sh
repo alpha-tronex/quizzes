@@ -4,7 +4,7 @@
 set -e  # Exit on error
 
 echo "Installing root dependencies with legacy peer deps..."
-npm install --legacy-peer-deps
+npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
 echo "Building Angular app..."
 npx @angular/cli build --configuration production
