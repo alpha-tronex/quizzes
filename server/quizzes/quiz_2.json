@@ -1,0 +1,81 @@
+{
+  "id": 2,
+  "title": "American History Quiz",
+  "questions": [
+    {
+      "questionNum": 0,
+      "questionType": "SingleAnswer",
+      "question": "In what year did the United States declare independence from Great Britain?",
+      "instructions": "Please select the correct answer:",
+      "answer1": "1774",
+      "answer2": "1776",
+      "answer3": "1778",
+      "answer4": "1781",
+      "correct": [
+        2
+      ],
+      "selection": []
+    },
+    {
+      "questionNum": 1,
+      "questionType": "MultipleChoice",
+      "question": "Which of the following were Founding Fathers of the United States?",
+      "instructions": "Please select all that apply:",
+      "answer1": "George Washington",
+      "answer2": "Abraham Lincoln",
+      "answer3": "Thomas Jefferson",
+      "answer4": "Benjamin Franklin",
+      "correct": [
+        1,
+        3,
+        4
+      ],
+      "selection": []
+    },
+    {
+      "questionNum": 2,
+      "questionType": "TreuFalse",
+      "question": "The Bill of Rights consists of the first ten amendments to the U.S. Constitution.",
+      "instructions": "Please select the correct answer:",
+      "answer1": "True",
+      "answer2": "False",
+      "answer3": "",
+      "answer4": "",
+      "correct": [
+        1
+      ],
+      "selection": []
+    },
+    {
+      "questionNum": 3,
+      "questionType": "SingleAnswer",
+      "question": "Who was the first President of the United States?",
+      "instructions": "Please select the correct answer:",
+      "answer1": "John Adams",
+      "answer2": "Thomas Jefferson",
+      "answer3": "George Washington",
+      "answer4": "James Madison",
+      "correct": [
+        3
+      ],
+      "selection": []
+    },
+    {
+      "questionNum": 4,
+      "questionType": "MultipleChoice",
+      "question": "Which of the following events occurred during the American Civil War era?",
+      "instructions": "Please select all that apply:",
+      "answer1": "Emancipation Proclamation",
+      "answer2": "Boston Tea Party",
+      "answer3": "Battle of Gettysburg",
+      "answer4": "Assassination of Abraham Lincoln",
+      "correct": [
+        1,
+        3,
+        4
+      ],
+      "selection": []
+    }
+  ],
+  "grade": 0
+}

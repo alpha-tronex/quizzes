@@ -1,0 +1,82 @@
+{
+  "id": 1,
+  "title": "Current Events Quiz",
+  "questions": [
+    {
+      "questionNum": 0,
+      "questionType": "SingleAnswer",
+      "question": "Which technology has seen the most significant advancement in 2025-2026?",
+      "instructions": "Please select the correct answer:",
+      "answer1": "Artificial Intelligence",
+      "answer2": "Virtual Reality",
+      "answer3": "Blockchain",
+      "answer4": "3D Printing",
+      "correct": [
+        1
+      ],
+      "selection": []
+    },
+    {
+      "questionNum": 1,
+      "questionType": "MultipleChoice",
+      "question": "Which countries are currently investing heavily in renewable energy infrastructure?",
+      "instructions": "Please select all that apply:",
+      "answer1": "China",
+      "answer2": "United States",
+      "answer3": "Germany",
+      "answer4": "Saudi Arabia",
+      "correct": [
+        1,
+        2,
+        3
+      ],
+      "selection": []
+    },
+    {
+      "questionNum": 2,
+      "questionType": "TreuFalse",
+      "question": "Electric vehicles have surpassed traditional gasoline vehicles in global sales.",
+      "instructions": "Please select the correct answer:",
+      "answer1": "True",
+      "answer2": "False",
+      "answer3": "",
+      "answer4": "",
+      "correct": [
+        2
+      ],
+      "selection": []
+    },
+    {
+      "questionNum": 3,
+      "questionType": "SingleAnswer",
+      "question": "What is the primary focus of recent international climate agreements?",
+      "instructions": "Please select the correct answer:",
+      "answer1": "Reducing carbon emissions",
+      "answer2": "Ocean pollution",
+      "answer3": "Deforestation",
+      "answer4": "Wildlife conservation",
+      "correct": [
+        1
+      ],
+      "selection": []
+    },
+    {
+      "questionNum": 4,
+      "questionType": "MultipleChoice",
+      "question": "Which sectors have been significantly impacted by AI automation?",
+      "instructions": "Please select all that apply:",
+      "answer1": "Customer Service",
+      "answer2": "Healthcare Diagnostics",
+      "answer3": "Content Creation",
+      "answer4": "Manufacturing",
+      "correct": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "selection": []
+    }
+  ],
+  "grade": 0
+}

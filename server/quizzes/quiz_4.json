@@ -1,0 +1,80 @@
+{
+  "id": 4,
+  "title": "Algebra Quiz",
+  "questions": [
+    {
+      "questionNum": 0,
+      "questionType": "SingleAnswer",
+      "question": "What is the value of x in the equation: 2x + 5 = 15?",
+      "instructions": "Please select the correct answer:",
+      "answer1": "3",
+      "answer2": "5",
+      "answer3": "7",
+      "answer4": "10",
+      "correct": [
+        2
+      ],
+      "selection": []
+    },
+    {
+      "questionNum": 1,
+      "questionType": "MultipleChoice",
+      "question": "Which of the following are equivalent to 3x + 6?",
+      "instructions": "Please select all that apply:",
+      "answer1": "3(x + 2)",
+      "answer2": "x + 2x + 6",
+      "answer3": "6 + 3x",
+      "answer4": "9x",
+      "correct": [
+        1,
+        2,
+        3
+      ],
+      "selection": []
+    },
+    {
+      "questionNum": 2,
+      "questionType": "TreuFalse",
+      "question": "In the expression 5x² + 3x - 7, the coefficient of x² is 5.",
+      "instructions": "Please select the correct answer:",
+      "answer1": "True",
+      "answer2": "False",
+      "answer3": "",
+      "answer4": "",
+      "correct": [
+        1
+      ],
+      "selection": []
+    },
+    {
+      "questionNum": 3,
+      "questionType": "SingleAnswer",
+      "question": "What is the slope of the line y = 4x - 3?",
+      "instructions": "Please select the correct answer:",
+      "answer1": "-3",
+      "answer2": "3",
+      "answer3": "4",
+      "answer4": "-4",
+      "correct": [
+        3
+      ],
+      "selection": []
+    },
+    {
+      "questionNum": 4,
+      "questionType": "MultipleChoice",
+      "question": "Which of the following are solutions to the equation x² = 16?",
+      "instructions": "Please select all that apply:",
+      "answer1": "4",
+      "answer2": "-4",
+      "answer3": "8",
+      "answer4": "2",
+      "correct": [
+        1,
+        2
+      ],
+      "selection": []
+    }
+  ],
+  "grade": 0
+}

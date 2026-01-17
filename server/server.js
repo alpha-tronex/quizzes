@@ -100,10 +100,27 @@ mongoose.connect("mongodb://localhost:27017/userDB");
 // Setup authentication routes
 authRoutes(app, User);
 
+app.get("/api/quizzes", (req, res) => {
+    console.log('loading available quizzes');
+    const quizzesDir = __dirname + '/quizzes';
+    const quizFiles = fs.readdirSync(quizzesDir).filter(file => file.endsWith('.json'));
+    
+    const quizzes = quizFiles.map(file => {
+        const data = JSON.parse(fs.readFileSync(`${quizzesDir}/${file}`, 'utf8'));
+        return {
+            id: data.id,
+            title: data.title
+        };
+    });
+    
+    res.json(quizzes);
+});
+
 app.route("/api/quiz")
     .get((req,res) => {
         console.log('loading quiz data');
-        const jsonData = fs.readFileSync(__dirname + '/quizzes/quiz_0.json');
+        const quizId = req.query.id || 0;
+        const jsonData = fs.readFileSync(__dirname + `/quizzes/quiz_${quizId}.json`);
         res.send(jsonData);
     })
     .post(bodyParser.json(), async (req, res) => {

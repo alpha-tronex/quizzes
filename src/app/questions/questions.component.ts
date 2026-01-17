@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Question, QuestionType, Quiz } from '../classes/quiz';
 import { QuestionsService } from '../services/questions-service';
 
@@ -19,10 +19,14 @@ export class QuestionsComponent implements OnInit {
   allAnswered: boolean = false;
   submitted: boolean = false;
 
-  constructor(private questionsService: QuestionsService, private router: Router) { }
+  constructor(private questionsService: QuestionsService, private router: Router, private route: ActivatedRoute) { }
 
   ngOnInit() {
-    this.questionsService.getQuiz().subscribe(
+    // Get quiz ID from route params
+    const quizId = this.route.snapshot.queryParams['id'];
+    const id = quizId ? parseInt(quizId, 10) : undefined;
+    
+    this.questionsService.getQuiz(id).subscribe(
       (data: Quiz) => {
         this.quiz = data as Quiz;
         if (this.quiz && this.quiz.questions.length > 0) {

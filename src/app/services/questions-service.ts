@@ -12,9 +12,17 @@ export class QuestionsService {
     this.http = http;
   }
 
-  getQuiz(): Observable<Quiz> {
-    return this.http.get<Quiz>('/api/quiz').pipe(
+  getQuiz(quizId?: number): Observable<Quiz> {
+    const url = quizId !== undefined ? `/api/quiz?id=${quizId}` : '/api/quiz';
+    return this.http.get<Quiz>(url).pipe(
       retry(3),
+      catchError(this.handleError)
+    );
+  }
+
+  getAvailableQuizzes(): Observable<any[]> {
+    return this.http.get<any[]>('/api/quizzes').pipe(
+      retry(1),
       catchError(this.handleError)
     );
   }
