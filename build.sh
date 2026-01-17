@@ -1,7 +1,9 @@
 #!/bin/bash
 # Build script for Render.com
 
-echo "Installing root dependencies..."
+set -e  # Exit on error
+
+echo "Installing root dependencies with legacy peer deps..."
 npm install --legacy-peer-deps
 
 echo "Building Angular app..."
