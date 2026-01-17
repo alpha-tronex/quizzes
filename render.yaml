@@ -4,8 +4,11 @@
       "type": "web",
       "name": "quiz-master",
       "env": "node",
-      "buildCommand": "npm install && npm run build && cd server && npm install",
+      "region": "oregon",
+      "plan": "free",
+      "buildCommand": "npm install --legacy-peer-deps && npm run build && cd server && npm install",
       "startCommand": "node server/server.js",
+      "healthCheckPath": "/",
       "envVars": [
         {
           "key": "NODE_ENV",
@@ -14,6 +17,10 @@
         {
           "key": "MONGODB_URI",
           "generateValue": false
+        },
+        {
+          "key": "NODE_VERSION",
+          "value": "18"
         }
       ]
     }
