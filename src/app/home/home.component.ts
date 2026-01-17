@@ -11,7 +11,6 @@ import { Router } from '@angular/router';
     standalone: false
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  thanksPhrase: string;
   subscription: any;
   studentLoggedIn: any;
   quizzes: any[] = [];
@@ -19,8 +18,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(private loginService: LoginService, private questionsService: QuestionsService, private router: Router) { }
 
   ngOnInit() {
-    this.thanksPhrase = 'Thank you for visiting the quiz master.';
-
     if (!this.loginService.userName) {
       //this.loginService.loggedInStudentChange.next(null);
     }
@@ -40,8 +37,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.router.navigate(['/questions'], { queryParams: { id: quizId } });
   }
 
-  userName() {
-    return this.loginService.userName;
+  getUsername(): string {
+    // Check if user is logged in using localStorage
+    if (localStorage.getItem('currentUser')) {
+      return this.loginService.userName;
+    }
+    return '';
   }
 
   ngOnDestroy(): void {

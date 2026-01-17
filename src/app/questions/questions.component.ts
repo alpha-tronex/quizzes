@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Question, QuestionType, Quiz } from '../classes/quiz';
 import { QuestionsService } from '../services/questions-service';
+import { LoginService } from '../services/login-service';
 
 @Component({
     selector: 'app-questions',
@@ -19,7 +20,7 @@ export class QuestionsComponent implements OnInit {
   allAnswered: boolean = false;
   submitted: boolean = false;
 
-  constructor(private questionsService: QuestionsService, private router: Router, private route: ActivatedRoute) { }
+  constructor(private questionsService: QuestionsService, private router: Router, private route: ActivatedRoute, private loginService: LoginService) { }
 
   ngOnInit() {
     // Get quiz ID from route params
@@ -190,12 +191,9 @@ export class QuestionsComponent implements OnInit {
   }
 
   getUsername(): string {
-    // Get username from localStorage or session
-    // This assumes username is stored after login
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      return user.username || user.uname || '';
+    // Check if user is logged in using localStorage
+    if (localStorage.getItem('currentUser')) {
+      return this.loginService.userName;
     }
     return '';
   }

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { QuestionsService } from '../services/questions-service';
+import { LoginService } from '../services/login-service';
 
 @Component({
     selector: 'app-history',
@@ -13,12 +14,18 @@ export class HistoryComponent implements OnInit {
   loading: boolean = true;
   error: string = '';
 
-  constructor(private questionsService: QuestionsService) {}
+  constructor(private questionsService: QuestionsService, private loginService: LoginService) {}
 
   ngOnInit() {
-    this.username = this.getUsername();
-    if (this.username) {
-      this.loadQuizHistory();
+    // Check if user is logged in using localStorage
+    if (localStorage.getItem('currentUser')) {
+      this.username = this.loginService.userName;
+      if (this.username) {
+        this.loadQuizHistory();
+      } else {
+        this.error = 'Unable to retrieve user information';
+        this.loading = false;
+      }
     } else {
       this.error = 'Please login to view your quiz history';
       this.loading = false;
@@ -37,15 +44,6 @@ export class HistoryComponent implements OnInit {
         this.loading = false;
       }
     );
-  }
-
-  getUsername(): string {
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      return user.username || user.uname || '';
-    }
-    return '';
   }
 
   formatDate(date: any): string {

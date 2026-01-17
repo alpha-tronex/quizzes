@@ -21,14 +21,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
     // this.loggedIn = this.loginService.loggedInStudent.
   }
 
-  userName() {
-    return this.loginService.userName;
+  getUsername(): string {
+    // Check if user is logged in using localStorage
+    if (localStorage.getItem('currentUser')) {
+      return this.loginService.userName;
+    }
+    return '';
   }
 
   logOff() {
     //this.loginService.loggedInStudentChange.next(null);
     this.loginService.logout();
-    alert('Thank you for visiting!');
     // take to home page
     this.router.navigate(['home']);
   }

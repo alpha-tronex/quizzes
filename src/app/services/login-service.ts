@@ -7,6 +7,7 @@ import { User } from '../classes/users';
 @Injectable()
 export class LoginService {
   //loggedInStudentChange: Subject<User> = new Subject<User>();
+  welcomePhrase: string = 'Welcome to the quiz master. Please login or register to start taking quizzes!';
   user: User;
   http: HttpClient;
 
@@ -56,6 +57,8 @@ export class LoginService {
       tap(response => {
         this.user = response;
         console.log('Registered user:', this.user.uname);
+        // Store user in localStorage for access across components
+        localStorage.setItem('currentUser', JSON.stringify(response));
       }),
       catchError(this.handleError)
     );
@@ -73,6 +76,7 @@ export class LoginService {
 
   logout(): void {
     this.user = null;
+    this.welcomePhrase = 'You have been logged off. Please log back in to continue taking quizzes.';
     // Clear user from localStorage
     localStorage.removeItem('currentUser');
   }
