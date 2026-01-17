@@ -6,7 +6,7 @@
       "env": "node",
       "region": "oregon",
       "plan": "free",
-      "buildCommand": "npm install --legacy-peer-deps && npm run build && cd server && npm install",
+      "buildCommand": "npm install --legacy-peer-deps && npx ng build --configuration production && cd server && npm install --production",
       "startCommand": "node server/server.js",
       "healthCheckPath": "/",
       "envVars": [

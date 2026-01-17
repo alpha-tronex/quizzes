@@ -7,10 +7,10 @@ echo "Installing root dependencies with legacy peer deps..."
 npm install --legacy-peer-deps
 
 echo "Building Angular app..."
-npm run build
+npx ng build --configuration production
 
 echo "Installing server dependencies..."
 cd server
-npm install
+npm install --production
 
 echo "Build complete!"
