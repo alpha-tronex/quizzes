@@ -7,7 +7,7 @@ echo "Installing root dependencies with legacy peer deps..."
 npm install --legacy-peer-deps
 
 echo "Building Angular app..."
-npm run build
+npx @angular/cli build --configuration production
 
 echo "Installing server dependencies..."
 cd server
