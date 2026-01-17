@@ -18,7 +18,7 @@ const saltRounds = 10;
 // console.log("API_KEY: " + process.env.API_KEY);
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // filepath: c:\Projects\NODEJS\quizzes\server\server.js
 const path = require("path");
@@ -96,7 +96,8 @@ const User = new mongoose.model("User", userSchema);
 //mongoose.connect("mongodb://localhost:27017/userDB", {useNewUrlParser: true, useUnifiedTopology: true});
 //mongoose.set("useCreateIndex", true);
 
-mongoose.connect("mongodb://localhost:27017/userDB");
+const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/userDB";
+mongoose.connect(mongoURI);
 
 // Setup authentication routes
 authRoutes(app, User);

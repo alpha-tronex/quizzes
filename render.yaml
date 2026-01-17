@@ -1,0 +1,21 @@
+{
+  "services": [
+    {
+      "type": "web",
+      "name": "quiz-master",
+      "env": "node",
+      "buildCommand": "npm install && npm run build && cd server && npm install",
+      "startCommand": "node server/server.js",
+      "envVars": [
+        {
+          "key": "NODE_ENV",
+          "value": "production"
+        },
+        {
+          "key": "MONGODB_URI",
+          "generateValue": false
+        }
+      ]
+    }
+  ]
+}

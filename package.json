@@ -8,7 +8,10 @@
     "build": "ng build --configuration production",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "server": "node server/server.js",
+    "dev": "npm run build && npm run server",
+    "postinstall": "cd server && npm install"
   },
   "private": true,
   "dependencies": {
