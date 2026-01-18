@@ -120,6 +120,11 @@ app.use((req, res, next) => {
     } else {
         indexFile = path.join(srcPath, 'index.html');
     }
+    
+    // Set cache control headers for Safari compatibility
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     res.sendFile(indexFile);
 });
 
