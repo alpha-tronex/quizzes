@@ -34,7 +34,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   startQuiz(quizId: number) {
-    this.router.navigate(['/questions'], { queryParams: { id: quizId } });
+    try {
+      this.router.navigate(['/questions'], { queryParams: { id: quizId } });
+    } catch (error) {
+      console.error('Error starting quiz:', error);
+    }
   }
 
   getUsername(): string {
