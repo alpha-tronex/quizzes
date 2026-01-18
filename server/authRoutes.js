@@ -104,7 +104,6 @@ module.exports = function(app, User) {
             console.log("in if (foundUser)");
             bcrypt.compare(pass, foundUser.password, function(err, result) {
                 console.log('result: ' + result);
-                console.log('err: ' + err);
                 if (result === true) {
                     const userObj = {
                         id: foundUser._id,
