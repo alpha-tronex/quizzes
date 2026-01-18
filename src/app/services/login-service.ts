@@ -45,7 +45,10 @@ export class LoginService {
         // Store user in localStorage for access across components
         localStorage.setItem('currentUser', JSON.stringify(response));
       }),
-      catchError(this.handleError)
+      catchError((error) => {
+        console.log('Error in getQuiz:', error);
+        return this.handleError(error);
+      })
     );
   }
 
@@ -60,7 +63,10 @@ export class LoginService {
         // Store user in localStorage for access across components
         localStorage.setItem('currentUser', JSON.stringify(response));
       }),
-      catchError(this.handleError)
+      catchError((error) => {
+        console.log('Error in getQuiz:', error);
+        return this.handleError(error);
+      })
     );
   }
 
@@ -70,7 +76,10 @@ export class LoginService {
         this.user = response;
         console.log('User updated:', this.user.uname);
       }),
-      catchError(this.handleError)
+      catchError((error) => {
+        console.log('Error in getQuiz:', error);
+        return this.handleError(error);
+      })
     );
   }
 

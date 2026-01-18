@@ -16,28 +16,40 @@ export class QuestionsService {
     const url = quizId !== undefined ? `/api/quiz?id=${quizId}` : '/api/quiz';
     return this.http.get<Quiz>(url).pipe(
       retry(3),
-      catchError(this.handleError)
+      catchError((error) => {
+        console.log('Error in getQuiz:', error);
+        return this.handleError(error);
+      })
     );
   }
 
   getAvailableQuizzes(): Observable<any[]> {
     return this.http.get<any[]>('/api/quizzes').pipe(
       retry(1),
-      catchError(this.handleError)
+      catchError((error) => {
+        console.log('Error in getQuiz:', error);
+        return this.handleError(error);
+      })
     );
   }
 
   saveQuiz(username: string, quizData: any): Observable<any> {
     return this.http.post<any>('/api/quiz', { username, quizData }).pipe(
       retry(1),
-      catchError(this.handleError)
+      catchError((error) => {
+        console.log('Error in getQuiz:', error);
+        return this.handleError(error);
+      })
     );
   }
 
   getQuizHistory(username: string): Observable<any> {
     return this.http.get<any>(`/api/quiz/history/${username}`).pipe(
       retry(1),
-      catchError(this.handleError)
+      catchError((error) => {
+        console.log('Error in getQuiz:', error);
+        return this.handleError(error);
+      })
     );
   }
 
