@@ -143,6 +143,29 @@ module.exports = function(app, User) {
             res.redirect("/");
     });
 
+    app.route("/api/users")
+        .get(async (req, res) => {
+            try {
+                // Fetch all users but exclude password field
+                const users = await User.find({}, { password: 0 });
+                
+                const userList = users.map(user => ({
+                    id: user._id,
+                    fname: user.fname || '',
+                    lname: user.lname || '',
+                    uname: user.username,
+                    email: user.email || '',
+                    phone: user.phone || '',
+                    type: user.type || 'student'
+                }));
+
+                res.status(200).json(userList);
+            } catch (err) {
+                console.log('err: ' + err);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
     app.route("/api/user/update")
         .put(async (req, res) => {
             try {

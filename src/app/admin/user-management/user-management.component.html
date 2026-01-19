@@ -4,7 +4,68 @@
     
     <div class="card text-dark">
       <div class="card-body">
-        <p>User management interface coming soon...</p>
+        <div class="row text-start">
+          <div class="col-md-8 offset-md-2">
+            
+            <div *ngIf="errorMessage" class="alert alert-danger">
+              {{ errorMessage }}
+            </div>
+
+            <div *ngIf="loading" class="text-center py-4">
+              <p>Loading users...</p>
+            </div>
+
+            <div *ngIf="!loading" class="mb-4">
+              <label for="userSelect" class="form-label"><strong>Select User:</strong></label>
+              <select 
+                id="userSelect" 
+                class="form-select form-control" 
+                (change)="onUserSelect($event)"
+                [disabled]="users.length === 0">
+                <option value="">-- Choose a user --</option>
+                <option *ngFor="let user of users" [value]="user.id">
+                  {{ getUserDisplayName(user) }}
+                </option>
+              </select>
+              <small class="text-muted" *ngIf="users.length === 0">No users found.</small>
+              <small class="text-muted" *ngIf="users.length > 0">{{ users.length }} user(s) available</small>
+            </div>
+
+            <div *ngIf="selectedUser" class="card" style="background-color: #f8f9fa;">
+              <div class="card-body">
+                <h5 class="card-title mb-3">User Details</h5>
+                
+                <div class="mb-2">
+                  <strong>Username:</strong> {{ selectedUser.uname }}
+                </div>
+                
+                <div class="mb-2" *ngIf="selectedUser.fname || selectedUser.lname">
+                  <strong>Name:</strong> {{ selectedUser.fname }} {{ selectedUser.lname }}
+                </div>
+                
+                <div class="mb-2" *ngIf="selectedUser.email">
+                  <strong>Email:</strong> {{ selectedUser.email }}
+                </div>
+                
+                <div class="mb-2" *ngIf="selectedUser.phone">
+                  <strong>Phone:</strong> {{ selectedUser.phone }}
+                </div>
+                
+                <div class="mb-2">
+                  <strong>Type:</strong> 
+                  <span class="badge" [ngClass]="selectedUser.type === 'admin' ? 'bg-danger' : 'bg-primary'">
+                    {{ selectedUser.type || 'student' }}
+                  </span>
+                </div>
+                
+                <div class="mb-2">
+                  <strong>User ID:</strong> <small class="text-muted">{{ selectedUser.id }}</small>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
     </div>
   </div>
