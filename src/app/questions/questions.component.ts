@@ -19,6 +19,7 @@ export class QuestionsComponent implements OnInit {
   curQuestion: Question;
   allAnswered: boolean = false;
   submitted: boolean = false;
+  resultsAccepted: boolean = false;
 
   constructor(private questionsService: QuestionsService, private router: Router, private route: ActivatedRoute, private loginService: LoginService) { }
 
@@ -114,6 +115,7 @@ export class QuestionsComponent implements OnInit {
     // Reset state
     this.submitted = false;
     this.allAnswered = false;
+    this.resultsAccepted = false;
     // Go back to first question
     if (this.quiz && this.quiz.questions.length > 0) {
       this.curQuestion = this.quiz.questions[0];
@@ -122,6 +124,15 @@ export class QuestionsComponent implements OnInit {
   }
 
   acceptResults() {
+    // Prevent multiple submissions
+    if (this.resultsAccepted) {
+      console.log('Results already accepted, ignoring duplicate submission');
+      return;
+    }
+    
+    // Mark results as accepted
+    this.resultsAccepted = true;
+    
     // Could navigate to home or show confirmation
     console.log('Results accepted');
     // Calculate score

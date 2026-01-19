@@ -170,10 +170,10 @@
     
     <div class="row mt-4">
       <div class="col-sm-6">
-        <button class="btn btn-secondary w-100" (click)="retakeQuiz()">Retake Quiz</button>
+        <button class="btn btn-secondary w-100" (click)="retakeQuiz()" [disabled]="resultsAccepted">Retake Quiz</button>
       </div>
       <div class="col-sm-6">
-        <button class="btn btn-primary w-100" (click)="acceptResults()">Accept Results</button>
+        <button class="btn btn-primary w-100" (click)="acceptResults()" [disabled]="resultsAccepted">Accept Results</button>
       </div>
     </div>
   </div>
