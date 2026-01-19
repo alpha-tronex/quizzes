@@ -1,9 +1,9 @@
 .navbar-collapse.collapsing {
-  transition: height 1s ease !important;
+  transition: height .5s ease !important;
   overflow: hidden;
 }
 
 #navbarResponsive.collapse,
 #navbarResponsive.collapsing {
-  transition: height 1s ease !important;
+  transition: height .5s ease !important;
 }
