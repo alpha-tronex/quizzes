@@ -30,28 +30,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   collapseNavbar(): void {
+    const navbarToggler = document.querySelector('.navbar-toggler') as HTMLElement;
     const navbarCollapse = document.getElementById('navbarResponsive');
+    
     if (navbarCollapse && navbarCollapse.classList.contains('show')) {
-      // Add collapsing class for animation
-      navbarCollapse.classList.add('collapsing');
-      navbarCollapse.classList.remove('show');
-      
-      // Set height to current height for transition
-      const currentHeight = navbarCollapse.scrollHeight;
-      navbarCollapse.style.height = currentHeight + 'px';
-      
-      // Trigger reflow
-      navbarCollapse.offsetHeight;
-      
-      // Animate to height 0
-      navbarCollapse.style.height = '0px';
-      
-      // After transition completes, remove collapsing class and add collapse
-      setTimeout(() => {
-        navbarCollapse.classList.remove('collapsing');
-        navbarCollapse.classList.add('collapse');
-        navbarCollapse.style.height = '';
-      }, 500); // 500ms matches Bootstrap's default transition time
+      // Simulate clicking the toggle button to use Bootstrap's built-in collapse animation
+      if (navbarToggler) {
+        navbarToggler.click();
+      }
     }
   }
 
