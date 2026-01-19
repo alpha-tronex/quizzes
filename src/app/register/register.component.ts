@@ -14,6 +14,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
   user: User;
   subscription: Subscription;
   serverErrors: string[] = [];
+  showPassword: boolean = false;
+  showConfirmPassword: boolean = false;
 
   constructor(private router: Router, private loginService: LoginService) { }
 
@@ -58,6 +60,14 @@ export class RegisterComponent implements OnInit, OnDestroy {
         }
       }
     );
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
   }
 
   ngOnDestroy() {

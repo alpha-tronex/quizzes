@@ -14,6 +14,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   user: User;
   subscription: Subscription;
   serverErrors: string[] = [];
+  showPassword: boolean = false;
 
   constructor(private router: Router, private loginService: LoginService) {}
 
@@ -52,6 +53,10 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.serverErrors = ['An error occurred during login.'];
       }
     });
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 
   ngOnDestroy() {
