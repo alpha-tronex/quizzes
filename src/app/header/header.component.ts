@@ -29,6 +29,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return '';
   }
 
+  isAdmin(): boolean {
+    // Check if user is admin
+    if (localStorage.getItem('currentUser')) {
+      return this.loginService.isAdmin();
+    }
+    return false;
+  }
+
   collapseNavbar(): void {
     const navbarToggler = document.querySelector('.navbar-toggler') as HTMLElement;
     const navbarCollapse = document.getElementById('navbarResponsive');

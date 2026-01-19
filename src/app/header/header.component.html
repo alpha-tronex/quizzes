@@ -12,6 +12,16 @@
               <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" [routerLink]="['home']" (click)="collapseNavbar()">home</a></li>
               <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" [routerLink]="['account']" *ngIf="getUsername()" (click)="collapseNavbar()">Account</a></li>
               <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" [routerLink]="['history']" *ngIf="getUsername()" (click)="collapseNavbar()">History</a></li>
+              <li class="nav-item dropdown mx-0 mx-lg-1" *ngIf="isAdmin()">
+                <a class="nav-link py-3 px-0 px-lg-3 rounded dropdown-toggle" href="#" id="adminDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Admin
+                </a>
+                <div class="dropdown-menu" aria-labelledby="adminDropdown">
+                  <a class="dropdown-item" [routerLink]="['admin/user-management']" (click)="collapseNavbar()">User Management</a>
+                  <a class="dropdown-item" [routerLink]="['admin/create-quiz']" (click)="collapseNavbar()">Create Quiz</a>
+                  <a class="dropdown-item" [routerLink]="['admin/upload-quiz']" (click)="collapseNavbar()">Upload Quiz</a>
+                </div>
+              </li>
               <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" [routerLink]="['login']" *ngIf="!getUsername()" (click)="collapseNavbar()">Login</a></li>
               <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" [routerLink]="['register']" *ngIf="!getUsername()" (click)="collapseNavbar()">Register</a></li>
               <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" style="cursor: pointer;" (click)="logOff()" *ngIf="getUsername()">log Off</a></li>
