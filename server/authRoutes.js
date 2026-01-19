@@ -11,50 +11,56 @@ module.exports = function(app, User) {
                 // basic validation
                 const validationErrors = [];
                 
-                if (!fname || typeof fname !== 'string' || fname.trim().length < 2) {
-                    validationErrors.push('first name must be at least 2 characters');
-                }
-
-                if (!lname || typeof lname !== 'string' || lname.trim().length < 2) {
-                    validationErrors.push('last name must be at least 2 characters');
-                }
-
+                // Required fields: uname and pass
                 if (!uname || typeof uname !== 'string' || uname.trim().length < 3) {
                     validationErrors.push('username must be at least 3 characters');
                 } else if (!/^[A-Za-z0-9]+$/.test(uname)) {
                     validationErrors.push('username may contain only letters and numbers');
                 }
 
-                if (!email || typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email)) {
+                if (!pass || typeof pass !== 'string' || pass.length < 6) {
+                    validationErrors.push('password must be at least 6 characters');
+                }
+
+                // Optional fields: validate only if provided
+                if (fname && (typeof fname !== 'string' || fname.trim().length < 2)) {
+                    validationErrors.push('first name must be at least 2 characters');
+                }
+
+                if (lname && (typeof lname !== 'string' || lname.trim().length < 2)) {
+                    validationErrors.push('last name must be at least 2 characters');
+                }
+
+                if (email && (typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email))) {
                     validationErrors.push('invalid email address');
                 }
 
-                if (!phone || typeof phone !== 'string' || !/^[\d\s\-\+\(\)]{10,}$/.test(phone)) {
+                if (phone && (typeof phone !== 'string' || !/^[\d\s\-\+\(\)]{10,}$/.test(phone))) {
                     validationErrors.push('phone number must be at least 10 digits');
-                }
-
-                if (!pass || typeof pass !== 'string' || pass.length < 6) {
-                    validationErrors.push('password must be at least 6 characters');
                 }
 
                 if (validationErrors.length) {
                     return res.status(400).json({ errors: validationErrors });
                 }
 
-                // ensure username/email uniqueness
-                const existing = await User.findOne({ $or: [{ username: uname }, { email: email }] });
+                // ensure username/email uniqueness (only check email if provided)
+                const uniqueQuery = [{ username: uname }];
+                if (email) {
+                    uniqueQuery.push({ email: email });
+                }
+                const existing = await User.findOne({ $or: uniqueQuery });
                 if (existing) {
                     return res.status(409).json({ error: 'username or email already in use' });
                 }
 
                 const hash = await bcrypt.hash(pass, saltRounds);
                 const user = new User({
-                    fname: fname,
-                    lname: lname,
+                    fname: fname || '',
+                    lname: lname || '',
                     username: uname,
-                    email: email,
+                    email: email || '',
                     password: hash,
-                    phone: phone,
+                    phone: phone || '',
                     type: 'student'
                 });
                 console.log('before save');
