@@ -29,8 +29,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return '';
   }
 
+  collapseNavbar(): void {
+    const navbarCollapse = document.getElementById('navbarResponsive');
+    if (navbarCollapse && navbarCollapse.classList.contains('show')) {
+      navbarCollapse.classList.remove('show');
+    }
+  }
+
   logOff() {
     //this.loginService.loggedInStudentChange.next(null);
+    this.collapseNavbar();
     this.loginService.logout();
     // take to home page
     this.router.navigate(['home']);
