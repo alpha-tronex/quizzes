@@ -14,6 +14,7 @@
   },
   "private": true,
   "dependencies": {
+    "@angular-devkit/build-angular": "^21.1.0",
     "@angular/animations": "^21.1.0",
     "@angular/cli": "^21.1.0",
     "@angular/common": "^21.1.0",
@@ -24,7 +25,6 @@
     "@angular/platform-browser": "^21.1.0",
     "@angular/platform-browser-dynamic": "^21.1.0",
     "@angular/router": "^21.1.0",
-    "@angular-devkit/build-angular": "^21.1.0",
     "bcrypt": "^5.0.0",
     "core-js": "^3.6.5",
     "dotenv": "^8.2.0",
@@ -37,7 +37,6 @@
     "puppeteer": "^24.34.0",
     "rxjs": "^7.8.0",
     "tslib": "^2.0.0",
-    "typescript": "~5.8.3",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
@@ -50,6 +49,6 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.8.3"
+    "typescript": "~5.9.0"
   }
 }
