@@ -28,16 +28,16 @@ export class QuestionsComponent implements OnInit {
     const quizId = this.route.snapshot.queryParams['id'];
     const id = quizId ? parseInt(quizId, 10) : undefined;
     
-    this.questionsService.getQuiz(id).subscribe(
-      (data: Quiz) => {
+    this.questionsService.getQuiz(id).subscribe({
+      next: (data: Quiz) => {
         this.quiz = data as Quiz;
         if (this.quiz && this.quiz.questions.length > 0) {
           this.curQuestion = this.quiz.questions[0];
           this.setQuestionType();
         }
       },
-      (error) => console.error('Error fetching questions:', error)
-    );
+      error: (error) => console.error('Error fetching questions:', error)
+    });
     console.log('questions, questions, questions');
   }
 
@@ -160,18 +160,18 @@ export class QuestionsComponent implements OnInit {
     };
 
     // Save to database
-    this.questionsService.saveQuiz(this.getUsername(), quizData).subscribe(
-      (response) => {
+    this.questionsService.saveQuiz(this.getUsername(), quizData).subscribe({
+      next: (response) => {
         console.log('Quiz saved successfully:', response);
         // Redirect to history page
         this.router.navigate(['/history']);
       },
-      (error) => {
+      error: (error) => {
         console.error('Error saving quiz:', error);
         // Still redirect even if save fails
         this.router.navigate(['/history']);
       }
-    );
+    });
   }
 
   getAnswerText(question: Question, answerNum: number): string {

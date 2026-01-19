@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const fs = require('fs');
 const authRoutes = require(`${__dirname}/authRoutes.js`);
 const quizRoutes = require(`${__dirname}/quizRoutes.js`);
+const adminRoutes = require(`${__dirname}/adminRoutes.js`);
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -104,6 +105,9 @@ authRoutes(app, User);
 
 // Setup quiz routes
 quizRoutes(app, User);
+
+// Setup admin routes
+adminRoutes(app, User);
 
 // Serve Angular app for any other GET request (must be after API routes)
 app.use((req, res, next) => {

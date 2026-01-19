@@ -35,22 +35,25 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   login(): void {
     this.serverErrors = [];
-    this.subscription = this.loginService.login(this.user).subscribe((user) => {
-      this.user = user;
-      this.router.navigate(['home']);
-    }, (error) => {
-      if (error && typeof error === 'object') {
-        if (error.error && typeof error.error === 'string') {
-          this.serverErrors = [error.error];
-        } else if (error.message) {
-          this.serverErrors = [error.message];
+    this.subscription = this.loginService.login(this.user).subscribe({
+      next: (user) => {
+        this.user = user;
+        this.router.navigate(['home']);
+      },
+      error: (error) => {
+        if (error && typeof error === 'object') {
+          if (error.error && typeof error.error === 'string') {
+            this.serverErrors = [error.error];
+          } else if (error.message) {
+            this.serverErrors = [error.message];
+          } else {
+            this.serverErrors = ['Unable to login. Please try again.'];
+          }
+        } else if (typeof error === 'string') {
+          this.serverErrors = [error];
         } else {
-          this.serverErrors = ['Unable to login. Please try again.'];
+          this.serverErrors = ['An error occurred during login.'];
         }
-      } else if (typeof error === 'string') {
-        this.serverErrors = [error];
-      } else {
-        this.serverErrors = ['An error occurred during login.'];
       }
     });
   }

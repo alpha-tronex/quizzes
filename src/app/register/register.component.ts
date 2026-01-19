@@ -36,12 +36,12 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
   registerStudent(): void {
     this.serverErrors = [];
-    this.subscription = this.loginService.register(this.user).subscribe(
-      (user) => {
+    this.subscription = this.loginService.register(this.user).subscribe({
+      next: (user) => {
         this.user = user;
         this.router.navigate(['home']);
       },
-      (err) => {
+      error: (err) => {
         // err may be an object like { errors: [...] } or a string
         if (err && typeof err === 'object') {
           if (Array.isArray(err.errors)) {
@@ -59,7 +59,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
           this.serverErrors = ['An unknown error occurred'];
         }
       }
-    );
+    });
   }
 
   togglePasswordVisibility(): void {

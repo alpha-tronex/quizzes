@@ -33,17 +33,17 @@ export class HistoryComponent implements OnInit {
   }
 
   loadQuizHistory() {
-    this.questionsService.getQuizHistory(this.username).subscribe(
-      (data) => {
+    this.questionsService.getQuizHistory(this.username).subscribe({
+      next: (data) => {
         this.quizzes = data.quizzes || [];
         this.loading = false;
       },
-      (error) => {
+      error: (error) => {
         console.error('Error loading quiz history:', error);
         this.error = 'Failed to load quiz history';
         this.loading = false;
       }
-    );
+    });
   }
 
   formatDate(date: any): string {

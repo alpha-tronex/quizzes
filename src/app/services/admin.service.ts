@@ -1,0 +1,62 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
+import { User } from '../classes/users';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AdminService {
+
+  constructor(private http: HttpClient) { }
+
+  getAllUsers(): Observable<User[]> {
+    return this.http.get<User[]>('/api/admin/users').pipe(
+      tap(users => console.log('Fetched users:', users.length)),
+      catchError(this.handleError)
+    );
+  }
+
+  getUserById(userId: string): Observable<User> {
+    return this.http.get<User>(`/api/admin/user/${userId}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  updateUser(user: User): Observable<User> {
+    return this.http.put<User>(`/api/admin/user/${user.id}`, user).pipe(
+      tap(response => console.log('User updated:', response)),
+      catchError(this.handleError)
+    );
+  }
+
+  deleteUser(userId: string): Observable<any> {
+    return this.http.delete(`/api/admin/user/${userId}`).pipe(
+      tap(() => console.log('User deleted:', userId)),
+      catchError(this.handleError)
+    );
+  }
+
+  updateUserType(userId: string, type: string): Observable<User> {
+    return this.http.patch<User>(`/api/admin/user/${userId}/type`, { type }).pipe(
+      tap(response => console.log('User type updated:', response)),
+      catchError(this.handleError)
+    );
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    let errorMessage = 'An error occurred';
+    
+    if (error.error instanceof ErrorEvent) {
+      // Client-side error
+      errorMessage = `Error: ${error.error.message}`;
+    } else {
+      // Server-side error
+      errorMessage = error.error?.error || error.error?.message || error.message || 'Server error';
+    }
+    
+    console.error('Admin service error:', errorMessage);
+    return throwError(() => errorMessage);
+  }
+}

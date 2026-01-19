@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { User } from '../../classes/users';
+import { AdminService } from '../../services/admin.service';
 
 @Component({
     selector: 'app-user-management',
@@ -14,7 +14,7 @@ export class UserManagementComponent implements OnInit {
   loading: boolean = false;
   errorMessage: string = '';
 
-  constructor(private http: HttpClient) { }
+  constructor(private adminService: AdminService) { }
 
   ngOnInit() {
     this.loadUsers();
@@ -24,17 +24,17 @@ export class UserManagementComponent implements OnInit {
     this.loading = true;
     this.errorMessage = '';
     
-    this.http.get<User[]>('/api/users').subscribe(
-      (data) => {
+    this.adminService.getAllUsers().subscribe({
+      next: (data) => {
         this.users = data;
         this.loading = false;
       },
-      (error) => {
+      error: (error) => {
         console.error('Error loading users:', error);
         this.errorMessage = 'Failed to load users. Please try again.';
         this.loading = false;
       }
-    );
+    });
   }
 
   onUserSelect(event: Event): void {

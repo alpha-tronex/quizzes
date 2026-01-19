@@ -50,13 +50,13 @@ export class AccountComponent implements OnInit {
     this.serverErrors = [];
     this.error = '';
     
-    this.loginService.updateUser(this.user).subscribe(
-      (updatedUser) => {
+    this.loginService.updateUser(this.user).subscribe({
+      next: (updatedUser) => {
         this.user = updatedUser;
         this.editMode = false;
         this.saving = false;
       },
-      (err) => {
+      error: (err) => {
         this.saving = false;
         if (err && typeof err === 'object') {
           if (Array.isArray(err.errors)) {
@@ -74,7 +74,7 @@ export class AccountComponent implements OnInit {
           this.serverErrors = ['An error occurred while updating user information'];
         }
       }
-    );
+    });
   }
 
 }

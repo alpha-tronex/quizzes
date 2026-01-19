@@ -23,14 +23,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     // Load available quizzes
-    this.questionsService.getAvailableQuizzes().subscribe(
-      (data) => {
+    this.questionsService.getAvailableQuizzes().subscribe({
+      next: (data) => {
         this.quizzes = data;
       },
-      (error) => {
+      error: (error) => {
         console.error('Error loading quizzes:', error);
       }
-    );
+    });
   }
 
   startQuiz(quizId: number) {
