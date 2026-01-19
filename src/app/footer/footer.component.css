@@ -1,0 +1,13 @@
+.footer {
+  padding: 2rem 0;
+  color: #fff;
+}
+
+.footer p {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.footer h4 {
+  letter-spacing: 1px;
+}

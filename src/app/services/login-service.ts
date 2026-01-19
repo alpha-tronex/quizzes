@@ -7,7 +7,7 @@ import { User } from '../classes/users';
 @Injectable()
 export class LoginService {
   //loggedInStudentChange: Subject<User> = new Subject<User>();
-  welcomePhrase: string = 'Welcome to the quiz master. Please login or register to start taking quizzes!';
+  welcomePhrase: string = 'Welcome to ISRA learning. Please login or register to start taking quizzes!';
   user: User;
   http: HttpClient;
 
