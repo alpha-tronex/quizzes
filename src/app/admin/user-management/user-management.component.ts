@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { User } from '../../classes/users';
 import { AdminService } from '../../services/admin.service';
+import { LoginService } from '../../services/login-service';
 
 @Component({
     selector: 'app-user-management',
@@ -14,7 +15,10 @@ export class UserManagementComponent implements OnInit {
   loading: boolean = false;
   errorMessage: string = '';
 
-  constructor(private adminService: AdminService) { }
+  constructor(
+    private adminService: AdminService,
+    private loginService: LoginService
+  ) { }
 
   ngOnInit() {
     this.loadUsers();
@@ -83,6 +87,43 @@ export class UserManagementComponent implements OnInit {
         error: (error) => {
           console.error('Error updating user type:', error);
           alert('Failed to update user type: ' + error);
+        }
+      });
+    }
+  }
+
+  deleteUser(user: User): void {
+    if (!user || !user.id) {
+      return;
+    }
+
+    // Prevent user from deleting themselves
+    const currentUser = this.loginService.user;
+    if (currentUser && currentUser.id === user.id) {
+      alert('You cannot delete your own account while logged in.');
+      return;
+    }
+
+    const confirmed = confirm(
+      `Are you sure you want to delete user "${user.uname}"?\n\nThis action cannot be undone.`
+    );
+    
+    if (confirmed) {
+      this.adminService.deleteUser(user.id).subscribe({
+        next: () => {
+          // Remove user from the list
+          this.users = this.users.filter(u => u.id !== user.id);
+          
+          // Clear selected user if it was the deleted one
+          if (this.selectedUser && this.selectedUser.id === user.id) {
+            this.selectedUser = null;
+          }
+          
+          alert('User deleted successfully');
+        },
+        error: (error) => {
+          console.error('Error deleting user:', error);
+          alert('Failed to delete user: ' + error);
         }
       });
     }

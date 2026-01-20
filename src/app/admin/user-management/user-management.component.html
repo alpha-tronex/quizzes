@@ -64,13 +64,27 @@
                   </a>
                 </div>
                 
+                <div class="mb-3 mt-3">
+                  <button 
+                    class="btn btn-sm btn-primary me-2" 
+                    [routerLink]="['/admin/user-details', selectedUser.id]">
+                    Edit User Details
+                  </button>
+                  <button 
+                    class="btn btn-sm btn-danger" 
+                    (click)="deleteUser(selectedUser)"
+                    title="Delete user">
+                    Delete User
+                  </button>
+                </div>
+                
                 <div class="mb-2">
                   <strong>User ID:</strong> <small class="text-muted">{{ selectedUser.id }}</small>
                 </div>
                 
                 <!-- Quizzes Section -->
                 <div class="mt-4" *ngIf="selectedUser.quizzes && selectedUser.quizzes.length > 0">
-                  <h6 class="border-bottom pb-2 mb-3">Quizzes Taken ({{ selectedUser.quizzes.length }})</h6>
+                  <h6 class="mb-3">Quizzes Taken ({{ selectedUser.quizzes.length }})</h6>
                   <div class="table-responsive">
                     <table class="table table-sm table-striped">
                       <thead>

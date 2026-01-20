@@ -1,0 +1,8 @@
+.form-control[readonly] {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}

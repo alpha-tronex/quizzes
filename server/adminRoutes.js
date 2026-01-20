@@ -44,6 +44,15 @@ module.exports = function(app, User) {
                     email: user.email || '',
                     phone: user.phone || '',
                     type: user.type || 'student',
+                    address: user.address || {
+                        street1: '',
+                        street2: '',
+                        street3: '',
+                        city: '',
+                        state: '',
+                        zipCode: '',
+                        country: ''
+                    },
                     quizzes: user.quizzes || []
                 };
 
@@ -59,7 +68,7 @@ module.exports = function(app, User) {
         .put(async (req, res) => {
             try {
                 const userId = req.params.id;
-                const { fname, lname, email, phone, uname, type } = req.body || {};
+                const { fname, lname, email, phone, uname, type, address } = req.body || {};
 
                 // Validation
                 const validationErrors = [];
@@ -110,6 +119,7 @@ module.exports = function(app, User) {
                 if (phone !== undefined) updateData.phone = phone;
                 if (uname !== undefined) updateData.username = uname;
                 if (type !== undefined) updateData.type = type;
+                if (address !== undefined) updateData.address = address;
 
                 const updatedUser = await User.findByIdAndUpdate(
                     userId,
@@ -128,7 +138,16 @@ module.exports = function(app, User) {
                     uname: updatedUser.username,
                     email: updatedUser.email || '',
                     phone: updatedUser.phone || '',
-                    type: updatedUser.type || 'student'
+                    type: updatedUser.type || 'student',
+                    address: updatedUser.address || {
+                        street1: '',
+                        street2: '',
+                        street3: '',
+                        city: '',
+                        state: '',
+                        zipCode: '',
+                        country: ''
+                    }
                 };
 
                 res.status(200).json(userObj);
