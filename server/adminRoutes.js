@@ -13,7 +13,8 @@ module.exports = function(app, User) {
                     uname: user.username,
                     email: user.email || '',
                     phone: user.phone || '',
-                    type: user.type || 'student'
+                    type: user.type || 'student',
+                    quizzes: user.quizzes || []
                 }));
 
                 res.status(200).json(usersArray);
@@ -42,7 +43,8 @@ module.exports = function(app, User) {
                     uname: user.username,
                     email: user.email || '',
                     phone: user.phone || '',
-                    type: user.type || 'student'
+                    type: user.type || 'student',
+                    quizzes: user.quizzes || []
                 };
 
                 res.status(200).json(userObj);

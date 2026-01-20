@@ -13,7 +13,6 @@ export class AdminService {
 
   getAllUsers(): Observable<User[]> {
     return this.http.get<User[]>('/api/admin/users').pipe(
-      tap(users => console.log('Fetched users:', users.length)),
       catchError(this.handleError)
     );
   }

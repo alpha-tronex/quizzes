@@ -29,7 +29,8 @@ export class LoginComponent implements OnInit, OnDestroy {
       fname: '',
       lname: '',
       phone: '',
-      address: null
+      address: null,
+      quizzes: []
     };
   }
 

@@ -32,4 +32,5 @@ export class User {
     pass: string;
     confirmPass: string;
     type: string;
+    quizzes?: Quiz[];
 }
