@@ -7,6 +7,13 @@
         <form (ngSubmit)="registerStudent()" #registerForm="ngForm" novalidate>
           <div class="row text-start">
             <div class="col-md-6 offset-md-3">
+              <div *ngIf="clientErrors?.length" class="alert alert-warning">
+                <strong>Validation Errors:</strong>
+                <ul class="mb-0">
+                  <li *ngFor="let err of clientErrors">{{ err }}</li>
+                </ul>
+              </div>
+              
               <div *ngIf="serverErrors?.length" class="alert alert-danger">
                 <ul class="mb-0">
                   <li *ngFor="let err of serverErrors">{{ err }}</li>

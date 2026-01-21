@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
 import { LoginService } from '../../services/login-service';
+import { UtilService, State, Country } from '../../services/util.service';
+import { ValidationService } from '../../services/validation.service';
 import { User } from '../../classes/users';
 
 @Component({
@@ -16,12 +18,17 @@ export class UserDetailsComponent implements OnInit {
   saving: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
+  states: State[] = [];
+  countries: Country[] = [];
+  clientErrors: string[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private adminService: AdminService,
-    private loginService: LoginService
+    private loginService: LoginService,
+    private utilService: UtilService,
+    private validationService: ValidationService
   ) { }
 
   ngOnInit() {
@@ -32,6 +39,26 @@ export class UserDetailsComponent implements OnInit {
       this.errorMessage = 'No user ID provided';
       this.loading = false;
     }
+    
+    // Load states
+    this.utilService.getStates().subscribe({
+      next: (data) => {
+        this.states = data;
+      },
+      error: (error) => {
+        console.error('Error loading states:', error);
+      }
+    });
+
+    // Load countries
+    this.utilService.getCountries().subscribe({
+      next: (data) => {
+        this.countries = data;
+      },
+      error: (error) => {
+        console.error('Error loading countries:', error);
+      }
+    });
   }
 
   loadUser(userId: string): void {
@@ -80,13 +107,28 @@ export class UserDetailsComponent implements OnInit {
     this.saving = true;
     this.errorMessage = '';
     this.successMessage = '';
+    this.clientErrors = [];
+
+    // Client-side validation
+    const validationResult = this.validationService.validateForm({
+      fname: this.user.fname,
+      lname: this.user.lname,
+      email: this.user.email,
+      phone: this.user.phone
+    });
+
+    if (!validationResult.valid) {
+      this.clientErrors = validationResult.errors;
+      this.saving = false;
+      return;
+    }
 
     this.adminService.updateUser(this.user).subscribe({
       next: (updatedUser) => {
         this.user = updatedUser;
         this.saving = false;
         this.successMessage = 'User updated successfully!';
-        
+
         //If the updated user is the currently logged-in user, update LoginService and localStorage
         const currentUser = this.loginService.user;
         if (currentUser && currentUser.id === updatedUser.id) {

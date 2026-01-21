@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { User } from '../classes/users';
 import { LoginService } from '../services/login-service';
+import { UtilService, State, Country } from '../services/util.service';
+import { ValidationService } from '../services/validation.service';
 
 @Component({
     selector: 'app-account',
@@ -15,8 +17,15 @@ export class AccountComponent implements OnInit {
   editMode: boolean = false;
   saving: boolean = false;
   serverErrors: string[] = [];
+  states: State[] = [];
+  countries: Country[] = [];
+  clientErrors: string[] = [];
 
-  constructor(private loginService: LoginService) { }
+  constructor(
+    private loginService: LoginService,
+    private utilService: UtilService,
+    private validationService: ValidationService
+  ) { }
 
   ngOnInit() {
     // Get the current logged-in user from the login service
@@ -35,6 +44,26 @@ export class AccountComponent implements OnInit {
         country: ''
       };
     }
+    
+    // Load states
+    this.utilService.getStates().subscribe({
+      next: (data) => {
+        this.states = data;
+      },
+      error: (error) => {
+        console.error('Error loading states:', error);
+      }
+    });
+
+    // Load countries
+    this.utilService.getCountries().subscribe({
+      next: (data) => {
+        this.countries = data;
+      },
+      error: (error) => {
+        console.error('Error loading countries:', error);
+      }
+    });
   }
 
   toggleEditMode(): void {
@@ -48,7 +77,22 @@ export class AccountComponent implements OnInit {
     
     this.saving = true;
     this.serverErrors = [];
+    this.clientErrors = [];
     this.error = '';
+
+    // Client-side validation
+    const validationResult = this.validationService.validateForm({
+      fname: this.user.fname,
+      lname: this.user.lname,
+      email: this.user.email,
+      phone: this.user.phone
+    });
+
+    if (!validationResult.valid) {
+      this.clientErrors = validationResult.errors;
+      this.saving = false;
+      return;
+    }
     
     this.loginService.updateUser(this.user).subscribe({
       next: (updatedUser) => {

@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { Admin, User } from '../classes/users';
 import { Router } from '@angular/router';
 import { LoginService } from '../services/login-service';
+import { ValidationService } from '../services/validation.service';
 
 @Component({
     selector: 'app-login',
@@ -15,8 +16,13 @@ export class LoginComponent implements OnInit, OnDestroy {
   subscription: Subscription;
   serverErrors: string[] = [];
   showPassword: boolean = false;
+  clientErrors: string[] = [];
 
-  constructor(private router: Router, private loginService: LoginService) {}
+  constructor(
+    private router: Router,
+    private loginService: LoginService,
+    private validationService: ValidationService
+  ) {}
 
   ngOnInit() {
     this.user = {
@@ -36,6 +42,24 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   login(): void {
     this.serverErrors = [];
+    this.clientErrors = [];
+
+    // Client-side validation
+    const usernameValidation = this.validationService.validateUsername(this.user.uname);
+    if (!usernameValidation.valid && usernameValidation.error) {
+      this.clientErrors.push(usernameValidation.error);
+    }
+
+    const passwordValidation = this.validationService.validatePassword(this.user.pass);
+    if (!passwordValidation.valid && passwordValidation.error) {
+      this.clientErrors.push(passwordValidation.error);
+    }
+
+    // Stop if there are client-side errors
+    if (this.clientErrors.length > 0) {
+      return;
+    }
+
     this.subscription = this.loginService.login(this.user).subscribe({
       next: (user) => {
         this.user = user;

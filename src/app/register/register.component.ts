@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { User } from '../classes/users';
 import { LoginService } from '../services/login-service';
+import { ValidationService } from '../services/validation.service';
 
 @Component({
     selector: 'app-register',
@@ -16,8 +17,13 @@ export class RegisterComponent implements OnInit, OnDestroy {
   serverErrors: string[] = [];
   showPassword: boolean = false;
   showConfirmPassword: boolean = false;
+  clientErrors: string[] = [];
 
-  constructor(private router: Router, private loginService: LoginService) { }
+  constructor(
+    private router: Router,
+    private loginService: LoginService,
+    private validationService: ValidationService
+  ) { }
 
   ngOnInit() {
     this.user = {
@@ -37,6 +43,29 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
   registerStudent(): void {
     this.serverErrors = [];
+    this.clientErrors = [];
+
+    // Client-side validation
+    const usernameValidation = this.validationService.validateUsername(this.user.uname);
+    if (!usernameValidation.valid && usernameValidation.error) {
+      this.clientErrors.push(usernameValidation.error);
+    }
+
+    const passwordValidation = this.validationService.validatePassword(this.user.pass);
+    if (!passwordValidation.valid && passwordValidation.error) {
+      this.clientErrors.push(passwordValidation.error);
+    }
+
+    // Check password confirmation
+    if (this.user.pass !== this.user.confirmPass) {
+      this.clientErrors.push('Passwords do not match');
+    }
+
+    // Stop if there are client-side errors
+    if (this.clientErrors.length > 0) {
+      return;
+    }
+
     this.subscription = this.loginService.register(this.user).subscribe({
       next: (user) => {
         this.user = user;

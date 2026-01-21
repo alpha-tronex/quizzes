@@ -6,6 +6,7 @@ const fs = require('fs');
 const authRoutes = require(`${__dirname}/authRoutes.js`);
 const quizRoutes = require(`${__dirname}/quizRoutes.js`);
 const adminRoutes = require(`${__dirname}/adminRoutes.js`);
+const utilRoutes = require(`${__dirname}/utilRoutes.js`);
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -108,6 +109,9 @@ quizRoutes(app, User);
 
 // Setup admin routes
 adminRoutes(app, User);
+
+// Setup utility routes
+utilRoutes(app);
 
 // Serve Angular app for any other GET request (must be after API routes)
 app.use((req, res, next) => {

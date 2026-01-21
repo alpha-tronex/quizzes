@@ -50,6 +50,13 @@
         
         <!-- Edit Mode -->
         <form *ngIf="editMode" (ngSubmit)="saveChanges()" #editForm="ngForm">
+          <div *ngIf="clientErrors?.length" class="alert alert-warning">
+            <strong>Validation Errors:</strong>
+            <ul class="mb-0">
+              <li *ngFor="let err of clientErrors">{{ err }}</li>
+            </ul>
+          </div>
+          
           <div *ngIf="serverErrors?.length" class="alert alert-danger">
             <ul class="mb-0">
               <li *ngFor="let err of serverErrors">{{ err }}</li>
@@ -127,7 +134,10 @@
                 <div class="col-md-6">
                   <div class="form-group mb-3">
                     <label for="state">State</label>
-                    <input type="text" class="form-control" name="state" [(ngModel)]="user.address.state" placeholder="State">
+                    <select class="form-control form-select" name="state" [(ngModel)]="user.address.state">
+                      <option value="">-- Select State --</option>
+                      <option *ngFor="let state of states" [value]="state.code">{{ state.name }}</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -142,7 +152,10 @@
                 <div class="col-md-6">
                   <div class="form-group mb-3">
                     <label for="country">Country</label>
-                    <input type="text" class="form-control" name="country" [(ngModel)]="user.address.country" placeholder="Country">
+                    <select class="form-control form-select" name="country" [(ngModel)]="user.address.country">
+                      <option value="">-- Select Country --</option>
+                      <option *ngFor="let country of countries" [value]="country.code">{{ country.name }}</option>
+                    </select>
                   </div>
                 </div>
               </div>

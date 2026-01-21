@@ -7,6 +7,14 @@
         <div class="row text-start">
           <div class="col-md-8 offset-md-2">
             
+            <div *ngIf="clientErrors?.length" class="alert alert-warning alert-dismissible fade show" role="alert">
+              <strong>Validation Errors:</strong>
+              <ul class="mb-0">
+                <li *ngFor="let err of clientErrors">{{ err }}</li>
+              </ul>
+              <button type="button" class="btn-close" (click)="clientErrors = []" aria-label="Close"></button>
+            </div>
+            
             <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
               <strong>Error!</strong> {{ errorMessage }}
               <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
@@ -147,12 +155,14 @@
                 <!-- State -->
                 <div class="mb-3">
                   <label for="state" class="form-label">State:</label>
-                  <input 
-                    type="text" 
+                  <select 
                     id="state" 
                     name="state" 
-                    class="form-control" 
+                    class="form-control form-select" 
                     [(ngModel)]="user.address.state">
+                    <option value="">-- Select State --</option>
+                    <option *ngFor="let state of states" [value]="state.code">{{ state.name }}</option>
+                  </select>
                 </div>
 
                 <!-- Zip Code -->
@@ -169,12 +179,14 @@
                 <!-- Country -->
                 <div class="mb-3">
                   <label for="country" class="form-label">Country:</label>
-                  <input 
-                    type="text" 
+                  <select 
                     id="country" 
                     name="country" 
-                    class="form-control" 
+                    class="form-control form-select" 
                     [(ngModel)]="user.address.country">
+                    <option value="">-- Select Country --</option>
+                    <option *ngFor="let country of countries" [value]="country.code">{{ country.name }}</option>
+                  </select>
                 </div>
 
                 <!-- Buttons -->
