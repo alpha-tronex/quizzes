@@ -33,4 +33,5 @@ export class User {
     confirmPass: string;
     type: string;
     quizzes?: Quiz[];
+    token?: string; // JWT token for authentication
 }

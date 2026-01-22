@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
@@ -15,6 +15,7 @@ import { RegisterComponent } from './register/register.component';
 import { HistoryComponent } from './history/history.component';
 import { LoginService } from './services/login-service';
 import { QuestionsService } from './services/questions-service';
+import { AuthInterceptor } from './services/auth.interceptor';
 
 
 @NgModule({ declarations: [
@@ -30,5 +31,14 @@ import { QuestionsService } from './services/questions-service';
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         AppRoutingModule,
-        FormsModule], providers: [LoginService, QuestionsService, provideHttpClient(withInterceptorsFromDi())] })
+        FormsModule], providers: [
+        LoginService, 
+        QuestionsService, 
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: AuthInterceptor,
+            multi: true
+        },
+        provideHttpClient(withInterceptorsFromDi())
+    ] })
 export class AppModule { }

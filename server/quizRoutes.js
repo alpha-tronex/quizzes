@@ -1,9 +1,10 @@
 const fs = require('fs');
 const bodyParser = require("body-parser");
+const { verifyToken } = require('./middleware/authMiddleware');
 
 module.exports = function(app, User) {
-    // Get list of all available quizzes
-    app.get("/api/quizzes", (req, res) => {
+    // Get list of all available quizzes (protected route)
+    app.get("/api/quizzes", verifyToken, (req, res) => {
         console.log('loading available quizzes');
         const quizzesDir = __dirname + '/quizzes';
         const quizFiles = fs.readdirSync(quizzesDir).filter(file => file.endsWith('.json'));
@@ -19,16 +20,16 @@ module.exports = function(app, User) {
         res.json(quizzes);
     });
 
-    // Get a specific quiz or default quiz
+    // Get a specific quiz or default quiz (protected route)
     app.route("/api/quiz")
-        .get((req, res) => {
+        .get(verifyToken, (req, res) => {
             console.log('loading quiz data');
             const quizId = req.query.id || 0;
             console.log('quizId: ' + quizId);
             const jsonData = fs.readFileSync(__dirname + `/quizzes/quiz_${quizId}.json`);
             res.send(jsonData);
         })
-        .post(bodyParser.json(), async (req, res) => {
+        .post(verifyToken, bodyParser.json(), async (req, res) => {
             try {
                 const { username, quizData } = req.body;
                 
@@ -53,8 +54,8 @@ module.exports = function(app, User) {
             }
         });
 
-    // Get quiz history for a specific user
-    app.get("/api/quiz/history/:username", async (req, res) => {
+    // Get quiz history for a specific user (protected route)
+    app.get("/api/quiz/history/:username", verifyToken, async (req, res) => {
         try {
             const username = req.params.username;
             

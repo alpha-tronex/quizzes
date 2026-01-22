@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const validators = require('./utils/validators');
+const { generateToken, verifyToken } = require('./middleware/authMiddleware');
 const saltRounds = 10;
 
 module.exports = function(app, User) {
@@ -91,6 +92,10 @@ module.exports = function(app, User) {
                 console.log('email: ' + user.email);
 
                 console.log('after save');
+
+                // Generate JWT token
+                const token = generateToken(user);
+
                 const userObj = {
                     id: user._id,
                     fname: user.fname,
@@ -100,7 +105,8 @@ module.exports = function(app, User) {
                     phone: user.phone,
                     pass: '', // Don't send the hashed password
                     confirmPass: '',
-                    type: user.type
+                    type: user.type,
+                    token: token
                 };
                 res.status(200).json(userObj);
 
@@ -131,6 +137,9 @@ module.exports = function(app, User) {
             bcrypt.compare(pass, foundUser.password, function(err, result) {
                 console.log('result: ' + result);
                 if (result === true) {
+                    // Generate JWT token
+                    const token = generateToken(foundUser);
+
                     const userObj = {
                         id: foundUser._id,
                         fname: foundUser.fname,
@@ -141,7 +150,8 @@ module.exports = function(app, User) {
                         address: foundUser.address,
                         pass: '', // Don't send the hashed password
                         confirmPass: '',
-                        type: foundUser.type
+                        type: foundUser.type,
+                        token: token
                     };
                     res.status(200).json(userObj);
                     console.log("status 200 success");
@@ -187,7 +197,7 @@ module.exports = function(app, User) {
         });
 
     app.route("/api/user/update")
-        .put(async (req, res) => {
+        .put(verifyToken, async (req, res) => {
             try {
                 const { id, fname, lname, email, phone, address } = req.body || {};
 

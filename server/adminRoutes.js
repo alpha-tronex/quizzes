@@ -1,10 +1,11 @@
 const validators = require('./utils/validators');
+const { verifyToken, verifyAdmin } = require('./middleware/authMiddleware');
 
 module.exports = function(app, User) {
 
-    // Get all users
+    // Get all users (admin only)
     app.route("/api/admin/users")
-        .get(async (req, res) => {
+        .get(verifyToken, verifyAdmin, async (req, res) => {
             try {
                 const users = await User.find({}, { password: 0 });
                 
@@ -26,9 +27,9 @@ module.exports = function(app, User) {
             }
         });
 
-    // Get user by ID
+    // Get user by ID (admin only)
     app.route("/api/admin/user/:id")
-        .get(async (req, res) => {
+        .get(verifyToken, verifyAdmin, async (req, res) => {
             try {
                 const userId = req.params.id;
                 
@@ -65,9 +66,9 @@ module.exports = function(app, User) {
             }
         });
 
-    // Update user
+    // Update user (admin only)
     app.route("/api/admin/user/:id")
-        .put(async (req, res) => {
+        .put(verifyToken, verifyAdmin, async (req, res) => {
             try {
                 const userId = req.params.id;
                 const { fname, lname, email, phone, uname, type, address } = req.body || {};

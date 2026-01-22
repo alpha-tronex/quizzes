@@ -42,11 +42,11 @@ export class LoginService {
       tap(response => {
         this.user = response;
         console.log('Username:', this.user.uname);
-        // Store user in localStorage for access across components
+        // Store user with token in localStorage for access across components
         localStorage.setItem('currentUser', JSON.stringify(response));
       }),
       catchError((error) => {
-        console.log('Error in getQuiz:', error);
+        console.log('Error in login:', error);
         return this.handleError(error);
       })
     );
@@ -60,11 +60,11 @@ export class LoginService {
       tap(response => {
         this.user = response;
         console.log('Registered user:', this.user.uname);
-        // Store user in localStorage for access across components
+        // Store user with token in localStorage for access across components
         localStorage.setItem('currentUser', JSON.stringify(response));
       }),
       catchError((error) => {
-        console.log('Error in getQuiz:', error);
+        console.log('Error in register:', error);
         return this.handleError(error);
       })
     );
@@ -75,9 +75,16 @@ export class LoginService {
       tap(response => {
         this.user = response;
         console.log('User updated:', this.user.uname);
+        // Update localStorage with new user data (preserve token)
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+          const parsedUser = JSON.parse(currentUser);
+          const updatedUser = { ...response, token: parsedUser.token };
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        }
       }),
       catchError((error) => {
-        console.log('Error in getQuiz:', error);
+        console.log('Error in updateUser:', error);
         return this.handleError(error);
       })
     );
