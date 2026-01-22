@@ -144,14 +144,16 @@ export class ValidationService {
   /**
    * Validate all fields in a form
    */
-  validateForm(formData: any): { valid: boolean; errors: string[] } {
+  validateForm(formData: any): { valid: boolean; errors: string[]; invalidFields: string[] } {
     const errors: string[] = [];
+    const invalidFields: string[] = [];
 
     // Username validation
     if (formData.uname !== undefined) {
       const usernameResult = this.validateUsername(formData.uname);
       if (!usernameResult.valid && usernameResult.error) {
         errors.push(usernameResult.error);
+        invalidFields.push('uname');
       }
     }
 
@@ -160,6 +162,7 @@ export class ValidationService {
       const passwordResult = this.validatePassword(formData.pass);
       if (!passwordResult.valid && passwordResult.error) {
         errors.push(passwordResult.error);
+        invalidFields.push('pass');
       }
     }
 
@@ -168,6 +171,7 @@ export class ValidationService {
       const emailResult = this.validateEmail(formData.email);
       if (!emailResult.valid && emailResult.error) {
         errors.push(emailResult.error);
+        invalidFields.push('email');
       }
     }
 
@@ -176,6 +180,7 @@ export class ValidationService {
       const phoneResult = this.validatePhone(formData.phone);
       if (!phoneResult.valid && phoneResult.error) {
         errors.push(phoneResult.error);
+        invalidFields.push('phone');
       }
     }
 
@@ -184,6 +189,7 @@ export class ValidationService {
       const fnameResult = this.validateName(formData.fname, 'First name');
       if (!fnameResult.valid && fnameResult.error) {
         errors.push(fnameResult.error);
+        invalidFields.push('fname');
       }
     }
 
@@ -192,6 +198,7 @@ export class ValidationService {
       const lnameResult = this.validateName(formData.lname, 'Last name');
       if (!lnameResult.valid && lnameResult.error) {
         errors.push(lnameResult.error);
+        invalidFields.push('lname');
       }
     }
 
@@ -200,6 +207,7 @@ export class ValidationService {
       const typeResult = this.validateUserType(formData.type);
       if (!typeResult.valid && typeResult.error) {
         errors.push(typeResult.error);
+        invalidFields.push('type');
       }
     }
 
@@ -208,12 +216,14 @@ export class ValidationService {
       const zipCodeResult = this.validateZipCode(formData.zipCode);
       if (!zipCodeResult.valid && zipCodeResult.error) {
         errors.push(zipCodeResult.error);
+        invalidFields.push('zipCode');
       }
     }
 
     return {
       valid: errors.length === 0,
-      errors: errors
+      errors: errors,
+      invalidFields: invalidFields
     };
   }
 }

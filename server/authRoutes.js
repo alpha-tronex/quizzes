@@ -70,7 +70,7 @@ module.exports = function(app, User) {
                 }
                 const existing = await User.findOne({ $or: uniqueQuery });
                 if (existing) {
-                    return res.status(409).json({ error: 'username or email already in use' });
+                    return res.status(409).json({ errors: ['Username or email already in use'] });
                 }
 
                 const hash = await bcrypt.hash(pass, saltRounds);

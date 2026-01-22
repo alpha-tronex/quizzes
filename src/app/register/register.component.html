@@ -27,7 +27,7 @@
                   
                   <div class="form-group mb-3">
                     <label for="userName">User Name</label>
-                    <input type="text" class="form-control" name="uname" [(ngModel)]="user.uname" #uname="ngModel" #usernameInput placeholder="User Name" autocomplete="off" required minlength="3">
+                    <input type="text" class="form-control" [class.is-invalid]="isFieldInvalid('uname')" name="uname" [(ngModel)]="user.uname" #uname="ngModel" #usernameInput placeholder="User Name" autocomplete="off" required minlength="3">
                     <div *ngIf="uname.invalid && (uname.dirty || uname.touched)" class="text-danger mt-1">
                       <small *ngIf="uname.errors?.required">User name is required.</small>
                       <small *ngIf="uname.errors?.minlength">User name must be at least 3 characters.</small>
@@ -37,7 +37,7 @@
                   <div class="form-group mb-3">
                     <label for="password">Password</label>
                     <div class="position-relative">
-                      <input [type]="showPassword ? 'text' : 'password'" class="form-control" name="pass" [(ngModel)]="user.pass" #pass="ngModel" placeholder="Password" autocomplete="off" required minlength="6" style="padding-right: 2.5rem;">
+                      <input [type]="showPassword ? 'text' : 'password'" class="form-control" [class.is-invalid]="isFieldInvalid('pass')" name="pass" [(ngModel)]="user.pass" #pass="ngModel" placeholder="Password" autocomplete="off" required minlength="6" style="padding-right: 2.5rem;">
                       <button type="button" class="btn btn-sm position-absolute" (click)="togglePasswordVisibility()" style="top: 50%; right: 0.5rem; transform: translateY(-50%); border: none; background: transparent; padding: 0.25rem 0.5rem;" tabindex="-1">
                         <span *ngIf="!showPassword">👁️</span>
                         <span *ngIf="showPassword">👁️‍🗨️</span>
@@ -52,7 +52,7 @@
                   <div class="form-group mb-0">
                     <label for="confirmPass">Confirm Password</label>
                     <div class="position-relative">
-                      <input [type]="showConfirmPassword ? 'text' : 'password'" class="form-control" name="confirmPass" [(ngModel)]="user.confirmPass" #confirmPass="ngModel" placeholder="Confirm Password" autocomplete="off" required style="padding-right: 2.5rem;">
+                      <input [type]="showConfirmPassword ? 'text' : 'password'" class="form-control" [class.is-invalid]="isFieldInvalid('confirmPass')" name="confirmPass" [(ngModel)]="user.confirmPass" #confirmPass="ngModel" placeholder="Confirm Password" autocomplete="off" required style="padding-right: 2.5rem;">
                       <button type="button" class="btn btn-sm position-absolute" (click)="toggleConfirmPasswordVisibility()" style="top: 50%; right: 0.5rem; transform: translateY(-50%); border: none; background: transparent; padding: 0.25rem 0.5rem;" tabindex="-1">
                         <span *ngIf="!showConfirmPassword">👁️</span>
                         <span *ngIf="showConfirmPassword">👁️‍🗨️</span>
@@ -72,27 +72,27 @@
                   
                   <div class="form-group mb-3">
                     <label for="firstName">First Name</label>
-                    <input type="text" class="form-control" name="fname" [(ngModel)]="user.fname" #fname="ngModel" placeholder="First Name" autocomplete="off">
+                    <input type="text" class="form-control" [class.is-invalid]="isFieldInvalid('fname')" name="fname" [(ngModel)]="user.fname" #fname="ngModel" placeholder="First Name" autocomplete="off">
                   </div>
                   
                   <div class="form-group mb-3">
                     <label for="lastName">Last Name</label>
-                    <input type="text" class="form-control" name="lname" [(ngModel)]="user.lname" #lname="ngModel" placeholder="Last Name" autocomplete="off">
+                    <input type="text" class="form-control" [class.is-invalid]="isFieldInvalid('lname')" name="lname" [(ngModel)]="user.lname" #lname="ngModel" placeholder="Last Name" autocomplete="off">
                   </div>
                   
                   <div class="form-group mb-3">
                     <label for="phone">Phone</label>
-                    <input type="tel" class="form-control" name="phone" [(ngModel)]="user.phone" #phone="ngModel" placeholder="(888) 456-2333" autocomplete="off">
+                    <input type="tel" class="form-control" [class.is-invalid]="isFieldInvalid('phone')" name="phone" [(ngModel)]="user.phone" #phone="ngModel" placeholder="(888) 123-4567" autocomplete="off">
                   </div>
                   
                   <div class="form-group mb-3">
                     <label for="email">Email</label>
-                    <input type="email" class="form-control" name="email" [(ngModel)]="user.email" #email="ngModel" placeholder="Email" autocomplete="off">
+                    <input type="email" class="form-control" [class.is-invalid]="isFieldInvalid('email')" name="email" [(ngModel)]="user.email" #email="ngModel" placeholder="Email" autocomplete="off">
                   </div>
                   
                   <div class="form-group mb-0">
                     <label for="zipCode">Zip Code</label>
-                    <input type="text" class="form-control" name="zipCode" [(ngModel)]="user.address.zipCode" #zipCode="ngModel" placeholder="12345 or 12345-6789" autocomplete="off">
+                    <input type="text" class="form-control" [class.is-invalid]="isFieldInvalid('zipCode')" name="zipCode" [(ngModel)]="user.address.zipCode" #zipCode="ngModel" placeholder="12345 or 12345-6789" autocomplete="off">
                   </div>
                 </div>
               </div>

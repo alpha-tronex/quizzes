@@ -17,7 +17,9 @@ export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
   serverErrors: string[] = [];
   showPassword: boolean = false;
   showConfirmPassword: boolean = false;
-  clientErrors: string[] = [];  @ViewChild('usernameInput') usernameInput: ElementRef;
+  clientErrors: string[] = [];
+  invalidFields: Set<string> = new Set();
+  @ViewChild('usernameInput') usernameInput: ElementRef;
   constructor(
     private router: Router,
     private loginService: LoginService,
@@ -60,10 +62,13 @@ export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
   registerStudent(): void {
     this.serverErrors = [];
     this.clientErrors = [];
+    this.invalidFields.clear();
 
     // Check password confirmation
     if (this.user.pass !== this.user.confirmPass) {
       this.clientErrors.push('Passwords do not match');
+      this.invalidFields.add('pass');
+      this.invalidFields.add('confirmPass');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -81,6 +86,7 @@ export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
 
     if (!validationResult.valid) {
       this.clientErrors = validationResult.errors;
+      this.invalidFields = new Set(validationResult.invalidFields);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -97,16 +103,20 @@ export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
             this.serverErrors = err.errors;
           } else if (err.error && Array.isArray(err.error.errors)) {
             this.serverErrors = err.error.errors;
+          } else if (err.error && err.error.error) {
+            // Handle single error field (e.g., { error: "message" })
+            this.serverErrors = [err.error.error];
           } else if (err.message) {
             this.serverErrors = [err.message];
           } else {
-            this.serverErrors = [JSON.stringify(err)];
+            this.serverErrors = ['An error occurred during registration'];
           }
         } else if (typeof err === 'string') {
           this.serverErrors = [err];
         } else {
           this.serverErrors = ['An unknown error occurred'];
         }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
   }
@@ -117,6 +127,10 @@ export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
 
   toggleConfirmPasswordVisibility(): void {
     this.showConfirmPassword = !this.showConfirmPassword;
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    return this.invalidFields.has(fieldName);
   }
 
   ngOnDestroy() {

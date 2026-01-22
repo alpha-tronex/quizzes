@@ -20,6 +20,7 @@ export class AccountComponent implements OnInit {
   states: State[] = [];
   countries: Country[] = [];
   clientErrors: string[] = [];
+  invalidFields: Set<string> = new Set();
 
   constructor(
     private loginService: LoginService,
@@ -78,6 +79,7 @@ export class AccountComponent implements OnInit {
     this.saving = true;
     this.serverErrors = [];
     this.clientErrors = [];
+    this.invalidFields.clear();
     this.error = '';
 
     // Client-side validation
@@ -91,6 +93,7 @@ export class AccountComponent implements OnInit {
 
     if (!validationResult.valid) {
       this.clientErrors = validationResult.errors;
+      this.invalidFields = new Set(validationResult.invalidFields);
       this.saving = false;
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -121,6 +124,10 @@ export class AccountComponent implements OnInit {
         }
       }
     });
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    return this.invalidFields.has(fieldName);
   }
 
 }

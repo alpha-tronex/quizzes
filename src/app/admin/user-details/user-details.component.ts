@@ -20,7 +20,9 @@ export class UserDetailsComponent implements OnInit, AfterViewInit {
   successMessage: string = '';
   states: State[] = [];
   countries: Country[] = [];
-  clientErrors: string[] = [];  @ViewChild('fnameInput') fnameInput: ElementRef;
+  clientErrors: string[] = [];
+  invalidFields: Set<string> = new Set();
+  @ViewChild('fnameInput') fnameInput: ElementRef;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -123,6 +125,7 @@ export class UserDetailsComponent implements OnInit, AfterViewInit {
     this.errorMessage = '';
     this.successMessage = '';
     this.clientErrors = [];
+    this.invalidFields.clear();
 
     // Client-side validation
     const validationResult = this.validationService.validateForm({
@@ -135,6 +138,7 @@ export class UserDetailsComponent implements OnInit, AfterViewInit {
 
     if (!validationResult.valid) {
       this.clientErrors = validationResult.errors;
+      this.invalidFields = new Set(validationResult.invalidFields);
       this.saving = false;
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -175,5 +179,9 @@ export class UserDetailsComponent implements OnInit, AfterViewInit {
 
   cancel(): void {
     this.router.navigate(['/admin/user-management']);
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    return this.invalidFields.has(fieldName);
   }
 }

@@ -67,7 +67,7 @@
             <div class="col-md-6">
               <div class="form-group mb-3">
                 <label for="fname">First Name</label>
-                <input type="text" class="form-control" name="fname" [(ngModel)]="user.fname" #fname="ngModel" minlength="2">
+                <input type="text" class="form-control" [class.is-invalid]="isFieldInvalid('fname')" name="fname" [(ngModel)]="user.fname" #fname="ngModel" minlength="2">
                 <div *ngIf="fname.invalid && fname.touched" class="text-danger mt-1">
                   <small *ngIf="fname.errors?.minlength">First name must be at least 2 characters.</small>
                 </div>
@@ -75,7 +75,7 @@
               
               <div class="form-group mb-3">
                 <label for="lname">Last Name</label>
-                <input type="text" class="form-control" name="lname" [(ngModel)]="user.lname" #lname="ngModel" minlength="2">
+                <input type="text" class="form-control" [class.is-invalid]="isFieldInvalid('lname')" name="lname" [(ngModel)]="user.lname" #lname="ngModel" minlength="2">
                 <div *ngIf="lname.invalid && lname.touched" class="text-danger mt-1">
                   <small *ngIf="lname.errors?.minlength">Last name must be at least 2 characters.</small>
                 </div>
@@ -85,7 +85,7 @@
             <div class="col-md-6">
               <div class="form-group mb-3">
                 <label for="email">Email</label>
-                <input type="email" class="form-control" name="email" [(ngModel)]="user.email" #email="ngModel" email>
+                <input type="email" class="form-control" [class.is-invalid]="isFieldInvalid('email')" name="email" [(ngModel)]="user.email" #email="ngModel" email>
                 <div *ngIf="email.invalid && email.touched" class="text-danger mt-1">
                   <small *ngIf="email.errors?.email">Enter a valid email address.</small>
                 </div>
@@ -93,7 +93,7 @@
               
               <div class="form-group mb-3">
                 <label for="phone">Phone</label>
-                <input type="tel" class="form-control" name="phone" [(ngModel)]="user.phone" #phone="ngModel">
+                <input type="tel" class="form-control" [class.is-invalid]="isFieldInvalid('phone')" name="phone" [(ngModel)]="user.phone" placeholder="(888) 123-4567" #phone="ngModel">
               </div>
             </div>
           </div>
@@ -139,7 +139,7 @@
                 <div class="col-md-6">
                   <div class="form-group mb-3">
                     <label for="zipCode">Zip Code</label>
-                    <input type="text" class="form-control" name="zipCode" [(ngModel)]="user.address.zipCode" #zipCode="ngModel" placeholder="12345 or 12345-6789">
+                    <input type="text" class="form-control" [class.is-invalid]="isFieldInvalid('zipCode')" name="zipCode" [(ngModel)]="user.address.zipCode" #zipCode="ngModel" placeholder="12345 or 12345-6789">
                   </div>
                 </div>
                 <div class="col-md-6">
