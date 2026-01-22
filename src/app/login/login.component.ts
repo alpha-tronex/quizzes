@@ -37,6 +37,13 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
       address: null,
       quizzes: []
     };
+
+    // Check for logout reason (e.g., inactivity timeout)
+    const logoutReason = sessionStorage.getItem('logoutReason');
+    if (logoutReason) {
+      this.serverErrors = [logoutReason];
+      sessionStorage.removeItem('logoutReason');
+    }
   }
 
   ngAfterViewInit() {

@@ -1,13 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { IdleTimeoutService } from './idle-timeout.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private idleTimeoutService: IdleTimeoutService
+  ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // Get token from localStorage
@@ -34,6 +38,12 @@ export class AuthInterceptor implements HttpInterceptor {
 
     // Handle the request and catch errors
     return next.handle(req).pipe(
+      tap(() => {
+        // Reset idle timer on successful API calls
+        if (this.idleTimeoutService.isWatching()) {
+          this.idleTimeoutService.reset();
+        }
+      }),
       catchError((error: HttpErrorResponse) => {
         // If 401 Unauthorized, token is invalid/expired - redirect to login
         if (error.status === 401) {

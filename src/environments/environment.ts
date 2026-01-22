@@ -4,5 +4,7 @@
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  idleTimeoutMinutes: 30, // Idle timeout in minutes
+  idleWarningMinutes: 2   // Warning time before logout
 };

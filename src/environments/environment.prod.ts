@@ -1,3 +1,5 @@
 export const environment = {
-  production: true
+  production: true,
+  idleTimeoutMinutes: 30, // Idle timeout in minutes
+  idleWarningMinutes: 2   // Warning time before logout
 };

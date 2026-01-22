@@ -10,6 +10,7 @@ export class LoginService {
   welcomePhrase: string = 'Welcome to ISRA learning. Please login or register to start taking quizzes!';
   user: User;
   http: HttpClient;
+  loggedIn: boolean = false;
 
   constructor(http?: HttpClient) {
     this.http = http;
@@ -44,6 +45,8 @@ export class LoginService {
         console.log('Username:', this.user.uname);
         // Store user with token in localStorage for access across components
         localStorage.setItem('currentUser', JSON.stringify(response));
+        // Signal that user is logged in (app.component will start idle monitoring)
+        this.loggedIn = true;
       }),
       catchError((error) => {
         console.log('Error in login:', error);
@@ -61,6 +64,8 @@ export class LoginService {
         this.user = response;
         console.log('Registered user:', this.user.uname);
         // Store user with token in localStorage for access across components
+        // Signal that user is logged in (app.component will start idle monitoring)
+        this.loggedIn = true;
         localStorage.setItem('currentUser', JSON.stringify(response));
       }),
       catchError((error) => {
@@ -92,6 +97,7 @@ export class LoginService {
 
   logout(): void {
     this.user = null;
+    this.loggedIn = false;
     this.welcomePhrase = 'You have been logged off. Please log back in to continue taking quizzes.';
     // Clear user from localStorage
     localStorage.removeItem('currentUser');
