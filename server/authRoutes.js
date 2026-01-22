@@ -191,27 +191,47 @@ module.exports = function(app, User) {
             try {
                 const { id, fname, lname, email, phone, address } = req.body || {};
 
-                // Validation
+                // Validation using validators module
                 const validationErrors = [];
                 
                 if (!id) {
                     return res.status(400).json({ error: 'User ID is required' });
                 }
 
-                if (!fname || typeof fname !== 'string' || fname.trim().length < 2) {
-                    validationErrors.push('first name must be at least 2 characters');
+                // Optional fields: validate only if provided and not empty
+                if (fname && fname.trim()) {
+                    const fnameValidation = validators.validateName(fname, 'First name');
+                    if (!fnameValidation.valid) {
+                        validationErrors.push(fnameValidation.error);
+                    }
                 }
 
-                if (!lname || typeof lname !== 'string' || lname.trim().length < 2) {
-                    validationErrors.push('last name must be at least 2 characters');
+                if (lname && lname.trim()) {
+                    const lnameValidation = validators.validateName(lname, 'Last name');
+                    if (!lnameValidation.valid) {
+                        validationErrors.push(lnameValidation.error);
+                    }
                 }
 
-                if (!email || typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email)) {
-                    validationErrors.push('invalid email address');
+                if (email && email.trim()) {
+                    const emailValidation = validators.validateEmail(email);
+                    if (!emailValidation.valid) {
+                        validationErrors.push(emailValidation.error);
+                    }
                 }
 
-                if (!phone || typeof phone !== 'string' || !/^[\d\s\-\+\(\)]{10,}$/.test(phone)) {
-                    validationErrors.push('phone number must be at least 10 digits');
+                if (phone && phone.trim()) {
+                    const phoneValidation = validators.validatePhone(phone);
+                    if (!phoneValidation.valid) {
+                        validationErrors.push(phoneValidation.error);
+                    }
+                }
+
+                if (address && address.zipCode && address.zipCode.trim()) {
+                    const zipValidation = validators.validateZipCode(address.zipCode);
+                    if (!zipValidation.valid) {
+                        validationErrors.push(zipValidation.error);
+                    }
                 }
 
                 if (validationErrors.length) {

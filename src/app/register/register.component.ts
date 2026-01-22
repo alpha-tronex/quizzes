@@ -64,7 +64,7 @@ export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
     // Check password confirmation
     if (this.user.pass !== this.user.confirmPass) {
       this.clientErrors.push('Passwords do not match');
-      window.scrollTo(0, 0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
@@ -81,7 +81,7 @@ export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
 
     if (!validationResult.valid) {
       this.clientErrors = validationResult.errors;
-      window.scrollTo(0, 0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 

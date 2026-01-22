@@ -92,7 +92,7 @@ export class AccountComponent implements OnInit {
     if (!validationResult.valid) {
       this.clientErrors = validationResult.errors;
       this.saving = false;
-      window.scrollTo(0, 0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     

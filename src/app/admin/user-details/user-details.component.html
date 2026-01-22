@@ -30,7 +30,7 @@
             </div>
 
             <div *ngIf="!loading && user && user.address">
-              <form #userForm="ngForm">
+              <form #userForm="ngForm" (ngSubmit)="saveUser()">
                 
                 <!-- Username (readonly) -->
                 <div class="mb-3">
@@ -69,7 +69,8 @@
                     id="fname" 
                     name="fname" 
                     class="form-control" 
-                    [(ngModel)]="user.fname">
+                    [(ngModel)]="user.fname"
+                    #fnameInput>
                 </div>
 
                 <!-- Last Name -->
@@ -194,9 +195,8 @@
                 <!-- Buttons -->
                 <div class="mt-4 d-flex gap-2 justify-content-center">
                   <button 
-                    type="button" 
+                    type="submit" 
                     class="btn btn-primary" 
-                    (click)="saveUser()" 
                     [disabled]="saving || !userForm.valid">
                     <span *ngIf="saving">Saving...</span>
                     <span *ngIf="!saving">Save Changes</span>

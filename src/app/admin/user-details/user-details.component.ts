@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
 import { LoginService } from '../../services/login-service';
@@ -12,7 +12,7 @@ import { User } from '../../classes/users';
     styleUrls: ['./user-details.component.css'],
     standalone: false
 })
-export class UserDetailsComponent implements OnInit {
+export class UserDetailsComponent implements OnInit, AfterViewInit {
   user: User | null = null;
   loading: boolean = true;
   saving: boolean = false;
@@ -20,8 +20,7 @@ export class UserDetailsComponent implements OnInit {
   successMessage: string = '';
   states: State[] = [];
   countries: Country[] = [];
-  clientErrors: string[] = [];
-
+  clientErrors: string[] = [];  @ViewChild('fnameInput') fnameInput: ElementRef;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -61,6 +60,15 @@ export class UserDetailsComponent implements OnInit {
     });
   }
 
+  ngAfterViewInit() {
+    // Focus on first name input field after view initializes
+    if (this.fnameInput && !this.loading) {
+      setTimeout(() => {
+        this.fnameInput.nativeElement.focus();
+      }, 100);
+    }
+  }
+
   loadUser(userId: string): void {
     this.loading = true;
     this.errorMessage = '';
@@ -90,6 +98,13 @@ export class UserDetailsComponent implements OnInit {
           this.user.address.country = this.user.address.country || '';
         }
         this.loading = false;
+        
+        // Focus on first name field after data is loaded
+        setTimeout(() => {
+          if (this.fnameInput) {
+            this.fnameInput.nativeElement.focus();
+          }
+        }, 100);
       },
       error: (error) => {
         console.error('Error loading user:', error);
@@ -121,7 +136,7 @@ export class UserDetailsComponent implements OnInit {
     if (!validationResult.valid) {
       this.clientErrors = validationResult.errors;
       this.saving = false;
-      window.scrollTo(0, 0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 

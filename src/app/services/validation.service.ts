@@ -163,32 +163,32 @@ export class ValidationService {
       }
     }
 
-    // Email validation
-    if (formData.email !== undefined) {
+    // Email validation (only if provided and not empty)
+    if (formData.email !== undefined && formData.email && formData.email.trim()) {
       const emailResult = this.validateEmail(formData.email);
       if (!emailResult.valid && emailResult.error) {
         errors.push(emailResult.error);
       }
     }
 
-    // Phone validation
-    if (formData.phone !== undefined) {
+    // Phone validation (only if provided and not empty)
+    if (formData.phone !== undefined && formData.phone && formData.phone.trim()) {
       const phoneResult = this.validatePhone(formData.phone);
       if (!phoneResult.valid && phoneResult.error) {
         errors.push(phoneResult.error);
       }
     }
 
-    // First name validation
-    if (formData.fname !== undefined) {
+    // First name validation (only if provided and not empty)
+    if (formData.fname !== undefined && formData.fname && formData.fname.trim()) {
       const fnameResult = this.validateName(formData.fname, 'First name');
       if (!fnameResult.valid && fnameResult.error) {
         errors.push(fnameResult.error);
       }
     }
 
-    // Last name validation
-    if (formData.lname !== undefined) {
+    // Last name validation (only if provided and not empty)
+    if (formData.lname !== undefined && formData.lname && formData.lname.trim()) {
       const lnameResult = this.validateName(formData.lname, 'Last name');
       if (!lnameResult.valid && lnameResult.error) {
         errors.push(lnameResult.error);
