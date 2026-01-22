@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
-const validators = require('./utils/validators');
-const { generateToken, verifyToken } = require('./middleware/authMiddleware');
+const validators = require('../utils/validators');
+const { generateToken, verifyToken } = require('../middleware/authMiddleware');
 const saltRounds = 10;
 
 module.exports = function(app, User) {

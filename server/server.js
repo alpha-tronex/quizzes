@@ -3,10 +3,10 @@ const express = require("express");
 const https = require("https");
 const bodyParser = require("body-parser");
 const fs = require('fs');
-const authRoutes = require(`${__dirname}/authRoutes.js`);
-const quizRoutes = require(`${__dirname}/quizRoutes.js`);
-const adminRoutes = require(`${__dirname}/adminRoutes.js`);
-const utilRoutes = require(`${__dirname}/utilRoutes.js`);
+const authRoutes = require(`${__dirname}/routes/authRoutes.js`);
+const quizRoutes = require(`${__dirname}/routes/quizRoutes.js`);
+const adminRoutes = require(`${__dirname}/routes/adminRoutes.js`);
+const utilRoutes = require(`${__dirname}/routes/utilRoutes.js`);
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -135,50 +135,5 @@ app.use((req, res, next) => {
     res.setHeader('Expires', '0');
     res.sendFile(indexFile);
 });
-
-// app.route("/api/register")
-// .post(bodyParser.json(), (req, res) => {
-//     User.register({ username: req.body.uname }, req.body.pass, () => {
-//         try {
-//             if (err) {
-//                 console.log(err);
-//                 res.redirect("/register");
-//             } else {
-//                 // authenticates and logs in the user
-//                 passport.authenticate("local")(req, res, () => {
-//                     alert('all is good')
-//                     res.redirect("/questions");
-//                 });
-//             }
-//         }
-//         catch (error) {
-//             console.log(error);
-//         }
-// });
-
-// app.route("/api/login")
-//     .post(bodyParser.json(), (req,res) => {
-//         const user = new User ({
-//             username: req.body.uname,
-//             password: req.body.pass
-//         });
-        
-//         req.login(user, (err) => {
-//             if (err) {
-//                 console.log(err);
-//             } else {
-//                 passport.authenticate("local")(req, res, () => {
-//                     res.redirect("/questions");
-//                 });
-//             }
-//         });
-// });
-
-// app.route("/api/logout")
-//     .get((req,res) => {
-//         req.logout();
-//         res.redirect("/");
-// });
-
 
 app.listen(port, () => console.log(`Server is running on port ${port}.`));

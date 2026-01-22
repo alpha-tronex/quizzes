@@ -1,5 +1,5 @@
-const validators = require('./utils/validators');
-const { verifyToken, verifyAdmin } = require('./middleware/authMiddleware');
+const validators = require('../utils/validators');
+const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
 
 module.exports = function(app, User) {
 
