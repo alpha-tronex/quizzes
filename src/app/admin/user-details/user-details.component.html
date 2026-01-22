@@ -173,7 +173,9 @@
                     id="zipCode" 
                     name="zipCode" 
                     class="form-control" 
-                    [(ngModel)]="user.address.zipCode">
+                    [(ngModel)]="user.address.zipCode"
+                    #zipCode="ngModel"
+                    placeholder="12345 or 12345-6789">
                 </div>
 
                 <!-- Country -->

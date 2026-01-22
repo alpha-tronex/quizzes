@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const validators = require('./utils/validators');
 const saltRounds = 10;
 
 module.exports = function(app, User) {
@@ -6,37 +7,56 @@ module.exports = function(app, User) {
     app.route("/api/register")
         .post(async (req, res) => {
             try {
-                const { fname, lname, uname, email, pass, phone } = req.body || {};
+                const { fname, lname, uname, email, pass, phone, address } = req.body || {};
 
-                // basic validation
+                // Validation using validators module
                 const validationErrors = [];
                 
                 // Required fields: uname and pass
-                if (!uname || typeof uname !== 'string' || uname.trim().length < 3) {
-                    validationErrors.push('username must be at least 3 characters');
-                } else if (!/^[A-Za-z0-9]+$/.test(uname)) {
-                    validationErrors.push('username may contain only letters and numbers');
+                const unameValidation = validators.validateUsername(uname);
+                if (!unameValidation.valid) {
+                    validationErrors.push(unameValidation.error);
                 }
 
-                if (!pass || typeof pass !== 'string' || pass.length < 6) {
-                    validationErrors.push('password must be at least 6 characters');
+                const passValidation = validators.validatePassword(pass);
+                if (!passValidation.valid) {
+                    validationErrors.push(passValidation.error);
                 }
 
                 // Optional fields: validate only if provided
-                if (fname && (typeof fname !== 'string' || fname.trim().length < 2)) {
-                    validationErrors.push('first name must be at least 2 characters');
+                if (fname && fname.trim()) {
+                    const fnameValidation = validators.validateName(fname, 'First name');
+                    if (!fnameValidation.valid) {
+                        validationErrors.push(fnameValidation.error);
+                    }
                 }
 
-                if (lname && (typeof lname !== 'string' || lname.trim().length < 2)) {
-                    validationErrors.push('last name must be at least 2 characters');
+                if (lname && lname.trim()) {
+                    const lnameValidation = validators.validateName(lname, 'Last name');
+                    if (!lnameValidation.valid) {
+                        validationErrors.push(lnameValidation.error);
+                    }
                 }
 
-                if (email && (typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email))) {
-                    validationErrors.push('invalid email address');
+                if (email && email.trim()) {
+                    const emailValidation = validators.validateEmail(email);
+                    if (!emailValidation.valid) {
+                        validationErrors.push(emailValidation.error);
+                    }
                 }
 
-                if (phone && (typeof phone !== 'string' || !/^[\d\s\-\+\(\)]{10,}$/.test(phone))) {
-                    validationErrors.push('phone number must be at least 10 digits');
+                if (phone && phone.trim()) {
+                    const phoneValidation = validators.validatePhone(phone);
+                    if (!phoneValidation.valid) {
+                        validationErrors.push(phoneValidation.error);
+                    }
+                }
+
+                if (address && address.zipCode && address.zipCode.trim()) {
+                    const zipValidation = validators.validateZipCode(address.zipCode);
+                    if (!zipValidation.valid) {
+                        validationErrors.push(zipValidation.error);
+                    }
                 }
 
                 if (validationErrors.length) {

@@ -113,10 +113,10 @@
             <div class="row mt-5">
               <div class="col-sm-4">
                 <button class="btn btn-secondary w-100" (click)="goPrevious()"
-                  style="max-width: 99%;" [disabled]="this.curQuestion.questionNum === 0">Previous</button>
+                  style="max-width: 99%; margin-bottom: 5px;" [disabled]="this.curQuestion.questionNum === 0">Previous</button>
               </div>
               <div class="col-sm-4">
-                <button class="btn btn-primary w-100" (click)="submit()" [disabled]="!allAnswered">Submit</button>
+                <button class="btn btn-primary w-100" style="margin-bottom: 5px;" (click)="submit()" [disabled]="!allAnswered">Submit</button>
               </div>
               <div class="col-sm-4">
                 <button class="btn btn-secondary w-100" (click)="goNext()"
@@ -170,10 +170,10 @@
     
     <div class="row mt-4">
       <div class="col-sm-6">
-        <button class="btn btn-secondary w-100" (click)="retakeQuiz()" [disabled]="resultsAccepted">Retake Quiz</button>
+        <button class="btn btn-secondary w-100" style=" margin-bottom: 5px;" (click)="retakeQuiz()" [disabled]="resultsAccepted">Retake Quiz</button>
       </div>
       <div class="col-sm-6">
-        <button class="btn btn-primary w-100" (click)="acceptResults()" [disabled]="resultsAccepted">Accept Results</button>
+        <button class="btn btn-secondary w-100" (click)="acceptResults()" [disabled]="resultsAccepted">Accept Results</button>
       </div>
     </div>
   </div>

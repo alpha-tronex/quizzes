@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Admin, User } from '../classes/users';
 import { Router } from '@angular/router';
@@ -11,13 +11,12 @@ import { ValidationService } from '../services/validation.service';
     styleUrls: ['./login.component.css'],
     standalone: false
 })
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
   user: User;
   subscription: Subscription;
   serverErrors: string[] = [];
   showPassword: boolean = false;
-  clientErrors: string[] = [];
-
+  clientErrors: string[] = [];  @ViewChild('usernameInput') usernameInput: ElementRef;
   constructor(
     private router: Router,
     private loginService: LoginService,
@@ -38,6 +37,15 @@ export class LoginComponent implements OnInit, OnDestroy {
       address: null,
       quizzes: []
     };
+  }
+
+  ngAfterViewInit() {
+    // Focus on username input field after view initializes
+    if (this.usernameInput) {
+      setTimeout(() => {
+        this.usernameInput.nativeElement.focus();
+      }, 0);
+    }
   }
 
   login(): void {

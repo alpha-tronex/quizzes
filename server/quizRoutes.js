@@ -26,7 +26,6 @@ module.exports = function(app, User) {
             const quizId = req.query.id || 0;
             console.log('quizId: ' + quizId);
             const jsonData = fs.readFileSync(__dirname + `/quizzes/quiz_${quizId}.json`);
-            console.log(jsonData)
             res.send(jsonData);
         })
         .post(bodyParser.json(), async (req, res) => {

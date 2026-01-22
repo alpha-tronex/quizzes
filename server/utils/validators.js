@@ -52,7 +52,7 @@ function validateEmail(email) {
     return { valid: false, error: 'Email is required' };
   }
   
-  const emailRegex = /^\S+@\S+\.\S+$/;
+  const emailRegex = /^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{3,}$/;
   if (!emailRegex.test(email)) {
     return { valid: false, error: 'Invalid email address' };
   }
@@ -70,9 +70,9 @@ function validatePhone(phone) {
     return { valid: false, error: 'Phone number is required' };
   }
   
-  const phoneRegex = /^[\d\s\-\+\(\)]{10,}$/;
+  const phoneRegex = /^(\+?\d{1,3}[-\.\s]?)?\(?\d{3}\)?[-\.\s]?\d{3}[-\.\s]?\d{4}$/;
   if (!phoneRegex.test(phone)) {
-    return { valid: false, error: 'Phone number must be at least 10 digits' };
+    return { valid: false, error: 'Invalid phone number format' };
   }
   
   return { valid: true, error: null };
@@ -114,6 +114,24 @@ function validateUserType(type) {
 }
 
 /**
+ * Validate zip code (US format: 12345 or 12345-6789)
+ * @param {string} zipCode - Zip code to validate
+ * @returns {object} - { valid: boolean, error: string }
+ */
+function validateZipCode(zipCode) {
+  if (!zipCode || typeof zipCode !== 'string') {
+    return { valid: false, error: 'Zip code is required' };
+  }
+  
+  const zipRegex = /^\d{5}(-\d{4})?$/;
+  if (!zipRegex.test(zipCode.trim())) {
+    return { valid: false, error: 'Invalid zip code format (use 12345 or 12345-6789)' };
+  }
+  
+  return { valid: true, error: null };
+}
+
+/**
  * Validate required fields and return all errors
  * @param {object} fields - Object with field names and values
  * @param {array} requiredFields - Array of required field names
@@ -138,5 +156,6 @@ module.exports = {
   validatePhone,
   validateName,
   validateUserType,
+  validateZipCode,
   validateRequiredFields
 };

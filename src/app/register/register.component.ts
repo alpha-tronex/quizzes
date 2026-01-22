@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { User } from '../classes/users';
@@ -11,14 +11,13 @@ import { ValidationService } from '../services/validation.service';
     styleUrls: ['./register.component.css'],
     standalone: false
 })
-export class RegisterComponent implements OnInit, OnDestroy {
+export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
   user: User;
   subscription: Subscription;
   serverErrors: string[] = [];
   showPassword: boolean = false;
   showConfirmPassword: boolean = false;
-  clientErrors: string[] = [];
-
+  clientErrors: string[] = [];  @ViewChild('usernameInput') usernameInput: ElementRef;
   constructor(
     private router: Router,
     private loginService: LoginService,
@@ -36,33 +35,53 @@ export class RegisterComponent implements OnInit, OnDestroy {
       fname: '',
       lname: '',
       phone: '',
-      address: null,
+      address: {
+        street1: '',
+        street2: '',
+        street3: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        country: ''
+      },
       quizzes: []
     };
+  }
+
+  ngAfterViewInit() {
+    // Focus on username input field after view initializes
+    if (this.usernameInput) {
+      setTimeout(() => {
+        this.usernameInput.nativeElement.focus();
+      }, 0);
+    }
   }
 
   registerStudent(): void {
     this.serverErrors = [];
     this.clientErrors = [];
 
-    // Client-side validation
-    const usernameValidation = this.validationService.validateUsername(this.user.uname);
-    if (!usernameValidation.valid && usernameValidation.error) {
-      this.clientErrors.push(usernameValidation.error);
-    }
-
-    const passwordValidation = this.validationService.validatePassword(this.user.pass);
-    if (!passwordValidation.valid && passwordValidation.error) {
-      this.clientErrors.push(passwordValidation.error);
-    }
-
     // Check password confirmation
     if (this.user.pass !== this.user.confirmPass) {
       this.clientErrors.push('Passwords do not match');
+      window.scrollTo(0, 0);
+      return;
     }
 
-    // Stop if there are client-side errors
-    if (this.clientErrors.length > 0) {
+    // Client-side validation using validateForm
+    const validationResult = this.validationService.validateForm({
+      uname: this.user.uname,
+      pass: this.user.pass,
+      email: this.user.email,
+      phone: this.user.phone,
+      fname: this.user.fname,
+      lname: this.user.lname,
+      zipCode: this.user.address?.zipCode
+    });
+
+    if (!validationResult.valid) {
+      this.clientErrors = validationResult.errors;
+      window.scrollTo(0, 0);
       return;
     }
 

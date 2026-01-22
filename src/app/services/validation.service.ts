@@ -56,7 +56,7 @@ export class ValidationService {
       return { valid: false, error: 'Email is required' };
     }
     
-    const emailRegex = /^\S+@\S+\.\S+$/;
+    const emailRegex = /^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{3,}$/;
     if (!emailRegex.test(email)) {
       return { valid: false, error: 'Invalid email address' };
     }
@@ -72,9 +72,9 @@ export class ValidationService {
       return { valid: false, error: 'Phone number is required' };
     }
     
-    const phoneRegex = /^[\d\s\-\+\(\)]{10,}$/;
+    const phoneRegex = /^(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
     if (!phoneRegex.test(phone)) {
-      return { valid: false, error: 'Phone number must be at least 10 digits' };
+      return { valid: false, error: 'Invalid phone number format' };
     }
     
     return { valid: true, error: null };
@@ -105,6 +105,22 @@ export class ValidationService {
     
     if (!type || !validTypes.includes(type)) {
       return { valid: false, error: 'Type must be either student or admin' };
+    }
+    
+    return { valid: true, error: null };
+  }
+
+  /**
+   * Validate zip code (US format: 12345 or 12345-6789)
+   */
+  validateZipCode(zipCode: string): ValidationResult {
+    if (!zipCode || typeof zipCode !== 'string') {
+      return { valid: false, error: 'Zip code is required' };
+    }
+    
+    const zipRegex = /^\d{5}(-\d{4})?$/;
+    if (!zipRegex.test(zipCode.trim())) {
+      return { valid: false, error: 'Invalid zip code format (use 12345 or 12345-6789)' };
     }
     
     return { valid: true, error: null };
@@ -184,6 +200,14 @@ export class ValidationService {
       const typeResult = this.validateUserType(formData.type);
       if (!typeResult.valid && typeResult.error) {
         errors.push(typeResult.error);
+      }
+    }
+
+    // Zip code validation
+    if (formData.zipCode !== undefined && formData.zipCode && formData.zipCode.trim()) {
+      const zipCodeResult = this.validateZipCode(formData.zipCode);
+      if (!zipCodeResult.valid && zipCodeResult.error) {
+        errors.push(zipCodeResult.error);
       }
     }
 

@@ -85,12 +85,14 @@ export class AccountComponent implements OnInit {
       fname: this.user.fname,
       lname: this.user.lname,
       email: this.user.email,
-      phone: this.user.phone
+      phone: this.user.phone,
+      zipCode: this.user.address?.zipCode
     });
 
     if (!validationResult.valid) {
       this.clientErrors = validationResult.errors;
       this.saving = false;
+      window.scrollTo(0, 0);
       return;
     }
     
