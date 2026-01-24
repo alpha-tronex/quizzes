@@ -73,6 +73,17 @@ export class UserManagementComponent implements OnInit {
     const newType = currentType === 'admin' ? 'student' : 'admin';
     const action = newType === 'admin' ? 'promote to administrator' : 'demote to student';
     
+    // Prevent admin from demoting themselves
+    const currentUser = this.loginService.user;
+    if (currentUser && currentUser.id === user.id && currentType === 'admin' && newType === 'student') {
+      this.confirmUser = user;
+      this.confirmAction = null; // Informational only
+      this.confirmTitle = 'Cannot Demote Yourself';
+      this.confirmMessage = 'You cannot demote your own account from administrator while logged in.';
+      this.showConfirmModal();
+      return;
+    }
+    
     this.confirmUser = user;
     this.confirmAction = 'promote';
     this.confirmTitle = 'Change User Type';
