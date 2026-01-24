@@ -175,13 +175,10 @@ export class QuestionsComponent implements OnInit {
   }
 
   getAnswerText(question: Question, answerNum: number): string {
-    switch(answerNum) {
-      case 1: return question.answer1;
-      case 2: return question.answer2;
-      case 3: return question.answer3;
-      case 4: return question.answer4;
-      default: return '';
+    if (!question.answers || answerNum < 1 || answerNum > question.answers.length) {
+      return '';
     }
+    return question.answers[answerNum - 1];
   }
 
   isQuestionCorrect(question: Question): boolean {
@@ -215,6 +212,6 @@ export class QuestionsComponent implements OnInit {
     } 
     this.multichoice = this.curQuestion.questionType === QuestionType.MultipleChoice;
     this.onechoice = this.curQuestion.questionType === QuestionType.SingleAnswer;
-    this.truefalse = this.curQuestion.questionType === QuestionType.TreuFalse;
+    this.truefalse = this.curQuestion.questionType === QuestionType.TrueFalse;
   }
 }

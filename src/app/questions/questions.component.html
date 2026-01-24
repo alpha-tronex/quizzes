@@ -12,100 +12,37 @@
           
           <div class="form-group">
             <ng-template [ngIf]="this.multichoice">
-              <div class="d-flex align-items-center mb-3">
+              <div class="d-flex align-items-center mb-3" *ngFor="let answer of curQuestion.answers; let i = index">
                 <div class="flex-grow-1 me-3">
-                  <input type="text" class="form-control" id="answer1" value={{curQuestion.answer1}} style="max-width: 99%;" disabled>
+                  <input type="text" class="form-control" [value]="answer" style="max-width: 99%;" disabled>
                 </div>
                 <div class="d-flex align-items-center justify-content-center" style="width: 2rem;">
                   <input type="checkbox" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;" 
-                    [checked]="isAnswerSelected(1)" (change)="recordMultiChoiceAnswer(1)">
-                </div>
-              </div>
-              <div class="d-flex align-items-center mb-3">
-                <div class="flex-grow-1 me-3">
-                  <input type="text" class="form-control" id="answer2" value={{curQuestion.answer2}} style="max-width: 99%;" disabled>
-                </div>
-                <div class="d-flex align-items-center justify-content-center" style="width: 2rem;">
-                  <input type="checkbox" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;" 
-                    [checked]="isAnswerSelected(2)" (change)="recordMultiChoiceAnswer(2)">
-                </div>
-              </div>
-              <div class="d-flex align-items-center mb-3">
-                <div class="flex-grow-1 me-3">
-                  <input type="text" class="form-control" id="answer3" value={{curQuestion.answer3}} style="max-width: 99%;" disabled>
-                </div>
-                <div class="d-flex align-items-center justify-content-center" style="width: 2rem;">
-                  <input type="checkbox" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;" 
-                    [checked]="isAnswerSelected(3)" (change)="recordMultiChoiceAnswer(3)">
-                </div>
-              </div>
-              <div class="d-flex align-items-center mb-3">
-                <div class="flex-grow-1 me-3">
-                  <input type="text" class="form-control" id="answer4" value={{curQuestion.answer4}} style="max-width: 99%;" disabled>
-                </div>
-                <div class="d-flex align-items-center justify-content-center" style="width: 2rem;">
-                  <input type="checkbox" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;" 
-                    [checked]="isAnswerSelected(4)" (change)="recordMultiChoiceAnswer(4)">
+                    [checked]="isAnswerSelected(i + 1)" (change)="recordMultiChoiceAnswer(i + 1)">
                 </div>
               </div>
             </ng-template>
             
             <ng-template [ngIf]="this.onechoice">
-              <div class="d-flex align-items-center mb-3">
+              <div class="d-flex align-items-center mb-3" *ngFor="let answer of curQuestion.answers; let i = index">
                 <div class="flex-grow-1 me-3">
-                  <input type="text" class="form-control" id="answer1" value={{curQuestion.answer1}} style="max-width: 99%;" disabled>
+                  <input type="text" class="form-control" [value]="answer" style="max-width: 99%;" disabled>
                 </div>
                 <div class="d-flex align-items-center justify-content-center" style="width: 2rem;">
                   <input type="radio" name="answer" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;" 
-                    [checked]="isAnswerSelected(1)" (change)="recordSingleAnswer(1)">
-                </div>
-              </div>
-              <div class="d-flex align-items-center mb-3">
-                <div class="flex-grow-1 me-3">
-                  <input type="text" class="form-control" id="answer2" value={{curQuestion.answer2}} style="max-width: 99%;" disabled>
-                </div>
-                <div class="d-flex align-items-center justify-content-center" style="width: 2rem;">
-                  <input type="radio" name="answer" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;" 
-                    [checked]="isAnswerSelected(2)" (change)="recordSingleAnswer(2)">
-                </div>
-              </div>
-              <div class="d-flex align-items-center mb-3">
-                <div class="flex-grow-1 me-3">
-                  <input type="text" class="form-control" id="answer3" value={{curQuestion.answer3}} style="max-width: 99%;" disabled>
-                </div>
-                <div class="d-flex align-items-center justify-content-center" style="width: 2rem;">
-                  <input type="radio" name="answer" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;" 
-                    [checked]="isAnswerSelected(3)" (change)="recordSingleAnswer(3)">
-                </div>
-              </div>
-              <div class="d-flex align-items-center mb-3">
-                <div class="flex-grow-1 me-3">
-                  <input type="text" class="form-control" id="answer4" value={{curQuestion.answer4}} style="max-width: 99%;" disabled>
-                </div>
-                <div class="d-flex align-items-center justify-content-center" style="width: 2rem;">
-                  <input type="radio" name="answer" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;" 
-                    [checked]="isAnswerSelected(4)" (change)="recordSingleAnswer(4)">
+                    [checked]="isAnswerSelected(i + 1)" (change)="recordSingleAnswer(i + 1)">
                 </div>
               </div>
             </ng-template>
             
             <ng-template [ngIf]="this.truefalse">
-              <div class="d-flex align-items-center mb-3">
+              <div class="d-flex align-items-center mb-3" *ngFor="let answer of curQuestion.answers; let i = index">
                 <div class="flex-grow-1 me-3">
-                  <input type="text" class="form-control" id="answer1" value={{curQuestion.answer1}} style="max-width: 99%;" disabled>
+                  <input type="text" class="form-control" [value]="answer" style="max-width: 99%;" disabled>
                 </div>
                 <div class="d-flex align-items-center justify-content-center" style="width: 2rem;">
                   <input type="radio" name="answer" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;" 
-                    [checked]="isAnswerSelected(1)" (change)="recordSingleAnswer(1)">
-                </div>
-              </div>
-              <div class="d-flex align-items-center mb-3">
-                <div class="flex-grow-1 me-3">
-                  <input type="text" class="form-control" id="answer2" value={{curQuestion.answer2}} style="max-width: 99%;" disabled>
-                </div>
-                <div class="d-flex align-items-center justify-content-center" style="width: 2rem;">
-                  <input type="radio" name="answer" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;" 
-                    [checked]="isAnswerSelected(2)" (change)="recordSingleAnswer(2)">
+                    [checked]="isAnswerSelected(i + 1)" (change)="recordSingleAnswer(i + 1)">
                 </div>
               </div>
             </ng-template>

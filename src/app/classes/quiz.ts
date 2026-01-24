@@ -11,17 +11,14 @@ export class Question {
     questionType: QuestionType;
     question: string;
     instructions: string;
-    answer1: string;
-    answer2: string;
-    answer3: string;
-    answer4: string;
+    answers: string[];
     correct: number[];
     selection: number[];
     isCorrect: boolean | null;
 }
 
 export enum QuestionType {
-    TreuFalse = 'TreuFalse',
+    TrueFalse = 'TrueFalse',
     MultipleChoice = 'MultipleChoice',
     SingleAnswer = 'SingleAnswer'
 }

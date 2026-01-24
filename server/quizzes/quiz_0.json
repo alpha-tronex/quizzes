@@ -7,73 +7,81 @@
       "questionType": "MultipleChoice",
       "question": "Which of the following are programming languages?",
       "instructions": "Please select all that apply:",
-      "answer1": "JavaScript",
-      "answer2": "HTML",
-      "answer3": "Python",
-      "answer4": "CSS",
       "correct": [
         1,
         3
       ],
-      "selection": []
+      "selection": [],
+      "answers": [
+        "JavaScript",
+        "HTML",
+        "Python",
+        "CSS"
+      ]
     },
     {
       "questionNum": 1,
       "questionType": "SingleAnswer",
       "question": "What does HTTP stand for?",
       "instructions": "Please select the correct answer:",
-      "answer1": "HyperText Transfer Protocol",
-      "answer2": "High Transfer Text Protocol",
-      "answer3": "HyperText Transmission Process",
-      "answer4": "High Tech Transfer Protocol",
       "correct": [
         1
       ],
-      "selection": []
+      "selection": [],
+      "answers": [
+        "HyperText Transfer Protocol",
+        "High Transfer Text Protocol",
+        "HyperText Transmission Process",
+        "High Tech Transfer Protocol"
+      ]
     },
     {
       "questionNum": 2,
-      "questionType": "TreuFalse",
+      "questionType": "TrueFalse",
       "question": "JavaScript and Java are the same programming language.",
       "instructions": "Please select the correct answer:",
-      "answer1": "True",
-      "answer2": "False",
-      "answer3": "",
-      "answer4": "",
       "correct": [
         2
       ],
-      "selection": []
+      "selection": [],
+      "answers": [
+        "True",
+        "False"
+      ]
     },
     {
       "questionNum": 3,
       "questionType": "MultipleChoice",
       "question": "Which of the following are JavaScript frameworks?",
       "instructions": "Please select all that apply:",
-      "answer1": "React",
-      "answer2": "Django",
-      "answer3": "Angular",
-      "answer4": "Vue",
       "correct": [
         1,
         3,
         4
       ],
-      "selection": []
+      "selection": [],
+      "answers": [
+        "React",
+        "Django",
+        "Angular",
+        "Vue"
+      ]
     },
     {
       "questionNum": 4,
       "questionType": "SingleAnswer",
       "question": "Which method is used to add an element to the end of an array in JavaScript?",
       "instructions": "Please select the correct answer:",
-      "answer1": "append()",
-      "answer2": "add()",
-      "answer3": "push()",
-      "answer4": "insert()",
       "correct": [
         3
       ],
-      "selection": []
+      "selection": [],
+      "answers": [
+        "append()",
+        "add()",
+        "push()",
+        "insert()"
+      ]
     }
   ],
   "grade": 0

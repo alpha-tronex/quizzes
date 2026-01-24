@@ -1,0 +1,90 @@
+{
+  "questions": [
+    {
+      "questionNum": 0,
+      "selection": [],
+      "questionType": "SingleAnswer",
+      "question": "In John 1:1 what does it say about the Word ‘Jesus’?",
+      "correct": [
+        1
+      ],
+      "instructions": "Please select the correct answer:",
+      "answers": [
+        "The Word was with God and the Word was God",
+        "The Word was a god",
+        "The Word was created by God",
+        "The Word was the first angel"
+      ]
+    },
+    {
+      "questionNum": 1,
+      "selection": [],
+      "questionType": "MultipleChoice",
+      "question": "Which of the following are titles given to Jesus in Scripture that affirm His divinity?",
+      "correct": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "instructions": "Please select all that apply:",
+      "answers": [
+        "Mighty God (Isaiah 9:6)",
+        "Lord of lords (Revelation 19:16)",
+        "Emmanuel - God with us (Matthew 1:23)",
+        "I AM (John 8:58)"
+      ]
+    },
+    {
+      "questionNum": 2,
+      "selection": [],
+      "questionType": "TreuFalse",
+      "question": "Jesus claimed to be equal with God which is why the Jewish leaders sought to stone Him.",
+      "instructions": "Please select the correct answer:",
+      "correct": [
+        1
+      ],
+      "answers": [
+        "True",
+        "False"
+      ]
+    },
+    {
+      "questionNum": 3,
+      "selection": [],
+      "questionType": "SingleAnswer",
+      "question": "When Thomas saw the risen Jesus what did he declare?",
+      "correct": [
+        1
+      ],
+      "instructions": "Please select the correct answer:",
+      "answers": [
+        "My Lord and my God",
+        "My teacher and my friend",
+        "My master and my guide",
+        "My prophet and my king"
+      ]
+    },
+    {
+      "questionNum": 4,
+      "selection": [],
+      "questionType": "MultipleChoice",
+      "question": "Which of the following demonstrate \\“Jesus\\” exercising divine authority?",
+      "instructions": "Please select all that apply:",
+      "correct": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "answers": [
+        "Forgiving sins (Mark 2:5-7)",
+        "Accepting worship (Matthew 14:33)",
+        "Calming the storm (Mark 4:39)",
+        "Raising the dead (John 11:43-44)"
+      ]
+    }
+  ],
+  "title": "The Divinity of Christ, First 5, part 2",
+  "id": 11
+}

@@ -7,74 +7,82 @@
       "questionType": "SingleAnswer",
       "question": "Which planet is known as the Red Planet?",
       "instructions": "Please select the correct answer:",
-      "answer1": "Venus",
-      "answer2": "Mars",
-      "answer3": "Jupiter",
-      "answer4": "Saturn",
       "correct": [
         2
       ],
-      "selection": []
+      "selection": [],
+      "answers": [
+        "Venus",
+        "Mars",
+        "Jupiter",
+        "Saturn"
+      ]
     },
     {
       "questionNum": 1,
       "questionType": "MultipleChoice",
       "question": "Which of the following are gas giants in our solar system?",
       "instructions": "Please select all that apply:",
-      "answer1": "Jupiter",
-      "answer2": "Mars",
-      "answer3": "Saturn",
-      "answer4": "Uranus",
       "correct": [
         1,
         3,
         4
       ],
-      "selection": []
+      "selection": [],
+      "answers": [
+        "Jupiter",
+        "Mars",
+        "Saturn",
+        "Uranus"
+      ]
     },
     {
       "questionNum": 2,
-      "questionType": "TreuFalse",
+      "questionType": "TrueFalse",
       "question": "The Sun is the largest star in the universe.",
       "instructions": "Please select the correct answer:",
-      "answer1": "True",
-      "answer2": "False",
-      "answer3": "",
-      "answer4": "",
       "correct": [
         2
       ],
-      "selection": []
+      "selection": [],
+      "answers": [
+        "True",
+        "False"
+      ]
     },
     {
       "questionNum": 3,
       "questionType": "SingleAnswer",
       "question": "What is the closest star to Earth?",
       "instructions": "Please select the correct answer:",
-      "answer1": "Alpha Centauri",
-      "answer2": "Sirius",
-      "answer3": "The Sun",
-      "answer4": "Proxima Centauri",
       "correct": [
         3
       ],
-      "selection": []
+      "selection": [],
+      "answers": [
+        "Alpha Centauri",
+        "Sirius",
+        "The Sun",
+        "Proxima Centauri"
+      ]
     },
     {
       "questionNum": 4,
       "questionType": "MultipleChoice",
       "question": "Which of the following are types of galaxies?",
       "instructions": "Please select all that apply:",
-      "answer1": "Spiral",
-      "answer2": "Elliptical",
-      "answer3": "Irregular",
-      "answer4": "Rectangular",
       "correct": [
         1,
         2,
         3
       ],
-      "selection": []
+      "selection": [],
+      "answers": [
+        "Spiral",
+        "Elliptical",
+        "Irregular",
+        "Rectangular"
+      ]
     }
   ],
   "grade": 0

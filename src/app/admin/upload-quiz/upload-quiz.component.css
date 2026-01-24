@@ -1,1 +1,29 @@
 /* Upload Quiz Styles */
+
+.text-left {
+  text-align: left !important;
+}
+
+.custom-file-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-preview {
+  font-size: 0.95rem;
+}
+
+.file-preview p {
+  margin-bottom: 0.5rem;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
+}
+
+.btn {
+  min-width: 120px;
+}
