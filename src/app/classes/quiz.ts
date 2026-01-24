@@ -5,6 +5,7 @@ export class Quiz {
     questions: Question[];
     score: number;
     totalQuestions: number;
+    duration?: number; // Duration in seconds
 }
 export class Question {
     questionNum: number;

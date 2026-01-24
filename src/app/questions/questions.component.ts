@@ -20,6 +20,8 @@ export class QuestionsComponent implements OnInit {
   allAnswered: boolean = false;
   submitted: boolean = false;
   resultsAccepted: boolean = false;
+  startTime: number;
+  elapsedTime: number = 0;
 
   constructor(private questionsService: QuestionsService, private router: Router, private route: ActivatedRoute, private loginService: LoginService) { }
 
@@ -27,6 +29,9 @@ export class QuestionsComponent implements OnInit {
     // Get quiz ID from route params
     const quizId = this.route.snapshot.queryParams['id'];
     const id = quizId ? parseInt(quizId, 10) : undefined;
+    
+    // Start timer when quiz loads
+    this.startTime = Date.now();
     
     this.questionsService.getQuiz(id).subscribe({
       next: (data: Quiz) => {
@@ -100,8 +105,11 @@ export class QuestionsComponent implements OnInit {
 
   submit() {
     if (this.allAnswered) {
+      // Calculate elapsed time in seconds
+      this.elapsedTime = Math.floor((Date.now() - this.startTime) / 1000);
       this.submitted = true;
       console.log('Quiz submitted:', this.quiz);
+      console.log('Time taken:', this.elapsedTime, 'seconds');
     }
   }
 
@@ -116,6 +124,9 @@ export class QuestionsComponent implements OnInit {
     this.submitted = false;
     this.allAnswered = false;
     this.resultsAccepted = false;
+    // Reset timer
+    this.startTime = Date.now();
+    this.elapsedTime = 0;
     // Go back to first question
     if (this.quiz && this.quiz.questions.length > 0) {
       this.curQuestion = this.quiz.questions[0];
@@ -156,7 +167,8 @@ export class QuestionsComponent implements OnInit {
         isCorrect: this.isQuestionCorrect(q)
       })),
       score: score,
-      totalQuestions: this.quiz.questions.length
+      totalQuestions: this.quiz.questions.length,
+      duration: this.elapsedTime
     };
 
     // Save to database

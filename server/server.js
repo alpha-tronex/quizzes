@@ -83,7 +83,8 @@ const userSchema = new mongoose.Schema ({
             isCorrect: Boolean
         }],
         score: Number,
-        totalQuestions: Number
+        totalQuestions: Number,
+        duration: Number
     }]
 });
 // userSchema.plugin(passportLocalMongoose); //will help us to hash and salt password and save users into mongodb database

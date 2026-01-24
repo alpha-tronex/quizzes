@@ -25,6 +25,7 @@
                 <th>Score</th>
                 <th>Total Questions</th>
                 <th>Percentage</th>
+                <th>Time Taken</th>
               </tr>
             </thead>
             <tbody>
@@ -34,6 +35,7 @@
                 <td>{{ quiz.score }}</td>
                 <td>{{ quiz.totalQuestions }}</td>
                 <td>{{ ((quiz.score / quiz.totalQuestions) * 100).toFixed(1) }}%</td>
+                <td>{{ formatDuration(quiz.duration) }}</td>
               </tr>
             </tbody>
           </table>
