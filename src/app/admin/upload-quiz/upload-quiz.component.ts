@@ -15,6 +15,7 @@ export class UploadQuizComponent implements OnInit {
   errorMessage: string = '';
   successMessage: string = '';
   uploading: boolean = false;
+  isDragOver: boolean = false;
 
   constructor(private quizUploadService: QuizUploadService) { }
 
@@ -95,6 +96,69 @@ export class UploadQuizComponent implements OnInit {
     text = text.replace(/\n\s*\n+/g, '\n');
     
     return text.trim();
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      
+      // Validate file type
+      const fileName = file.name.toLowerCase();
+      if (!fileName.endsWith('.txt') && !fileName.endsWith('.rtf')) {
+        this.errorMessage = 'Please drop a valid text (.txt) or rich text (.rtf) file.';
+        return;
+      }
+
+      // Process the dropped file using the same logic as file input
+      this.selectedFile = file;
+      this.selectedFileName = file.name;
+      this.errorMessage = '';
+      this.successMessage = '';
+      
+      // Read and parse the file
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        try {
+          let content = e.target.result;
+          
+          // If RTF file, strip RTF formatting
+          if (fileName.endsWith('.rtf')) {
+            content = this.stripRtfFormatting(content);
+          }
+          
+          const quizData = this.parseQuizContent(content);
+          const validationErrors = this.validateQuizStructure(quizData);
+          
+          if (validationErrors.length > 0) {
+            this.errorMessage = 'Quiz validation failed:\n\n' + validationErrors.join('\n');
+            this.fileContent = null;
+          } else {
+            this.fileContent = quizData;
+          }
+        } catch (error: any) {
+          this.errorMessage = error.message || 'Error parsing file. Please check the format.';
+          this.fileContent = null;
+        }
+      };
+      reader.readAsText(file);
+    }
   }
 
   parseQuizContent(content: string): any {

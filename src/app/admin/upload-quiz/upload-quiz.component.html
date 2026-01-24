@@ -21,6 +21,20 @@
           <small class="form-text text-muted">Please select a text (.txt) or rich text (.rtf) file containing quiz data in the specified format.</small>
         </div>
 
+        <!-- Drag and Drop Area -->
+        <div 
+          class="drag-drop-area mb-3"
+          [class.drag-over]="isDragOver"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)">
+          <div class="text-center py-4">
+            <i class="fa fa-cloud-upload fa-3x mb-3" style="color: #6c757d;"></i>
+            <p class="mb-0">Or drag and drop your file here</p>
+            <small class="text-muted">Supported formats: .txt, .rtf</small>
+          </div>
+        </div>
+
         <!-- Error Message -->
         <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
           <strong>Error:</strong>

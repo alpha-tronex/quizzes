@@ -27,3 +27,23 @@
 .btn {
   min-width: 120px;
 }
+
+/* Drag and Drop Area Styles */
+.drag-drop-area {
+  border: 2px dashed #6c757d;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.drag-drop-area:hover {
+  border-color: #495057;
+  background-color: #e9ecef;
+}
+
+.drag-drop-area.drag-over {
+  border-color: #007bff;
+  background-color: #e7f3ff;
+  border-style: solid;
+}
