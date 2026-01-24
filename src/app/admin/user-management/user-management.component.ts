@@ -14,6 +14,13 @@ export class UserManagementComponent implements OnInit {
   selectedUser: User | null = null;
   loading: boolean = false;
   errorMessage: string = '';
+  reviewedQuiz: any = null;
+  private modalInstance: any = null;
+  private confirmModalInstance: any = null;
+  confirmAction: 'promote' | 'delete' | null = null;
+  confirmUser: User | null = null;
+  confirmMessage: string = '';
+  confirmTitle: string = '';
 
   constructor(
     private adminService: AdminService,
@@ -66,30 +73,41 @@ export class UserManagementComponent implements OnInit {
     const newType = currentType === 'admin' ? 'student' : 'admin';
     const action = newType === 'admin' ? 'promote to administrator' : 'demote to student';
     
-    const confirmed = confirm(`Are you sure you want to ${action} user "${user.uname}"?`);
-    
-    if (confirmed) {
-      this.adminService.updateUserType(user.id, newType).subscribe({
-        next: (updatedUser) => {
-          // Update the selected user
-          if (this.selectedUser && this.selectedUser.id === user.id) {
-            this.selectedUser.type = newType;
-          }
-          
-          // Update the user in the users array
-          const userIndex = this.users.findIndex(u => u.id === user.id);
-          if (userIndex !== -1) {
-            this.users[userIndex].type = newType;
-          }
-          
-          console.log('User type updated successfully');
-        },
-        error: (error) => {
-          console.error('Error updating user type:', error);
-          alert('Failed to update user type: ' + error);
-        }
-      });
+    this.confirmUser = user;
+    this.confirmAction = 'promote';
+    this.confirmTitle = 'Change User Type';
+    this.confirmMessage = `Are you sure you want to ${action} user "${user.uname}"?`;
+    this.showConfirmModal();
+  }
+
+  private executePromote(): void {
+    if (!this.confirmUser || !this.confirmUser.id) {
+      return;
     }
+
+    const currentType = this.confirmUser.type || 'student';
+    const newType = currentType === 'admin' ? 'student' : 'admin';
+    
+    this.adminService.updateUserType(this.confirmUser.id, newType).subscribe({
+      next: (updatedUser) => {
+        // Update the selected user
+        if (this.selectedUser && this.selectedUser.id === this.confirmUser!.id) {
+          this.selectedUser.type = newType;
+        }
+        
+        // Update the user in the users array
+        const userIndex = this.users.findIndex(u => u.id === this.confirmUser!.id);
+        if (userIndex !== -1) {
+          this.users[userIndex].type = newType;
+        }
+        
+        console.log('User type updated successfully');
+      },
+      error: (error) => {
+        console.error('Error updating user type:', error);
+        alert('Failed to update user type: ' + error);
+      }
+    });
   }
 
   deleteUser(user: User): void {
@@ -100,33 +118,43 @@ export class UserManagementComponent implements OnInit {
     // Prevent user from deleting themselves
     const currentUser = this.loginService.user;
     if (currentUser && currentUser.id === user.id) {
-      alert('You cannot delete your own account while logged in.');
+      this.confirmUser = user;
+      this.confirmAction = null; // No action, just informational
+      this.confirmTitle = 'Cannot Delete Account';
+      this.confirmMessage = 'You cannot delete your own account while logged in.';
+      this.showConfirmModal();
       return;
     }
 
-    const confirmed = confirm(
-      `Are you sure you want to delete user "${user.uname}"?\n\nThis action cannot be undone.`
-    );
-    
-    if (confirmed) {
-      this.adminService.deleteUser(user.id).subscribe({
-        next: () => {
-          // Remove user from the list
-          this.users = this.users.filter(u => u.id !== user.id);
-          
-          // Clear selected user if it was the deleted one
-          if (this.selectedUser && this.selectedUser.id === user.id) {
-            this.selectedUser = null;
-          }
-          
-          alert('User deleted successfully');
-        },
-        error: (error) => {
-          console.error('Error deleting user:', error);
-          alert('Failed to delete user: ' + error);
-        }
-      });
+    this.confirmUser = user;
+    this.confirmAction = 'delete';
+    this.confirmTitle = 'Delete User';
+    this.confirmMessage = `Are you sure you want to delete user "${user.uname}"?`;
+    this.showConfirmModal();
+  }
+
+  private executeDelete(): void {
+    if (!this.confirmUser || !this.confirmUser.id) {
+      return;
     }
+
+    this.adminService.deleteUser(this.confirmUser.id).subscribe({
+      next: () => {
+        // Remove user from the list
+        this.users = this.users.filter(u => u.id !== this.confirmUser!.id);
+        
+        // Clear selected user if it was the deleted one
+        if (this.selectedUser && this.selectedUser.id === this.confirmUser!.id) {
+          this.selectedUser = null;
+        }
+        
+        alert('User deleted successfully');
+      },
+      error: (error) => {
+        console.error('Error deleting user:', error);
+        alert('Failed to delete user: ' + error);
+      }
+    });
   }
 
   formatDate(date: any): string {
@@ -141,6 +169,90 @@ export class UserManagementComponent implements OnInit {
     if (percentage >= 80) return 'bg-success';
     if (percentage >= 60) return 'bg-warning';
     return 'bg-danger';
+  }
+
+  formatDuration(seconds: number): string {
+    if (!seconds || seconds < 0) return 'N/A';
+    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${secs}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${secs}s`;
+    } else {
+      return `${secs}s`;
+    }
+  }
+
+  reviewQuiz(quiz: any): void {
+    this.reviewedQuiz = quiz;
+    
+    // Use Bootstrap's modal API to show the modal
+    const modalElement = document.getElementById('quizReviewModal');
+    if (modalElement) {
+      // Dispose of existing instance if any
+      if (this.modalInstance) {
+        this.modalInstance.dispose();
+      }
+      this.modalInstance = new (window as any).bootstrap.Modal(modalElement);
+      this.modalInstance.show();
+    }
+  }
+
+  closeModal(): void {
+    if (this.modalInstance) {
+      this.modalInstance.hide();
+    }
+  }
+
+  getAnswerText(question: any, answerNum: number): string {
+    if (!question.answers || answerNum < 1 || answerNum > question.answers.length) {
+      return 'N/A';
+    }
+    return question.answers[answerNum - 1];
+  }
+
+  private showConfirmModal(): void {
+    const modalElement = document.getElementById('confirmModal');
+    if (modalElement) {
+      // Dispose of existing instance if any
+      if (this.confirmModalInstance) {
+        this.confirmModalInstance.dispose();
+      }
+      this.confirmModalInstance = new (window as any).bootstrap.Modal(modalElement);
+      this.confirmModalInstance.show();
+    }
+  }
+
+  closeConfirmModal(): void {
+    if (this.confirmModalInstance) {
+      this.confirmModalInstance.hide();
+    }
+    // Reset confirmation state
+    this.confirmAction = null;
+    this.confirmUser = null;
+    this.confirmMessage = '';
+    this.confirmTitle = '';
+  }
+
+  confirmActionExecute(): void {
+    if (this.confirmAction === 'promote') {
+      this.executePromote();
+    } else if (this.confirmAction === 'delete') {
+      this.executeDelete();
+    }
+    this.closeConfirmModal();
+  }
+
+  getConfirmButtonClass(): string {
+    return this.confirmAction === 'delete' ? 'btn-danger' : 'btn-primary';
+  }
+
+  getConfirmButtonText(): string {
+    return this.confirmAction === 'delete' ? 'Delete' : 'Confirm';
   }
 
 }

@@ -13,16 +13,32 @@
       </div>
       <!-- Masthead Subheading-->
       <div class="masthead-subheading font-weight-light mb-0" *ngIf="getUsername()">
-        <div class="quiz-list">
+        <div class="quiz-selector">
           <h3 class="mb-4">Select a Quiz to Start:</h3>
-          <div class="list-group">
-            <a 
-              *ngFor="let quiz of quizzes" 
-              (click)="startQuiz(quiz.id)" 
-              class="list-group-item list-group-item-action quiz-link"
-              style="cursor: pointer;">
-              {{ quiz.title }}
-            </a>
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <div class="d-flex gap-2">
+                <input 
+                  type="text"
+                  class="form-control form-control-lg" 
+                  list="quizList"
+                  [(ngModel)]="selectedQuizTitle"
+                  (input)="onQuizInput()"
+                  placeholder="Type or select a quiz..."
+                  [ngStyle]="{'width': inputWidth, 'background-color': 'white', 'color': '#2c3e50'}">
+                <datalist id="quizList">
+                  <option *ngFor="let quiz of quizzes" [value]="quiz.title">
+                </datalist>
+                <button 
+                  class="btn btn-success btn-lg" 
+                  [disabled]="!isValidQuizSelected()"
+                  (click)="startSelectedQuiz()"
+                  style="margin-left: 10px;"
+                  title="Start Quiz">
+                  <i class="fas fa-play"></i>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -78,6 +78,7 @@ const userSchema = new mongoose.Schema ({
         questions: [{
             questionNum: Number,
             question: String,
+            answers: [String],
             selection: [Number],
             correct: [Number],
             isCorrect: Boolean

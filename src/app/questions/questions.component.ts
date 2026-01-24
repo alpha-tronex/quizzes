@@ -162,6 +162,7 @@ export class QuestionsComponent implements OnInit {
       questions: this.quiz.questions.map(q => ({
         questionNum: q.questionNum,
         question: q.question,
+        answers: q.answers,
         selection: q.selection,
         correct: q.correct,
         isCorrect: this.isQuestionCorrect(q)

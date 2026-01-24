@@ -13,6 +13,10 @@ import { IdleTimeoutService } from './services/idle-timeout.service';
 export class AppComponent implements OnInit, OnDestroy {
   title = 'app';
   private routerSubscription: any;
+  private warningSubscription: any;
+  showIdleWarning: boolean = false;
+  idleRemainingSeconds: number = 0;
+  private idleModalInstance: any = null;
 
   constructor(
     private router: Router,
@@ -48,12 +52,80 @@ export class AppComponent implements OnInit, OnDestroy {
         this.idleTimeoutService.stopWatching();
       }
     });
+
+    // Subscribe to idle timeout warnings
+    this.warningSubscription = this.idleTimeoutService.warningSubject.subscribe(
+      ({ show, remainingSeconds }) => {
+        this.showIdleWarning = show;
+        this.idleRemainingSeconds = remainingSeconds;
+        
+        if (show) {
+          this.showIdleModal();
+        } else {
+          this.closeIdleModal();
+        }
+      }
+    );
   }
 
   ngOnDestroy(): void {
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }
+    if (this.warningSubscription) {
+      this.warningSubscription.unsubscribe();
+    }
     this.idleTimeoutService.stopWatching();
+  }
+
+  private showIdleModal(): void {
+    const modalElement = document.getElementById('idleWarningModal');
+    if (modalElement && !this.idleModalInstance) {
+      this.idleModalInstance = new (window as any).bootstrap.Modal(modalElement, {
+        backdrop: 'static',
+        keyboard: false
+      });
+      this.idleModalInstance.show();
+    }
+  }
+
+  private closeIdleModal(): void {
+    if (this.idleModalInstance) {
+      this.idleModalInstance.hide();
+      
+      // Wait for hide animation to complete before cleanup
+      setTimeout(() => {
+        if (this.idleModalInstance) {
+          this.idleModalInstance.dispose();
+          this.idleModalInstance = null;
+        }
+        
+        // Manually remove all backdrops if they still exist
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => backdrop.remove());
+        
+        // Remove modal-open class from body
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        
+        // Reset the modal element itself
+        const modalElement = document.getElementById('idleWarningModal');
+        if (modalElement) {
+          modalElement.classList.remove('show');
+          modalElement.style.display = 'none';
+          modalElement.setAttribute('aria-hidden', 'true');
+          modalElement.removeAttribute('aria-modal');
+        }
+      }, 300); // Wait for Bootstrap modal animation
+    }
+  }
+
+  onStayLoggedIn(): void {
+    this.idleTimeoutService.stayLoggedIn();
+  }
+
+  onLogout(): void {
+    this.idleTimeoutService.proceedWithLogout();
   }
 }

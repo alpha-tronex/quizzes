@@ -93,6 +93,8 @@
                           <th>Quiz</th>
                           <th>Date</th>
                           <th>Score</th>
+                          <th>Time</th>
+                          <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -103,6 +105,15 @@
                             <span class="badge" [ngClass]="getScoreBadgeClass(quiz.score, quiz.totalQuestions)">
                               {{ quiz.score }}/{{ quiz.totalQuestions }}
                             </span>
+                          </td>
+                          <td>{{ formatDuration(quiz.duration) }}</td>
+                          <td>
+                            <button 
+                              class="btn btn-sm btn-info" 
+                              (click)="reviewQuiz(quiz)"
+                              title="Review quiz details">
+                              Review
+                            </button>
                           </td>
                         </tr>
                       </tbody>
@@ -122,3 +133,108 @@
     </div>
   </div>
 </section>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" [ngClass]="confirmAction === 'delete' ? 'bg-danger text-white' : (confirmAction === null ? 'bg-warning text-dark' : 'bg-primary text-white')">
+        <h5 class="modal-title" id="confirmModalLabel">
+          <i class="fas" [ngClass]="confirmAction === 'delete' ? 'fa-exclamation-triangle' : (confirmAction === null ? 'fa-info-circle' : 'fa-user-shield')"></i>
+          {{ confirmTitle }}
+        </h5>
+        <button type="button" class="btn-close" [ngClass]="confirmAction === null ? '' : 'btn-close-white'" (click)="closeConfirmModal()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0">{{ confirmMessage }}</p>
+        <div *ngIf="confirmAction === 'delete'" class="alert alert-warning mt-3 mb-0">
+          <i class="fas fa-exclamation-circle"></i>&nbsp;
+          <strong>Warning:</strong> This action cannot be undone.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button *ngIf="confirmAction !== null" type="button" class="btn btn-secondary" (click)="closeConfirmModal()">Cancel</button>
+        <button *ngIf="confirmAction !== null" type="button" class="btn" [ngClass]="getConfirmButtonClass()" (click)="confirmActionExecute()">
+          <i class="fas" [ngClass]="confirmAction === 'delete' ? 'fa-trash' : 'fa-check'"></i>
+          {{ getConfirmButtonText() }}
+        </button>
+        <button *ngIf="confirmAction === null" type="button" class="btn btn-primary" (click)="closeConfirmModal()">
+          <i class="fas fa-check"></i> OK
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quiz Review Modal -->
+<div class="modal fade" id="quizReviewModal" tabindex="-1" aria-labelledby="quizReviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="quizReviewModalLabel">Quiz Review: {{ reviewedQuiz?.title }}</h5>
+        <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" *ngIf="reviewedQuiz">
+        <!-- Quiz Summary -->
+        <div class="card mb-3 bg-light">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-3 text-muted">Summary</h6>
+            <div class="row">
+              <div class="col-md-6 mb-2">
+                <strong>Student:</strong> {{ selectedUser?.fname }} {{ selectedUser?.lname }} ({{ selectedUser?.uname }})
+              </div>
+              <div class="col-md-6 mb-2">
+                <strong>Date Completed:</strong> {{ formatDate(reviewedQuiz.completedAt) }}
+              </div>
+              <div class="col-md-6 mb-2">
+                <strong>Score:</strong> 
+                <span class="badge" [ngClass]="getScoreBadgeClass(reviewedQuiz.score, reviewedQuiz.totalQuestions)">
+                  {{ reviewedQuiz.score }}/{{ reviewedQuiz.totalQuestions }}
+                </span>
+                <span class="ms-2">({{ ((reviewedQuiz.score / reviewedQuiz.totalQuestions) * 100).toFixed(1) }}%)</span>
+              </div>
+              <div class="col-md-6 mb-2">
+                <strong>Time Taken:</strong> {{ formatDuration(reviewedQuiz.duration) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Question-by-Question Review -->
+        <h6 class="mb-3">Question Details</h6>
+        <div class="card mb-3" *ngFor="let question of reviewedQuiz.questions; let i = index">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h6 class="mb-0">Question {{ i + 1 }}</h6>
+              <span class="badge" [ngClass]="question.isCorrect ? 'bg-success' : 'bg-danger'">
+                {{ question.isCorrect ? 'Correct' : 'Incorrect' }}
+              </span>
+            </div>
+            <p class="mb-3">{{ question.question }}</p>
+            
+            <div class="mb-2">
+              <strong>Student's Answer(s):</strong>
+              <div class="ms-3" [ngClass]="question.isCorrect ? 'text-success' : 'text-danger'">
+                <span *ngFor="let sel of question.selection; let last = last">
+                  <small>{{ sel }}. {{ getAnswerText(question, sel) }}</small><span *ngIf="!last"><br></span>
+                </span>
+              </div>
+            </div>
+            
+            <div class="mb-0">
+              <strong>Correct Answer(s):</strong>
+              <div class="ms-3 text-success">
+                <span *ngFor="let cor of question.correct; let last = last">
+                  <small>{{ cor }}. {{ getAnswerText(question, cor) }}</small><span *ngIf="!last"><br></span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

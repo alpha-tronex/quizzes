@@ -14,6 +14,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   subscription: any;
   studentLoggedIn: any;
   quizzes: any[] = [];
+  selectedQuizId: number | null = null;
+  selectedQuizTitle: string = '';
+  inputWidth: string = '300px';
 
   constructor(private loginService: LoginService, private questionsService: QuestionsService, private router: Router) { }
 
@@ -38,6 +41,48 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.router.navigate(['/questions'], { queryParams: { id: quizId } });
     } catch (error) {
       console.error('Error starting quiz:', error);
+    }
+  }
+
+  onQuizSelect() {
+    // Optional: Could add logic here when selection changes
+  }
+
+  onQuizInput() {
+    // Find quiz by title as user types
+    const quiz = this.quizzes.find(q => q.title === this.selectedQuizTitle);
+    if (quiz) {
+      this.selectedQuizId = quiz.id;
+    } else {
+      this.selectedQuizId = null;
+    }
+    // Calculate width based on text length
+    this.calculateInputWidth();
+  }
+
+  calculateInputWidth() {
+    if (!this.selectedQuizTitle) {
+      this.inputWidth = '300px';
+      return;
+    }
+    // Estimate width: roughly 8-10px per character for typical fonts
+    // Add padding and some extra space
+    const charWidth = 9;
+    const padding = 40; // Account for padding and borders
+    const minWidth = 300;
+    const maxWidth = 800;
+    
+    const calculatedWidth = Math.max(minWidth, Math.min(maxWidth, this.selectedQuizTitle.length * charWidth + padding));
+    this.inputWidth = calculatedWidth + 'px';
+  }
+
+  isValidQuizSelected(): boolean {
+    return this.selectedQuizId !== null;
+  }
+
+  startSelectedQuiz() {
+    if (this.selectedQuizId !== null) {
+      this.startQuiz(this.selectedQuizId);
     }
   }
 

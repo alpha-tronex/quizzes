@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoginService } from './login-service';
 import { environment } from '../../environments/environment';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -19,6 +20,11 @@ export class IdleTimeoutService {
   
   private warningShown: boolean = false;
   private isActive: boolean = false;
+  private countdownTimer: any = null;
+
+  // Observable for modal communication
+  public warningSubject = new Subject<{ show: boolean; remainingSeconds: number }>();
+  public userResponseSubject = new Subject<boolean>();
 
   // Events to monitor for user activity
   private readonly ACTIVITY_EVENTS = [
@@ -87,6 +93,11 @@ export class IdleTimeoutService {
       this.warningTimer = null;
     }
 
+    if (this.countdownTimer) {
+      clearInterval(this.countdownTimer);
+      this.countdownTimer = null;
+    }
+
     this.warningShownAt = 0;
     this.warningShown = false;
     console.log('Idle timeout monitoring stopped');
@@ -128,16 +139,48 @@ export class IdleTimeoutService {
    */
   private showWarning(): void {
     this.warningShown = true;
-    this.warningShownAt = Date.now(); // Record when warning was shown
+    this.warningShownAt = Date.now();
     const seconds = Math.ceil(this.WARNING_TIME / 1000);
     
-    const shouldStayLoggedIn = confirm(
-      `You have been inactive for a while.\n\n` +
-      `You will be automatically logged out in ${seconds} seconds due to inactivity.\n\n` +
-      `Click OK to stay logged in, or Cancel to continue with logout.`
-    );
+    // Emit event to show modal
+    this.warningSubject.next({ show: true, remainingSeconds: seconds });
+    
+    // Start countdown timer
+    this.startCountdown();
+    
+    // Set up one-time listener for user response
+    const subscription = this.userResponseSubject.subscribe((stayLoggedIn: boolean) => {
+      subscription.unsubscribe();
+      this.handleUserResponse(stayLoggedIn);
+    });
+  }
 
-    if (shouldStayLoggedIn) {
+  private startCountdown(): void {
+    let remainingSeconds = Math.ceil(this.WARNING_TIME / 1000);
+    
+    this.countdownTimer = setInterval(() => {
+      remainingSeconds--;
+      
+      if (remainingSeconds > 0) {
+        this.warningSubject.next({ show: true, remainingSeconds });
+      } else {
+        this.clearCountdown();
+      }
+    }, 1000);
+  }
+
+  private clearCountdown(): void {
+    if (this.countdownTimer) {
+      clearInterval(this.countdownTimer);
+      this.countdownTimer = null;
+    }
+  }
+
+  private handleUserResponse(stayLoggedIn: boolean): void {
+    this.clearCountdown();
+    this.warningSubject.next({ show: false, remainingSeconds: 0 });
+    
+    if (stayLoggedIn) {
       // Check if warning period has already expired
       const now = Date.now();
       const timeSinceWarning = now - this.warningShownAt;
@@ -154,9 +197,24 @@ export class IdleTimeoutService {
         console.log('User chose to stay logged in within warning window - timer reset');
       }
     } else {
-      // User clicked Cancel or dismissed - let the timeout continue
-      console.log('User dismissed warning - countdown continues');
+      // User chose to log out
+      console.log('User chose to log out');
+      this.logout();
     }
+  }
+
+  /**
+   * Public method for user to stay logged in
+   */
+  public stayLoggedIn(): void {
+    this.userResponseSubject.next(true);
+  }
+
+  /**
+   * Public method for user to log out
+   */
+  public proceedWithLogout(): void {
+    this.userResponseSubject.next(false);
   }
 
   /**

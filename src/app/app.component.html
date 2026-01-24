@@ -1,3 +1,37 @@
 <app-header></app-header>
 <router-outlet></router-outlet>
 <app-footer></app-footer>
+
+<!-- Idle Timeout Warning Modal -->
+<div class="modal fade" id="idleWarningModal" tabindex="-1" aria-labelledby="idleWarningModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title" id="idleWarningModalLabel">
+          <i class="fas fa-clock"></i> Inactivity Warning
+        </h5>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-3">
+          <i class="fas fa-hourglass-half fa-2x text-warning"></i>
+        </div>
+        <p class="text-center mb-3">You have been inactive for a while.</p>
+        <div class="alert alert-warning text-center mb-0">
+          <h4 class="mb-0">
+            Logging out in:
+            <strong>{{ idleRemainingSeconds }}</strong> seconds
+          </h4>
+          <small>You will be automatically logged out due to inactivity.</small>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-secondary" (click)="onLogout()">
+          <i class="fas fa-sign-out-alt"></i> Log Out Now
+        </button>
+        <button type="button" class="btn btn-primary" (click)="onStayLoggedIn()">
+          <i class="fas fa-check"></i> Stay Logged In
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
