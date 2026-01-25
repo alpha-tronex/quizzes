@@ -49,7 +49,7 @@ src/app/
   services/
     auth.interceptor.ts     # Adds token to all requests
     login-service.ts        # Handles login/register
-  classes/
+  models/
     users.ts                # User model with token field
   app.module.ts             # Registers interceptor
 ```
