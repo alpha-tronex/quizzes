@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { AdminService } from '../../../services/admin.service';
+import { AdminUserService } from '../../../services/admin-user.service';
+import { AdminQuizService } from '../../../services/admin-quiz.service';
 
 @Component({
     selector: 'app-quiz-management',
@@ -27,7 +28,10 @@ export class QuizManagementComponent implements OnInit {
   confirmTitle: string = '';
   confirmMessage: string = '';
 
-  constructor(private adminService: AdminService) { }
+  constructor(
+    private adminUserService: AdminUserService,
+    private adminQuizService: AdminQuizService
+  ) { }
 
   ngOnInit() {
     this.loadUsers();
@@ -35,7 +39,7 @@ export class QuizManagementComponent implements OnInit {
   }
 
   loadUsers(): void {
-    this.adminService.getAllUsers().subscribe({
+    this.adminUserService.getAllUsers().subscribe({
       next: (data) => {
         this.users = data;
       },
@@ -49,7 +53,7 @@ export class QuizManagementComponent implements OnInit {
   loadQuizFiles(): void {
     // This will load available quiz files from the server
     // We'll need to add an endpoint to list quiz files
-    this.adminService.getAvailableQuizzes().subscribe({
+    this.adminQuizService.getAvailableQuizzes().subscribe({
       next: (data) => {
         this.quizzes = data;
       },
@@ -76,7 +80,7 @@ export class QuizManagementComponent implements OnInit {
 
   private executeDeleteUserQuizData(): void {
     this.loading = true;
-    this.adminService.deleteUserQuizData(this.selectedUserId).subscribe({
+    this.adminUserService.deleteUserQuizData(this.selectedUserId).subscribe({
       next: () => {
         this.showMessage('User quiz data deleted successfully', 'success');
         this.loadUsers();
@@ -130,7 +134,7 @@ export class QuizManagementComponent implements OnInit {
 
   private executeDeleteSpecificUserQuiz(): void {
     this.loading = true;
-    this.adminService.deleteSpecificUserQuiz(this.selectedUserIdForSpecificQuiz, this.selectedUserQuizId).subscribe({
+    this.adminUserService.deleteSpecificUserQuiz(this.selectedUserIdForSpecificQuiz, this.selectedUserQuizId).subscribe({
       next: () => {
         this.showMessage('Quiz entry deleted successfully', 'success');
         this.loadUsers();
@@ -149,7 +153,7 @@ export class QuizManagementComponent implements OnInit {
 
   private executeDeleteAllUsersQuizData(): void {
     this.loading = true;
-    this.adminService.deleteAllUsersQuizData().subscribe({
+    this.adminQuizService.deleteAllUsersQuizData().subscribe({
       next: () => {
         this.showMessage('All user quiz data deleted successfully', 'success');
         this.loadUsers();
@@ -179,7 +183,7 @@ export class QuizManagementComponent implements OnInit {
 
   private executeDeleteQuizFile(): void {
     this.loading = true;
-    this.adminService.deleteQuizFile(this.selectedQuizId).subscribe({
+    this.adminQuizService.deleteQuizFile(this.selectedQuizId).subscribe({
       next: () => {
         this.showMessage('Quiz file deleted successfully', 'success');
         this.loadQuizFiles();
@@ -204,7 +208,7 @@ export class QuizManagementComponent implements OnInit {
 
   private executeDeleteAllQuizFiles(): void {
     this.loading = true;
-    this.adminService.deleteAllQuizFiles().subscribe({
+    this.adminQuizService.deleteAllQuizFiles().subscribe({
       next: () => {
         this.showMessage('All quiz files deleted successfully', 'success');
         this.loadQuizFiles();

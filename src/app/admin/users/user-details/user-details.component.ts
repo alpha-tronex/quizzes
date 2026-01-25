@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AdminService } from '../../../services/admin.service';
+import { AdminUserService } from '../../../services/admin-user.service';
 import { LoginService } from '../../../services/login-service';
 import { UtilService, State, Country } from '../../../services/util.service';
 import { ValidationService } from '../../../services/validation.service';
@@ -26,7 +26,7 @@ export class UserDetailsComponent implements OnInit, AfterViewInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private adminService: AdminService,
+    private adminUserService: AdminUserService,
     private loginService: LoginService,
     private utilService: UtilService,
     private validationService: ValidationService
@@ -75,7 +75,7 @@ export class UserDetailsComponent implements OnInit, AfterViewInit {
     this.loading = true;
     this.errorMessage = '';
     
-    this.adminService.getUserById(userId).subscribe({
+    this.adminUserService.getUserById(userId).subscribe({
       next: (data) => {
         this.user = data;
         // Initialize address if it doesn't exist
@@ -144,7 +144,7 @@ export class UserDetailsComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    this.adminService.updateUser(this.user).subscribe({
+    this.adminUserService.updateUser(this.user).subscribe({
       next: (updatedUser) => {
         this.user = updatedUser;
         this.saving = false;

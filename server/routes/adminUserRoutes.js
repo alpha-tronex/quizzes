@@ -1,6 +1,10 @@
 const validators = require('../utils/validators');
 const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
 
+/**
+ * Admin User Routes
+ * Handles all user management operations for administrators
+ */
 module.exports = function(app, User) {
 
     // Get all users (admin only)
@@ -183,9 +187,9 @@ module.exports = function(app, User) {
             }
         });
 
-    // Delete user
+    // Delete user (admin only)
     app.route("/api/admin/user/:id")
-        .delete(async (req, res) => {
+        .delete(verifyToken, verifyAdmin, async (req, res) => {
             try {
                 const userId = req.params.id;
                 
@@ -204,7 +208,7 @@ module.exports = function(app, User) {
 
     // Update user type (promote/demote admin)
     app.route("/api/admin/user/:id/type")
-        .patch(async (req, res) => {
+        .patch(verifyToken, verifyAdmin, async (req, res) => {
             try {
                 const userId = req.params.id;
                 const { type } = req.body || {};
@@ -306,59 +310,6 @@ module.exports = function(app, User) {
                 res.status(200).json({ 
                     message: 'All users quiz data deleted successfully',
                     modifiedCount: result.modifiedCount 
-                });
-            } catch (err) {
-                console.log('err: ' + err);
-                res.status(500).json({ error: 'Internal server error' });
-            }
-        });
-
-    // Delete a specific quiz file
-    app.route("/api/admin/quiz-file/:quizId")
-        .delete(verifyToken, verifyAdmin, async (req, res) => {
-            try {
-                const fs = require('fs');
-                const path = require('path');
-                const quizId = req.params.quizId;
-                const quizFilePath = path.join(__dirname, '../quizzes', `quiz_${quizId}.json`);
-
-                if (!fs.existsSync(quizFilePath)) {
-                    return res.status(404).json({ error: 'Quiz file not found' });
-                }
-
-                fs.unlinkSync(quizFilePath);
-
-                res.status(200).json({ 
-                    message: 'Quiz file deleted successfully',
-                    quizId: quizId 
-                });
-            } catch (err) {
-                console.log('err: ' + err);
-                res.status(500).json({ error: 'Internal server error' });
-            }
-        });
-
-    // Delete all quiz files
-    app.route("/api/admin/quiz-files/all")
-        .delete(verifyToken, verifyAdmin, async (req, res) => {
-            try {
-                const fs = require('fs');
-                const path = require('path');
-                const quizzesDir = path.join(__dirname, '../quizzes');
-
-                const files = fs.readdirSync(quizzesDir);
-                const quizFiles = files.filter(file => file.endsWith('.json') && file.startsWith('quiz_'));
-
-                let deletedCount = 0;
-                for (const file of quizFiles) {
-                    const filePath = path.join(quizzesDir, file);
-                    fs.unlinkSync(filePath);
-                    deletedCount++;
-                }
-
-                res.status(200).json({ 
-                    message: 'All quiz files deleted successfully',
-                    deletedCount: deletedCount 
                 });
             } catch (err) {
                 console.log('err: ' + err);

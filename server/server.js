@@ -5,9 +5,9 @@ const bodyParser = require("body-parser");
 const fs = require('fs');
 const authRoutes = require(`${__dirname}/routes/authRoutes.js`);
 const quizRoutes = require(`${__dirname}/routes/quizRoutes.js`);
-const adminRoutes = require(`${__dirname}/routes/adminRoutes.js`);
+const adminUserRoutes = require(`${__dirname}/routes/adminUserRoutes.js`);
+const adminQuizRoutes = require(`${__dirname}/routes/adminQuizRoutes.js`);
 const utilRoutes = require(`${__dirname}/routes/utilRoutes.js`);
-const quizUploadRoutes = require(`${__dirname}/routes/quizUploadRoutes.js`);
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -107,17 +107,15 @@ mongoose.connect(mongoURI);
 // Setup authentication routes
 authRoutes(app, User);
 
-// Setup quiz routes
+// Setup quiz routes (student-facing)
 quizRoutes(app, User);
 
 // Setup admin routes
-adminRoutes(app, User);
+adminUserRoutes(app, User);
+adminQuizRoutes(app);
 
 // Setup utility routes
 utilRoutes(app);
-
-// Setup quiz upload routes
-quizUploadRoutes(app);
 
 // Serve Angular app for any other GET request (must be after API routes)
 app.use((req, res, next) => {

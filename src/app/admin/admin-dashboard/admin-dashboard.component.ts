@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { AdminService } from '../../services/admin.service';
+import { AdminUserService } from '../../services/admin-user.service';
+import { AdminQuizService } from '../../services/admin-quiz.service';
 
 @Component({
     selector: 'app-admin-dashboard',
@@ -15,7 +16,10 @@ export class AdminDashboardComponent implements OnInit {
   totalQuizzes: number = 0;
   totalQuizAttempts: number = 0;
 
-  constructor(private adminService: AdminService) { }
+  constructor(
+    private adminUserService: AdminUserService,
+    private adminQuizService: AdminQuizService
+  ) { }
 
   ngOnInit() {
     this.loadDashboardStats();
@@ -25,7 +29,7 @@ export class AdminDashboardComponent implements OnInit {
     this.loading = true;
     
     // Load users
-    this.adminService.getAllUsers().subscribe({
+    this.adminUserService.getAllUsers().subscribe({
       next: (users) => {
         this.totalUsers = users.length;
         this.totalAdmins = users.filter(u => u.type === 'admin').length;
@@ -40,7 +44,7 @@ export class AdminDashboardComponent implements OnInit {
     });
 
     // Load quizzes
-    this.adminService.getAvailableQuizzes().subscribe({
+    this.adminQuizService.getAvailableQuizzes().subscribe({
       next: (quizzes) => {
         this.totalQuizzes = quizzes.length;
       },

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { User } from '../../../models/users';
-import { AdminService } from '../../../services/admin.service';
+import { AdminUserService } from '../../../services/admin-user.service';
 import { LoginService } from '../../../services/login-service';
 
 @Component({
@@ -23,7 +23,7 @@ export class UserManagementComponent implements OnInit {
   confirmTitle: string = '';
 
   constructor(
-    private adminService: AdminService,
+    private adminUserService: AdminUserService,
     private loginService: LoginService
   ) { }
 
@@ -35,7 +35,7 @@ export class UserManagementComponent implements OnInit {
     this.loading = true;
     this.errorMessage = '';
     
-    this.adminService.getAllUsers().subscribe({
+    this.adminUserService.getAllUsers().subscribe({
       next: (data) => {
         this.users = data;
         this.loading = false;
@@ -99,7 +99,7 @@ export class UserManagementComponent implements OnInit {
     const currentType = this.confirmUser.type || 'student';
     const newType = currentType === 'admin' ? 'student' : 'admin';
     
-    this.adminService.updateUserType(this.confirmUser.id, newType).subscribe({
+    this.adminUserService.updateUserType(this.confirmUser.id, newType).subscribe({
       next: (updatedUser) => {
         // Update the selected user
         if (this.selectedUser && this.selectedUser.id === this.confirmUser!.id) {
@@ -149,7 +149,7 @@ export class UserManagementComponent implements OnInit {
       return;
     }
 
-    this.adminService.deleteUser(this.confirmUser.id).subscribe({
+    this.adminUserService.deleteUser(this.confirmUser.id).subscribe({
       next: () => {
         // Remove user from the list
         this.users = this.users.filter(u => u.id !== this.confirmUser!.id);

@@ -2,7 +2,12 @@ const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * Admin Quiz Routes
+ * Handles quiz file operations (upload, delete) for administrators
+ */
 module.exports = function(app) {
+
     // Upload quiz (admin only)
     app.route("/api/quiz/upload")
         .post(verifyToken, verifyAdmin, async (req, res) => {
@@ -136,7 +141,56 @@ module.exports = function(app) {
             }
         });
 
-    // Delete quiz (admin only)
+    // Delete a specific quiz file (admin only)
+    app.route("/api/admin/quiz-file/:quizId")
+        .delete(verifyToken, verifyAdmin, async (req, res) => {
+            try {
+                const quizId = req.params.quizId;
+                const quizFilePath = path.join(__dirname, '../quizzes', `quiz_${quizId}.json`);
+
+                if (!fs.existsSync(quizFilePath)) {
+                    return res.status(404).json({ error: 'Quiz file not found' });
+                }
+
+                fs.unlinkSync(quizFilePath);
+
+                res.status(200).json({ 
+                    message: 'Quiz file deleted successfully',
+                    quizId: quizId 
+                });
+            } catch (err) {
+                console.log('err: ' + err);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+    // Delete all quiz files (admin only)
+    app.route("/api/admin/quiz-files/all")
+        .delete(verifyToken, verifyAdmin, async (req, res) => {
+            try {
+                const quizzesDir = path.join(__dirname, '../quizzes');
+
+                const files = fs.readdirSync(quizzesDir);
+                const quizFiles = files.filter(file => file.endsWith('.json') && file.startsWith('quiz_'));
+
+                let deletedCount = 0;
+                for (const file of quizFiles) {
+                    const filePath = path.join(quizzesDir, file);
+                    fs.unlinkSync(filePath);
+                    deletedCount++;
+                }
+
+                res.status(200).json({ 
+                    message: 'All quiz files deleted successfully',
+                    deletedCount: deletedCount 
+                });
+            } catch (err) {
+                console.log('err: ' + err);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+    // Delete quiz by ID (admin only) - Alternative endpoint
     app.route("/api/quiz/delete/:id")
         .delete(verifyToken, verifyAdmin, (req, res) => {
             try {
@@ -158,4 +212,5 @@ module.exports = function(app) {
                 res.status(500).json({ error: 'Failed to delete quiz' });
             }
         });
+
 };
