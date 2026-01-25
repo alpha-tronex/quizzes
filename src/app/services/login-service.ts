@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, Subject, throwError } from 'rxjs';
 import { catchError, retry, tap } from 'rxjs/operators';
-import { User } from '../classes/users';
+import { User } from '../models/users';
 
 @Injectable()
 export class LoginService {

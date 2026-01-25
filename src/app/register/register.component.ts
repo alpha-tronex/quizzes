@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
-import { User } from '../classes/users';
+import { User } from '../models/users';
 import { LoginService } from '../services/login-service';
 import { ValidationService } from '../services/validation.service';
 

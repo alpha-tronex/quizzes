@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
-import { Quiz } from '../classes/quiz';
+import { Quiz } from '../models/quiz';
 
 @Injectable()
 export class QuestionsService {

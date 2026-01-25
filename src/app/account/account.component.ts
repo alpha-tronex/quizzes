@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { User } from '../classes/users';
+import { User } from '../models/users';
 import { LoginService } from '../services/login-service';
 import { UtilService, State, Country } from '../services/util.service';
 import { ValidationService } from '../services/validation.service';
