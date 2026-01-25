@@ -1,10 +1,10 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AdminService } from '../../services/admin.service';
-import { LoginService } from '../../services/login-service';
-import { UtilService, State, Country } from '../../services/util.service';
-import { ValidationService } from '../../services/validation.service';
-import { User } from '../../models/users';
+import { AdminService } from '../../../services/admin.service';
+import { LoginService } from '../../../services/login-service';
+import { UtilService, State, Country } from '../../../services/util.service';
+import { ValidationService } from '../../../services/validation.service';
+import { User } from '../../../models/users';
 
 @Component({
     selector: 'app-user-details',
