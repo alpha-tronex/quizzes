@@ -1,0 +1,18 @@
+/* Admin Dashboard Styles */
+
+.card {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.card-body i {
+  transition: transform 0.3s;
+}
+
+.card:hover .card-body i {
+  transform: scale(1.1);
+}

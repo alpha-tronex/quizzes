@@ -1,0 +1,48 @@
+.admin-menu h4 {
+  color: #495057;
+  font-weight: 600;
+}
+
+.menu-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-width: 2px;
+}
+
+.menu-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.menu-card .icon-wrapper {
+  padding: 15px 0;
+}
+
+.menu-card .icon-wrapper i {
+  transition: transform 0.3s ease;
+}
+
+.menu-card:hover .icon-wrapper i {
+  transform: scale(1.15);
+}
+
+.menu-card .card-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.menu-card .card-footer {
+  padding: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.menu-card .card-footer i {
+  margin-left: 5px;
+  transition: margin-left 0.3s ease;
+}
+
+.menu-card:hover .card-footer i {
+  margin-left: 10px;
+}

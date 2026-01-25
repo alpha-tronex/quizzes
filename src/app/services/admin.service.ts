@@ -44,6 +44,48 @@ export class AdminService {
     );
   }
 
+  // Quiz Management Methods
+  deleteUserQuizData(userId: string): Observable<any> {
+    return this.http.delete(`/api/admin/user/${userId}/quizzes`).pipe(
+      tap(() => console.log('User quiz data deleted:', userId)),
+      catchError(this.handleError)
+    );
+  }
+
+  deleteSpecificUserQuiz(userId: string, quizId: string): Observable<any> {
+    return this.http.delete(`/api/admin/user/${userId}/quiz/${quizId}`).pipe(
+      tap(() => console.log('Specific quiz deleted from user:', userId, quizId)),
+      catchError(this.handleError)
+    );
+  }
+
+  deleteAllUsersQuizData(): Observable<any> {
+    return this.http.delete('/api/admin/quizzes/all-users-data').pipe(
+      tap(() => console.log('All users quiz data deleted')),
+      catchError(this.handleError)
+    );
+  }
+
+  getAvailableQuizzes(): Observable<any[]> {
+    return this.http.get<any[]>('/api/quizzes').pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  deleteQuizFile(quizId: string): Observable<any> {
+    return this.http.delete(`/api/admin/quiz-file/${quizId}`).pipe(
+      tap(() => console.log('Quiz file deleted:', quizId)),
+      catchError(this.handleError)
+    );
+  }
+
+  deleteAllQuizFiles(): Observable<any> {
+    return this.http.delete('/api/admin/quiz-files/all').pipe(
+      tap(() => console.log('All quiz files deleted')),
+      catchError(this.handleError)
+    );
+  }
+
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'An error occurred';
     

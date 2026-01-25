@@ -240,4 +240,130 @@ module.exports = function(app, User) {
             }
         });
 
+    // Delete all quiz data from a specific user
+    app.route("/api/admin/user/:id/quizzes")
+        .delete(verifyToken, verifyAdmin, async (req, res) => {
+            try {
+                const userId = req.params.id;
+                
+                const updatedUser = await User.findByIdAndUpdate(
+                    userId,
+                    { $set: { quizzes: [] } },
+                    { new: true }
+                );
+
+                if (!updatedUser) {
+                    return res.status(404).json({ error: 'User not found' });
+                }
+
+                res.status(200).json({ 
+                    message: 'User quiz data deleted successfully', 
+                    userId: userId 
+                });
+            } catch (err) {
+                console.log('err: ' + err);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+    // Delete a specific quiz from a specific user
+    app.route("/api/admin/user/:userId/quiz/:quizId")
+        .delete(verifyToken, verifyAdmin, async (req, res) => {
+            try {
+                const userId = req.params.userId;
+                const quizId = req.params.quizId;
+                
+                const updatedUser = await User.findByIdAndUpdate(
+                    userId,
+                    { $pull: { quizzes: { _id: quizId } } },
+                    { new: true }
+                );
+
+                if (!updatedUser) {
+                    return res.status(404).json({ error: 'User not found' });
+                }
+
+                res.status(200).json({ 
+                    message: 'Quiz entry deleted successfully', 
+                    userId: userId,
+                    quizId: quizId
+                });
+            } catch (err) {
+                console.log('err: ' + err);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+    // Delete all quiz data from all users
+    app.route("/api/admin/quizzes/all-users-data")
+        .delete(verifyToken, verifyAdmin, async (req, res) => {
+            try {
+                const result = await User.updateMany(
+                    {},
+                    { $set: { quizzes: [] } }
+                );
+
+                res.status(200).json({ 
+                    message: 'All users quiz data deleted successfully',
+                    modifiedCount: result.modifiedCount 
+                });
+            } catch (err) {
+                console.log('err: ' + err);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+    // Delete a specific quiz file
+    app.route("/api/admin/quiz-file/:quizId")
+        .delete(verifyToken, verifyAdmin, async (req, res) => {
+            try {
+                const fs = require('fs');
+                const path = require('path');
+                const quizId = req.params.quizId;
+                const quizFilePath = path.join(__dirname, '../quizzes', `quiz_${quizId}.json`);
+
+                if (!fs.existsSync(quizFilePath)) {
+                    return res.status(404).json({ error: 'Quiz file not found' });
+                }
+
+                fs.unlinkSync(quizFilePath);
+
+                res.status(200).json({ 
+                    message: 'Quiz file deleted successfully',
+                    quizId: quizId 
+                });
+            } catch (err) {
+                console.log('err: ' + err);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+    // Delete all quiz files
+    app.route("/api/admin/quiz-files/all")
+        .delete(verifyToken, verifyAdmin, async (req, res) => {
+            try {
+                const fs = require('fs');
+                const path = require('path');
+                const quizzesDir = path.join(__dirname, '../quizzes');
+
+                const files = fs.readdirSync(quizzesDir);
+                const quizFiles = files.filter(file => file.endsWith('.json') && file.startsWith('quiz_'));
+
+                let deletedCount = 0;
+                for (const file of quizFiles) {
+                    const filePath = path.join(quizzesDir, file);
+                    fs.unlinkSync(filePath);
+                    deletedCount++;
+                }
+
+                res.status(200).json({ 
+                    message: 'All quiz files deleted successfully',
+                    deletedCount: deletedCount 
+                });
+            } catch (err) {
+                console.log('err: ' + err);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
 };
