@@ -1,1 +1,37 @@
 /* Create Quiz Styles */
+
+.accordion-button:not(.collapsed) {
+  background-color: #e7f3ff;
+  color: #0056b3;
+}
+
+.input-group-text {
+  cursor: pointer;
+}
+
+.list-group-item-success {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.form-label.fw-bold {
+  color: #495057;
+  font-size: 1.05rem;
+}
+
+.card.bg-light {
+  border: 2px solid #dee2e6;
+}
+
+.card-header h5 {
+  color: #0056b3;
+}
+
+.btn-group .btn {
+  margin-right: 5px;
+}
+
+.form-text {
+  font-size: 0.9rem;
+  color: #6c757d;
+}

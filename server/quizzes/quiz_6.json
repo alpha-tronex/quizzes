@@ -1,0 +1,51 @@
+{
+  "title": "Islam 101",
+  "questions": [
+    {
+      "questionNum": 0,
+      "questionType": "MultipleChoice",
+      "instructions": "Select all correct answers",
+      "question": "What are some of God's name?",
+      "answers": [
+        "Al-Rahman",
+        "Al-Raheem",
+        "Jahova",
+        "Allah"
+      ],
+      "correct": [
+        1,
+        2,
+        4
+      ]
+    },
+    {
+      "questionNum": 1,
+      "questionType": "TrueFalse",
+      "instructions": "Select the correct answer (True or False)",
+      "question": "What Islam a religion?",
+      "answers": [
+        "Yes",
+        "No"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "questionNum": 2,
+      "questionType": "SingleAnswer",
+      "instructions": "Select the correct answer",
+      "question": "Who is the Prophet of Islam?",
+      "answers": [
+        "Musa (AS)",
+        "Muhammed (SAS)",
+        "Isa (AS)",
+        "Ibrahim (AS)"
+      ],
+      "correct": [
+        2
+      ]
+    }
+  ],
+  "id": 6
+}

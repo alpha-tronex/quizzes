@@ -16,6 +16,13 @@ export class AdminQuizService {
     );
   }
 
+  uploadQuiz(quizData: any): Observable<any> {
+    return this.http.post('/api/quiz/upload', quizData).pipe(
+      tap(() => console.log('Quiz uploaded successfully')),
+      catchError(this.handleError)
+    );
+  }
+
   deleteAllUsersQuizData(): Observable<any> {
     return this.http.delete('/api/admin/quizzes/all-users-data').pipe(
       tap(() => console.log('All users quiz data deleted')),
