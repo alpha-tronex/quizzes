@@ -13,6 +13,7 @@ export class QuizManagementComponent implements OnInit {
   selectedUserId: string = '';
   quizzes: any[] = [];
   selectedQuizId: string = '';
+  selectedEditQuizId: string = '';
   loading: boolean = false;
   message: string = '';
   messageType: 'success' | 'error' | '' = '';
@@ -175,6 +176,16 @@ export class QuizManagementComponent implements OnInit {
     }
 
     const quiz = this.quizzes.find(q => q.id === parseInt(this.selectedQuizId));
+    this.confirmAction = 'deleteQuizFile';
+    this.confirmTitle = 'Delete Quiz File';
+    this.confirmMessage = `Are you sure you want to delete the quiz file "${quiz?.title}"? This action cannot be undone and users will no longer be able to take this quiz.`;
+    this.showConfirmModal();
+  }
+
+  // Delete quiz file from list (with quiz ID directly)
+  deleteQuizFileFromList(quizId: number): void {
+    const quiz = this.quizzes.find(q => q.id === quizId);
+    this.selectedQuizId = quizId.toString();
     this.confirmAction = 'deleteQuizFile';
     this.confirmTitle = 'Delete Quiz File';
     this.confirmMessage = `Are you sure you want to delete the quiz file "${quiz?.title}"? This action cannot be undone and users will no longer be able to take this quiz.`;

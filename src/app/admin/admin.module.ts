@@ -9,6 +9,7 @@ import { AdminMenuComponent } from './admin-menu/admin-menu.component';
 import { UserManagementComponent } from './users/user-management/user-management.component';
 import { UserDetailsComponent } from './users/user-details/user-details.component';
 import { CreateQuizComponent } from './quizzes/create-quiz/create-quiz.component';
+import { EditQuizComponent } from './quizzes/edit-quiz/edit-quiz.component';
 import { UploadQuizComponent } from './quizzes/upload-quiz/upload-quiz.component';
 import { QuizManagementComponent } from './quizzes/quiz-management/quiz-management.component';
 
@@ -19,6 +20,7 @@ import { QuizManagementComponent } from './quizzes/quiz-management/quiz-manageme
     AdminMenuComponent,
     UserManagementComponent,
     CreateQuizComponent,
+    EditQuizComponent,
     UploadQuizComponent,
     UserDetailsComponent,
     QuizManagementComponent

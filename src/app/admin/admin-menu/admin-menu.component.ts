@@ -38,6 +38,13 @@ export class AdminMenuComponent {
       color: 'info'
     },
     {
+      title: 'Edit Quiz',
+      description: 'Edit an existing quiz',
+      icon: 'fas fa-edit',
+      route: '/admin/quiz-management',
+      color: 'secondary'
+    },
+    {
       title: 'Quiz Management',
       description: 'Delete quiz data and files',
       icon: 'fas fa-trash-alt',

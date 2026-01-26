@@ -11,7 +11,44 @@
         </div>
 
         <div class="row text-start">
-          <!-- Section 1: Delete quiz data from specific user -->
+          <!-- Section 1: Edit Quiz File -->
+          <div class="col-md-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                  <i class="fas fa-edit"></i> Edit Quiz File
+                </h5>
+              </div>
+              <div class="card-body">
+                <p class="text-muted">Select and edit an existing quiz file</p>
+                
+                <div class="mb-3">
+                  <label for="editQuizSelect" class="form-label"><strong>Select Quiz:</strong></label>
+                  <select 
+                    id="editQuizSelect" 
+                    class="form-select" 
+                    [(ngModel)]="selectedEditQuizId"
+                    [disabled]="quizzes.length === 0">
+                    <option value="">-- Choose a quiz --</option>
+                    <option *ngFor="let quiz of quizzes" [value]="quiz.id">
+                      {{ quiz.title }} (ID: {{ quiz.id }})
+                    </option>
+                  </select>
+                  <small class="text-muted" *ngIf="quizzes.length === 0">No quiz files found</small>
+                  <small class="text-muted" *ngIf="quizzes.length > 0">{{ quizzes.length }} quiz file(s) available</small>
+                </div>
+
+                <button 
+                  class="btn btn-secondary w-100" 
+                  [disabled]="!selectedEditQuizId"
+                  [routerLink]="['/admin/edit-quiz', selectedEditQuizId]">
+                  <i class="fas fa-edit"></i> Edit Selected Quiz
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Delete User Quiz Data -->
           <div class="col-md-6 mb-4">
             <div class="card h-100">
               <div class="card-header bg-warning text-dark">
