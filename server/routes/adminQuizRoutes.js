@@ -52,12 +52,16 @@ module.exports = function(app) {
                     fs.mkdirSync(quizzesDir, { recursive: true });
                 }
                 
-                // Check for duplicate titles
+                // Check for duplicate titles (excluding current quiz if editing)
                 if (fs.existsSync(quizzesDir)) {
                     const quizFiles = fs.readdirSync(quizzesDir).filter(file => file.endsWith('.json'));
                     for (const file of quizFiles) {
                         const filePath = path.join(quizzesDir, file);
                         const existingQuiz = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+                        // Skip the current quiz being edited (if ID is provided in request)
+                        if (quizData.id !== undefined && existingQuiz.id === quizData.id) {
+                            continue;
+                        }
                         if (existingQuiz.title && existingQuiz.title.toLowerCase() === quizData.title.toLowerCase()) {
                             return res.status(400).json({ 
                                 error: `A quiz with the title "${quizData.title}" already exists (ID: ${existingQuiz.id})` 
@@ -78,20 +82,28 @@ module.exports = function(app) {
                     });
                 }
                 
-                // Sort IDs to find gaps
-                existingIds.sort((a, b) => a - b);
-                
-                // Find the lowest available ID (fills gaps first)
-                let newId = 0;
-                for (let i = 0; i < existingIds.length; i++) {
-                    if (existingIds[i] !== newId) {
-                        // Found a gap, use this ID
-                        break;
+                // Determine quiz ID
+                let newId;
+                if (quizData.id !== undefined) {
+                    // If ID is provided, use it (this is an update operation)
+                    newId = quizData.id;
+                } else {
+                    // If no ID provided, auto-assign using lowest available ID (new quiz)
+                    // Sort IDs to find gaps
+                    existingIds.sort((a, b) => a - b);
+                    
+                    // Find the lowest available ID (fills gaps first)
+                    newId = 0;
+                    for (let i = 0; i < existingIds.length; i++) {
+                        if (existingIds[i] !== newId) {
+                            // Found a gap, use this ID
+                            break;
+                        }
+                        newId++;
                     }
-                    newId++;
                 }
                 
-                // Assign the lowest available ID (overwrite any existing ID in the data)
+                // Assign the ID to quiz data
                 quizData.id = newId;
                 
                 const filePath = path.join(quizzesDir, `quiz_${newId}.json`);

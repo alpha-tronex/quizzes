@@ -1,4 +1,5 @@
 {
+  "id": 6,
   "title": "Islam 101",
   "questions": [
     {
@@ -20,19 +21,6 @@
     },
     {
       "questionNum": 1,
-      "questionType": "TrueFalse",
-      "instructions": "Select the correct answer (True or False)",
-      "question": "What Islam a religion?",
-      "answers": [
-        "Yes",
-        "No"
-      ],
-      "correct": [
-        1
-      ]
-    },
-    {
-      "questionNum": 2,
       "questionType": "SingleAnswer",
       "instructions": "Select the correct answer",
       "question": "Who is the Prophet of Islam?",
@@ -45,7 +33,19 @@
       "correct": [
         2
       ]
+    },
+    {
+      "questionNum": 2,
+      "questionType": "TrueFalse",
+      "instructions": "Select the correct answer (True or False)",
+      "question": "Is Islam a religion?",
+      "answers": [
+        "Yes",
+        "No"
+      ],
+      "correct": [
+        1
+      ]
     }
-  ],
-  "id": 6
+  ]
 }

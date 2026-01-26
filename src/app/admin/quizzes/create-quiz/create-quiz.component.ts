@@ -40,6 +40,7 @@ export class CreateQuizComponent implements OnInit {
   successMessage: string = '';
   errorMessage: string = '';
   isSubmitting: boolean = false;
+  isCurrentQuestionSaved: boolean = false;
 
   constructor(
     private adminQuizService: AdminQuizService,
@@ -100,18 +101,31 @@ getInstructions(questionType: QuestionType): string {
 
     // Add question to list
     this.questions.push({ ...this.currentQuestion });
-
-    // Reset current question
+    
+    // Clear the form
     this.currentQuestion = {
       questionText: '',
       answers: [{ text: '', isCorrect: false }],
       questionType: QuestionType.MultipleChoice,
-      instructions: 'Select all correct answers'
+      instructions: this.getInstructions(QuestionType.MultipleChoice)
     };
+    this.isCurrentQuestionSaved = true;
 
     this.errorMessage = '';
-    this.successMessage = 'Question added successfully!';
+    this.successMessage = 'Question saved successfully!';
     setTimeout(() => this.successMessage = '', 3000);
+  }
+
+  clearCurrentQuestion() {
+    // Reset current question for adding another
+    this.currentQuestion = {
+      questionText: '',
+      answers: [{ text: '', isCorrect: false }],
+      questionType: QuestionType.MultipleChoice,
+      instructions: this.getInstructions(QuestionType.MultipleChoice)
+    };
+    this.isCurrentQuestionSaved = false;
+    this.errorMessage = '';
   }
 
   removeQuestion(index: number) {
@@ -121,6 +135,7 @@ getInstructions(questionType: QuestionType): string {
   editQuestion(index: number) {
     this.currentQuestion = { ...this.questions[index] };
     this.questions.splice(index, 1);
+    this.isCurrentQuestionSaved = false;
   }
 
   saveQuiz() {

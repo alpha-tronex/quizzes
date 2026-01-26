@@ -161,13 +161,19 @@
               </p>
             </div>
 
-            <!-- Add Question Button -->
-            <div class="d-grid">
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2">
               <button 
-                class="btn btn-success btn-lg" 
+                class="btn btn-primary btn-lg" 
                 (click)="addQuestion()"
-                [disabled]="isSubmitting">
-                <i class="fas fa-plus-circle"></i> Add Question to Quiz
+                [disabled]="isSubmitting || isCurrentQuestionSaved">
+                <i class="fas fa-save"></i> Save Question
+              </button>
+              <button 
+                class="btn btn-success" 
+                (click)="clearCurrentQuestion()"
+                [disabled]="isSubmitting || !isCurrentQuestionSaved">
+                <i class="fas fa-plus-circle"></i> Add Another Question
               </button>
             </div>
           </div>

@@ -43,6 +43,7 @@ export class EditQuizComponent implements OnInit {
   errorMessage: string = '';
   isSubmitting: boolean = false;
   isLoading: boolean = true;
+  isCurrentQuestionSaved: boolean = false;
 
   constructor(
     private adminQuizService: AdminQuizService,
@@ -131,18 +132,31 @@ export class EditQuizComponent implements OnInit {
 
     // Add question to list
     this.questions.push({ ...this.currentQuestion });
-
-    // Reset current question
+    
+    // Clear the form
     this.currentQuestion = {
       questionText: '',
       answers: [{ text: '', isCorrect: false }],
       questionType: QuestionType.MultipleChoice,
       instructions: this.getInstructions(QuestionType.MultipleChoice)
     };
+    this.isCurrentQuestionSaved = true;
 
     this.errorMessage = '';
-    this.successMessage = 'Question added successfully!';
+    this.successMessage = 'Question saved successfully!';
     setTimeout(() => this.successMessage = '', 3000);
+  }
+
+  clearCurrentQuestion() {
+    // Reset current question for adding another
+    this.currentQuestion = {
+      questionText: '',
+      answers: [{ text: '', isCorrect: false }],
+      questionType: QuestionType.MultipleChoice,
+      instructions: this.getInstructions(QuestionType.MultipleChoice)
+    };
+    this.isCurrentQuestionSaved = false;
+    this.errorMessage = '';
   }
 
   removeQuestion(index: number) {
@@ -152,6 +166,7 @@ export class EditQuizComponent implements OnInit {
   editQuestion(index: number) {
     this.currentQuestion = { ...this.questions[index] };
     this.questions.splice(index, 1);
+    this.isCurrentQuestionSaved = false;
   }
 
   saveQuiz() {
