@@ -22,6 +22,23 @@ export class UserManagementComponent implements OnInit {
   confirmMessage: string = '';
   confirmTitle: string = '';
 
+  // Dashboard statistics
+  get totalUsers(): number {
+    return this.users.length;
+  }
+
+  get totalAdmins(): number {
+    return this.users.filter(u => u.type === 'admin').length;
+  }
+
+  get totalStudents(): number {
+    return this.users.filter(u => u.type === 'student' || !u.type).length;
+  }
+
+  get totalQuizzesTaken(): number {
+    return this.users.reduce((sum, user) => sum + (user.quizzes?.length || 0), 0);
+  }
+
   constructor(
     private adminUserService: AdminUserService,
     private loginService: LoginService
