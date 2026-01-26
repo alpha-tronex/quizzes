@@ -17,6 +17,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   selectedQuizId: number | null = null;
   selectedQuizTitle: string = '';
   inputWidth: string = '300px';
+  
+  // Dashboard stats
+  totalQuizzes: number = 0;
+  completedQuizzes: number = 0;
+  averageScore: number = 0;
+  recentQuizzes: any[] = [];
+  loadingStats: boolean = false;
 
   constructor(private loginService: LoginService, private questionsService: QuestionsService, private router: Router) { }
 
@@ -29,9 +36,54 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.questionsService.getAvailableQuizzes().subscribe({
       next: (data) => {
         this.quizzes = data;
+        this.totalQuizzes = data.length;
+        
+        // Load user stats if logged in
+        if (this.getUsername()) {
+          this.loadUserStats();
+        }
       },
       error: (error) => {
         console.error('Error loading quizzes:', error);
+      }
+    });
+  }
+
+  loadUserStats() {
+    this.loadingStats = true;
+    const username = this.getUsername();
+    
+    this.questionsService.getQuizHistory(username).subscribe({
+      next: (data) => {
+        const quizzes = data.quizzes || [];
+        this.completedQuizzes = quizzes.length;
+        
+        // Calculate average score
+        if (quizzes.length > 0) {
+          const totalScore = quizzes.reduce((sum: number, quiz: any) => {
+            const percentage = (quiz.score / quiz.totalQuestions) * 100;
+            return sum + percentage;
+          }, 0);
+          this.averageScore = Math.round(totalScore / quizzes.length);
+        }
+        
+        // Get recent quizzes (last 3)
+        this.recentQuizzes = quizzes
+          .sort((a: any, b: any) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
+          .slice(0, 3)
+          .map((quiz: any) => ({
+            title: quiz.title,
+            score: quiz.score,
+            totalQuestions: quiz.totalQuestions,
+            percentage: Math.round((quiz.score / quiz.totalQuestions) * 100),
+            completedAt: new Date(quiz.completedAt)
+          }));
+        
+        this.loadingStats = false;
+      },
+      error: (error) => {
+        console.error('Error loading user stats:', error);
+        this.loadingStats = false;
       }
     });
   }

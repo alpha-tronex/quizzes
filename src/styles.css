@@ -9999,9 +9999,9 @@ h3 {
     border-color: #dee2e6;
   }
 }
-.page-section {
+/*.page-section {
   padding: 6rem 0;
-}
+}*/
 .page-section .page-section-heading {
   font-size: 2.25rem;
   line-height: 2rem;
@@ -10133,7 +10133,7 @@ h3 {
   }
 }
 .masthead {
-  padding-top: calc(6rem + 74px);
+  padding-top: 150px; /*calc(6rem + 74px);*/
   padding-bottom: 6rem;
   min-height: 50rem;
 }
@@ -10150,7 +10150,7 @@ h3 {
 
 @media (min-width: 992px) {
   .masthead {
-    padding-top: calc(6rem + 104px);
+    padding-top: 150px; /*calc(6rem + 104px);*/
     padding-bottom: 6rem;
   }
   .masthead .masthead-heading {

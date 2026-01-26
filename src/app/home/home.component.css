@@ -23,3 +23,80 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   color: #0d6efd;
 }
+
+/* Dashboard Styles */
+.stat-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border-width: 2px;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon i {
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-icon i {
+  transform: scale(1.1);
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.table-responsive {
+  margin-top: 1rem;
+}
+
+.table th {
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.badge {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+/* Welcome Section Styles */
+.feature-icon i {
+  transition: all 0.3s ease;
+}
+
+.card:hover .feature-icon i {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.gap-3 {
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .d-flex.gap-3 {
+    flex-direction: column;
+  }
+  
+  .gap-3 > * {
+    width: 100%;
+  }
+}

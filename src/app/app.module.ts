@@ -13,6 +13,7 @@ import { LoginComponent } from './login/login.component';
 import { AccountComponent } from './account/account.component';
 import { RegisterComponent } from './register/register.component';
 import { HistoryComponent } from './history/history.component';
+import { BreadcrumbComponent } from './breadcrumb/breadcrumb.component';
 import { LoginService } from './services/login-service';
 import { QuestionsService } from './services/questions-service';
 import { AuthInterceptor } from './services/auth.interceptor';
@@ -27,7 +28,8 @@ import { AuthInterceptor } from './services/auth.interceptor';
         LoginComponent,
         AccountComponent,
         RegisterComponent,
-        HistoryComponent
+        HistoryComponent,
+        BreadcrumbComponent
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         AppRoutingModule,

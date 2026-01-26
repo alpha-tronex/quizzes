@@ -1,46 +1,235 @@
 <!-- Masthead-->
 <section class="masthead bg-primary text-white text-center">
-  <div class="container d-flex align-items-center flex-column">
-      <!-- Masthead Avatar Image-->
-      <img class="masthead-avatar mb-1" src="assets/img/avataaars.svg" alt="happy child taking the quiz" />
-      <!-- Masthead Heading-->
-      <p class="masthead-heading mb-0" *ngIf="!getUsername()" style="font-size: larger;">{{ loginService.welcomePhrase }}</p>
+
+  <!-- Welcome Section (for non-logged in users) -->
+  <section class="page-section" *ngIf="!getUsername()">
+    <div class="container">
+      <h2 class="page-section-heading text-center text-uppercase text-white mb-4">Welcome to ISRA Learning</h2>
+
       <!-- Icon Divider-->
       <div class="divider-custom divider-light">
-          <div class="divider-custom-line"></div>
-          <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-          <div class="divider-custom-line"></div>
+        <div class="divider-custom-line"></div>
+        <div class="divider-custom-icon"><i class="fas fa-graduation-cap"></i></div>
+        <div class="divider-custom-line"></div>
       </div>
-      <!-- Masthead Subheading-->
-      <div class="masthead-subheading font-weight-light mb-0" *ngIf="getUsername()">
-        <div class="quiz-selector">
-          <h3 class="mb-4">Select a Quiz to Start:</h3>
-          <div class="row justify-content-center">
-            <div class="col-12">
-              <div class="d-flex gap-2">
-                <input 
-                  type="text"
-                  class="form-control form-control-lg" 
-                  list="quizList"
-                  [(ngModel)]="selectedQuizTitle"
-                  (input)="onQuizInput()"
-                  placeholder="Type or select a quiz..."
-                  [ngStyle]="{'width': inputWidth, 'background-color': 'white', 'color': '#2c3e50'}">
-                <datalist id="quizList">
-                  <option *ngFor="let quiz of quizzes" [value]="quiz.title">
-                </datalist>
-                <button 
-                  class="btn btn-success btn-lg" 
-                  [disabled]="!isValidQuizSelected()"
-                  (click)="startSelectedQuiz()"
-                  style="margin-left: 10px;"
-                  title="Start Quiz">
-                  <i class="fas fa-play"></i>
-                </button>
+
+      <div class="row">
+        <!-- Features Cards -->
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 text-center border-primary">
+            <div class="card-body">
+              <div class="feature-icon mb-3">
+                <i class="fas fa-clipboard-list fa-4x text-primary"></i>
+              </div>
+              <h4 class="card-title">Interactive Quizzes</h4>
+              <p class="card-text">Test your knowledge with our comprehensive collection of interactive quizzes covering
+                various topics.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 text-center border-success">
+            <div class="card-body">
+              <div class="feature-icon mb-3">
+                <i class="fas fa-chart-line fa-4x text-success"></i>
+              </div>
+              <h4 class="card-title">Track Progress</h4>
+              <p class="card-text">Monitor your learning journey with detailed statistics and performance tracking.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 text-center border-info">
+            <div class="card-body">
+              <div class="feature-icon mb-3">
+                <i class="fas fa-trophy fa-4x text-info"></i>
+              </div>
+              <h4 class="card-title">Improve Skills</h4>
+              <p class="card-text">Enhance your knowledge and skills through continuous practice and instant feedback.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA Section -->
+      <div class="row mt-5">
+        <div class="col-12">
+          <div class="card bg-primary text-white">
+            <div class="card-body text-center py-5">
+              <h3 class="mb-4">Ready to Start Learning?</h3>
+              <p class="lead mb-4">Join ISRA Learning today and begin your educational journey!</p>
+              <div class="d-flex justify-content-center gap-3">
+                <a [routerLink]="['/register']" class="btn btn-light btn-lg">
+                  <i class="fas fa-user-plus"></i> Register Now
+                </a>
+                <a [routerLink]="['/login']" class="btn btn-outline-light btn-lg">
+                  <i class="fas fa-sign-in-alt"></i> Login
+                </a>
               </div>
             </div>
           </div>
         </div>
       </div>
-  </div>
+    </div>
+  </section>
+
+  <!-- Dashboard Section (for logged in users) -->
+  <section class="page-section" *ngIf="getUsername()">
+    <div class="container">
+      <h2 class="page-section-heading text-center text-uppercase text-white mb-4">ISRA learning Dashboard</h2>
+
+      <!-- Icon Divider-->
+      <div class="divider-custom divider-light">
+        <div class="divider-custom-line"></div>
+        <div class="divider-custom-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="divider-custom-line"></div>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="loadingStats" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <!-- Dashboard Stats -->
+      <div *ngIf="!loadingStats">
+        <!-- Stats Cards Row -->
+        <div class="row mb-5">
+          <!-- Total Quizzes Available -->
+          <div class="col-md-4 mb-3">
+            <div class="card stat-card h-100 border-primary">
+              <div class="card-body text-center">
+                <div class="stat-icon mb-3">
+                  <i class="fas fa-file-alt fa-3x text-primary"></i>
+                </div>
+                <h3 class="stat-number text-primary">{{ totalQuizzes }}</h3>
+                <p class="stat-label text-muted mb-0">Available Quizzes</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Completed Quizzes -->
+          <div class="col-md-4 mb-3">
+            <div class="card stat-card h-100 border-success">
+              <div class="card-body text-center">
+                <div class="stat-icon mb-3">
+                  <i class="fas fa-check-circle fa-3x text-success"></i>
+                </div>
+                <h3 class="stat-number text-success">{{ completedQuizzes }}</h3>
+                <p class="stat-label text-muted mb-0">Completed Quizzes</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Average Score -->
+          <div class="col-md-4 mb-3">
+            <div class="card stat-card h-100 border-warning">
+              <div class="card-body text-center">
+                <div class="stat-icon mb-3">
+                  <i class="fas fa-star fa-3x text-warning"></i>
+                </div>
+                <h3 class="stat-number text-warning">{{ averageScore }}%</h3>
+                <p class="stat-label text-muted mb-0">Average Score</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-clock"></i> Recent Activity</h5>
+              </div>
+              <div class="card-body">
+                <div *ngIf="recentQuizzes.length === 0" class="text-center text-muted py-4">
+                  <i class="fas fa-inbox fa-3x mb-3"></i>
+                  <p>No quiz attempts yet. Start a quiz to see your activity here!</p>
+                </div>
+
+                <div *ngIf="recentQuizzes.length > 0" class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Quiz</th>
+                        <th>Score</th>
+                        <th>Percentage</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let quiz of recentQuizzes">
+                        <td><strong>{{ quiz.title }}</strong></td>
+                        <td>{{ quiz.score }} / {{ quiz.totalQuestions }}</td>
+                        <td>
+                          <span class="badge" [ngClass]="{
+                                'bg-success': quiz.percentage >= 80,
+                                'bg-warning text-dark': quiz.percentage >= 60 && quiz.percentage < 80,
+                                'bg-danger': quiz.percentage < 60
+                              }">
+                            {{ quiz.percentage }}%
+                          </span>
+                        </td>
+                        <td>{{ quiz.completedAt | date: 'short' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div *ngIf="completedQuizzes > 3" class="text-center mt-3">
+                  <a [routerLink]="['/history']" class="btn btn-outline-primary">
+                    View Full History <i class="fas fa-arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="card bg-light">
+              <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-bolt"></i> Quick Actions</h5>
+
+                <!-- Quiz Selector -->
+                <div class="mb-3">
+                  <label for="quizSelect" class="form-label fw-bold">Select a Quiz</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="quizSelect" list="quizList"
+                      [(ngModel)]="selectedQuizTitle" (input)="onQuizInput()" placeholder="Choose a quiz..."
+                      [style.width.px]="inputWidth">
+                    <datalist id="quizList">
+                      <option *ngFor="let quiz of quizzes" [value]="quiz.title">
+                        {{ quiz.title }}
+                      </option>
+                    </datalist>
+                    <button class="btn btn-success" (click)="startSelectedQuiz()" [disabled]="!isValidQuizSelected()">
+                      <i class="fas fa-play"></i> Start Quiz
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Other Actions -->
+                <div class="d-flex flex-wrap gap-2">
+                  <a [routerLink]="['/history']" class="btn btn-outline-secondary">
+                    <i class="fas fa-history"></i> View History
+                  </a>
+                  <a [routerLink]="['/account']" class="btn btn-outline-secondary">
+                    <i class="fas fa-user"></i> My Account
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </section>

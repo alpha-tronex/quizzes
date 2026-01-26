@@ -1,6 +1,7 @@
 <section class="masthead bg-primary text-white text-center">
   <!-- Quiz Questions View -->
   <div class="container" *ngIf="curQuestion && !submitted">
+  <app-breadcrumb></app-breadcrumb>
     <h2 class="mb-2">Quiz</h2>
     <h2 class="mb-4">{{ quiz.title }}</h2>
     

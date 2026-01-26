@@ -1,0 +1,46 @@
+.breadcrumb-nav {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding-top: 85px; /* Account for fixed navbar height */
+  padding-bottom: 0.5rem;
+  margin-bottom: 0;
+  position: relative;
+  z-index: 1010; /* Below navbar */
+}
+
+.breadcrumb-nav + section.masthead,
+.breadcrumb-nav ~ section.masthead {
+  padding-top: 2rem !important; /* Reduce top padding when breadcrumb is present */
+}
+
+.breadcrumb {
+  margin-bottom: 0;
+  padding: 0.75rem 1rem;
+}
+
+.breadcrumb-item a {
+  color: #007bff;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.breadcrumb-item a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.breadcrumb-item.active {
+  font-weight: 500;
+  color: #495057;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  content: "›";
+  color: #6c757d;
+  font-size: 1.2em;
+  font-weight: 300;
+}
+
+.breadcrumb-item i {
+  margin-right: 5px;
+}
