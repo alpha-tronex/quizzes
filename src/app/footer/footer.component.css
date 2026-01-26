@@ -1,5 +1,5 @@
 .footer {
-  padding: 2rem 0;
+  padding: 4rem 0 2rem;
   color: #fff;
 }
 
@@ -10,4 +10,39 @@
 
 .footer h4 {
   letter-spacing: 1px;
+}
+
+.footer a:hover {
+  color: #1abc9c !important;
+  transition: color 0.3s ease;
+}
+
+.btn-social {
+  width: 3.25rem;
+  height: 3.25rem;
+  font-size: 1.25rem;
+  line-height: 2rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-social:hover {
+  background-color: #1abc9c;
+  border-color: #1abc9c;
+  color: #fff !important;
+}
+
+.footer hr {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 1.5rem 0;
+}
+
+.footer ul li {
+  transition: transform 0.2s ease;
+}
+
+.footer ul li:hover {
+  transform: translateX(5px);
 }
