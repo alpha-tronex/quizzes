@@ -38,12 +38,11 @@
             type="text" 
             class="form-control form-control-lg" 
             id="quizTitle"
+            #quizTitleInput
             [(ngModel)]="quizTitle"
             placeholder="Enter quiz title..."
             [disabled]="isSubmitting">
         </div>
-
-        <hr class="my-4">
 
         <!-- Questions List -->
         <div *ngIf="questions.length > 0" class="mb-4">
@@ -90,8 +89,6 @@
             </div>
           </div>
         </div>
-
-        <hr class="my-4">
 
         <!-- Current Question Form -->
         <div class="card bg-light">
@@ -150,6 +147,7 @@
                 <input 
                   type="text" 
                   class="form-control"
+                  #answerInput
                   [(ngModel)]="answer.text"
                   placeholder="Answer option {{ i + 1 }}..."
                   [disabled]="isSubmitting">
@@ -177,20 +175,17 @@
               </small>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="d-grid gap-2">
+            <!-- Add Question Button -->
+            <div class="d-grid">
               <button 
-                class="btn btn-primary btn-lg" 
+                class="btn btn-success btn-lg" 
                 (click)="addQuestion()"
-                [disabled]="isSubmitting || isCurrentQuestionSaved">
-                <i class="fas fa-save"></i> Save Question
+                [disabled]="isSubmitting">
+                <i class="fas fa-plus-circle"></i> Add Question
               </button>
-              <button 
-                class="btn btn-success" 
-                (click)="clearCurrentQuestion()"
-                [disabled]="isSubmitting || !isCurrentQuestionSaved">
-                <i class="fas fa-plus-circle"></i> Add Another Question
-              </button>
+              <small class="text-muted mt-2">
+                <i class="fas fa-info-circle"></i> Click to save this question and start a new one
+              </small>
             </div>
           </div>
         </div>

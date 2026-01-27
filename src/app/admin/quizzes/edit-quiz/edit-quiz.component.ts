@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChildren, QueryList, ElementRef, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AdminQuizService } from '../../../services/admin-quiz.service';
 import { QuestionsService } from '../../../services/questions-service';
@@ -22,7 +22,7 @@ interface Question {
     styleUrls: ['./edit-quiz.component.css'],
     standalone: false
 })
-export class EditQuizComponent implements OnInit {
+export class EditQuizComponent implements OnInit, AfterViewInit {
   quizId: number = 0;
   quizTitle: string = '';
   questions: Question[] = [];
@@ -43,13 +43,16 @@ export class EditQuizComponent implements OnInit {
   errorMessage: string = '';
   isSubmitting: boolean = false;
   isLoading: boolean = true;
-  isCurrentQuestionSaved: boolean = false;
+
+  @ViewChildren('answerInput') answerInputs!: QueryList<ElementRef>;
+  @ViewChild('quizTitleInput') quizTitleInput!: ElementRef;
 
   constructor(
     private adminQuizService: AdminQuizService,
     private questionsService: QuestionsService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -57,6 +60,30 @@ export class EditQuizComponent implements OnInit {
       this.quizId = +params['id']; // Convert string to number
       this.loadQuiz();
     });
+  }
+
+  ngAfterViewInit() {
+    // Focus quiz title input on load
+    if (this.quizTitleInput) {
+      setTimeout(() => {
+        this.quizTitleInput.nativeElement.focus();
+      });
+    }
+    // Remove initial focusLastAnswerInput call here
+    this.answerInputs.changes.subscribe(() => {
+      this.focusLastAnswerInput();
+    });
+  }
+
+  focusLastAnswerInput() {
+    if (this.answerInputs && this.answerInputs.length > 0) {
+      setTimeout(() => {
+        const lastInput = this.answerInputs.last;
+        if (lastInput) {
+          lastInput.nativeElement.focus();
+        }
+      });
+    }
   }
 
   loadQuiz() {
@@ -74,6 +101,12 @@ export class EditQuizComponent implements OnInit {
           instructions: q.instructions
         }));
         this.isLoading = false;
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          if (this.quizTitleInput) {
+            this.quizTitleInput.nativeElement.focus();
+          }
+        });
       },
       error: (error) => {
         this.errorMessage = 'Error loading quiz';
@@ -101,6 +134,7 @@ export class EditQuizComponent implements OnInit {
 
   addAnswer() {
     this.currentQuestion.answers.push({ text: '', isCorrect: false });
+    // focus will be handled by ViewChildren changes
   }
 
   removeAnswer(index: number) {
@@ -123,6 +157,13 @@ export class EditQuizComponent implements OnInit {
       return;
     }
 
+    // Ensure at least 2 answers
+    const validAnswers = this.currentQuestion.answers.filter(a => a.text.trim() !== '');
+    if (validAnswers.length < 2) {
+      this.errorMessage = 'Each question must have at least 2 answers';
+      return;
+    }
+
     // Check if at least one answer is marked as correct
     const hasCorrectAnswer = this.currentQuestion.answers.some(a => a.isCorrect);
     if (!hasCorrectAnswer) {
@@ -133,30 +174,17 @@ export class EditQuizComponent implements OnInit {
     // Add question to list
     this.questions.push({ ...this.currentQuestion });
     
-    // Clear the form
-    this.currentQuestion = {
-      questionText: '',
-      answers: [{ text: '', isCorrect: false }],
-      questionType: QuestionType.MultipleChoice,
-      instructions: this.getInstructions(QuestionType.MultipleChoice)
-    };
-    this.isCurrentQuestionSaved = true;
-
     this.errorMessage = '';
-    this.successMessage = 'Question saved successfully!';
+    this.successMessage = `Question ${this.questions.length} saved! Form cleared for next question.`;
     setTimeout(() => this.successMessage = '', 3000);
-  }
-
-  clearCurrentQuestion() {
-    // Reset current question for adding another
+    
+    // Clear the form immediately for the next question
     this.currentQuestion = {
       questionText: '',
       answers: [{ text: '', isCorrect: false }],
       questionType: QuestionType.MultipleChoice,
       instructions: this.getInstructions(QuestionType.MultipleChoice)
     };
-    this.isCurrentQuestionSaved = false;
-    this.errorMessage = '';
   }
 
   removeQuestion(index: number) {
@@ -166,7 +194,6 @@ export class EditQuizComponent implements OnInit {
   editQuestion(index: number) {
     this.currentQuestion = { ...this.questions[index] };
     this.questions.splice(index, 1);
-    this.isCurrentQuestionSaved = false;
   }
 
   saveQuiz() {

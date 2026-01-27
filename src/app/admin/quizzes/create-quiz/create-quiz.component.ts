@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChildren, QueryList, ElementRef, AfterViewInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AdminQuizService } from '../../../services/admin-quiz.service';
 import { QuestionType } from '../../../models/quiz';
@@ -21,7 +21,7 @@ interface Question {
     styleUrls: ['./create-quiz.component.css'],
     standalone: false
 })
-export class CreateQuizComponent implements OnInit {
+export class CreateQuizComponent implements OnInit, AfterViewInit {
   quizTitle: string = '';
   questions: Question[] = [];
   
@@ -40,7 +40,6 @@ export class CreateQuizComponent implements OnInit {
   successMessage: string = '';
   errorMessage: string = '';
   isSubmitting: boolean = false;
-  isCurrentQuestionSaved: boolean = false;
 
   constructor(
     private adminQuizService: AdminQuizService,
@@ -67,8 +66,35 @@ getInstructions(questionType: QuestionType): string {
   }
 
   
+  @ViewChildren('answerInput') answerInputs!: QueryList<ElementRef>;
+  @ViewChild('quizTitleInput') quizTitleInput!: ElementRef;
+
+  ngAfterViewInit() {
+    // Focus quiz title input on load
+    if (this.quizTitleInput) {
+      setTimeout(() => {
+        this.quizTitleInput.nativeElement.focus();
+      });
+    }
+    this.answerInputs.changes.subscribe(() => {
+      this.focusLastAnswerInput();
+    });
+  }
+
+  focusLastAnswerInput() {
+    if (this.answerInputs && this.answerInputs.length > 0) {
+      setTimeout(() => {
+        const lastInput = this.answerInputs.last;
+        if (lastInput) {
+          lastInput.nativeElement.focus();
+        }
+      });
+    }
+  }
+
   addAnswer() {
     this.currentQuestion.answers.push({ text: '', isCorrect: false });
+    // focus will be handled by ViewChildren changes
   }
 
   removeAnswer(index: number) {
@@ -89,7 +115,13 @@ getInstructions(questionType: QuestionType): string {
     if (hasEmptyAnswers) {
       this.errorMessage = 'Please fill in all answer options';
       return;
-      instructions: this.getInstructions(QuestionType.MultipleChoice)
+    }
+
+    // Ensure at least 2 answers
+    const validAnswers = this.currentQuestion.answers.filter(a => a.text.trim() !== '');
+    if (validAnswers.length < 2) {
+      this.errorMessage = 'Each question must have at least 2 answers';
+      return;
     }
 
     // Check if at least one answer is marked as correct
@@ -102,30 +134,17 @@ getInstructions(questionType: QuestionType): string {
     // Add question to list
     this.questions.push({ ...this.currentQuestion });
     
-    // Clear the form
-    this.currentQuestion = {
-      questionText: '',
-      answers: [{ text: '', isCorrect: false }],
-      questionType: QuestionType.MultipleChoice,
-      instructions: this.getInstructions(QuestionType.MultipleChoice)
-    };
-    this.isCurrentQuestionSaved = true;
-
     this.errorMessage = '';
-    this.successMessage = 'Question saved successfully!';
+    this.successMessage = `Question ${this.questions.length} saved! Form cleared for next question.`;
     setTimeout(() => this.successMessage = '', 3000);
-  }
-
-  clearCurrentQuestion() {
-    // Reset current question for adding another
+    
+    // Clear the form immediately for the next question
     this.currentQuestion = {
       questionText: '',
       answers: [{ text: '', isCorrect: false }],
       questionType: QuestionType.MultipleChoice,
       instructions: this.getInstructions(QuestionType.MultipleChoice)
     };
-    this.isCurrentQuestionSaved = false;
-    this.errorMessage = '';
   }
 
   removeQuestion(index: number) {
@@ -135,7 +154,6 @@ getInstructions(questionType: QuestionType): string {
   editQuestion(index: number) {
     this.currentQuestion = { ...this.questions[index] };
     this.questions.splice(index, 1);
-    this.isCurrentQuestionSaved = false;
   }
 
   saveQuiz() {
