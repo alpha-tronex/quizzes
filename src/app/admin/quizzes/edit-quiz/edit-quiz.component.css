@@ -31,3 +31,7 @@
   width: 3rem;
   height: 3rem;
 }
+
+.form-check-input {
+    margin-left: -7px;
+}

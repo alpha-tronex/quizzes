@@ -122,6 +122,7 @@
               </label>
               
               <div *ngFor="let answer of currentQuestion.answers; let i = index" class="input-group mb-2">
+                <div class="input-group-prepend">
                 <div class="input-group-text">
                   <input 
                     class="form-check-input mt-0" 
@@ -130,6 +131,7 @@
                     [disabled]="isSubmitting"
                     title="Mark as correct answer">
                 </div>
+                </div>
                 <input 
                   type="text" 
                   class="form-control"
@@ -137,6 +139,7 @@
                   [(ngModel)]="answer.text"
                   placeholder="Answer option {{ i + 1 }}..."
                   [disabled]="isSubmitting">
+                  <div class="input-group-append">
                 <button 
                   class="btn btn-outline-danger" 
                   type="button"
@@ -145,6 +148,7 @@
                   title="Remove this answer">
                   <i class="fas fa-times"></i>
                 </button>
+                  </div>
               </div>
 
               <button 
@@ -162,7 +166,7 @@
             <!-- Add Question Button -->
             <div class="d-grid">
               <button 
-                class="btn btn-success btn-lg" 
+                class="btn btn-success btn-lg mr-2" 
                 (click)="addQuestion()"
                 [disabled]="isSubmitting">
                 <i class="fas fa-plus-circle"></i> Add Question
@@ -177,7 +181,7 @@
         <!-- Action Buttons -->
         <div class="mt-4 d-flex gap-2 justify-content-end">
           <button 
-            class="btn btn-secondary" 
+            class="btn btn-secondary mr-2" 
             (click)="cancelQuiz()"
             [disabled]="isSubmitting">
             <i class="fas fa-times"></i> Cancel
