@@ -12,18 +12,11 @@ const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
-// const md5 = require("md5");
-// const encrypt = require("mongoose-encryption");
-// const session = require("express-session");
-// const passport = require("passport");
-// const passportLocalMongoose = require("passport-local-mongoose");
-
-// console.log("API_KEY: " + process.env.API_KEY);
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// filepath: c:\Projects\NODEJS\quizzes\server\server.js
+
 const path = require("path");
 const { type } = require("os"); //his function returns a string representing the operating system name (e.g., 'Linux', 'Darwin' for macOS,
 
@@ -43,14 +36,6 @@ if (fs.existsSync(distBrowserPath)) {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-// app.use(session({
-//     secret: "Mama mia.",
-//     resave: false,
-//     saveUninitialized: false
-// }));
-
-// app.use(passport.initialize());
-// app.use(passport.session());
 
 
 
@@ -71,6 +56,8 @@ const userSchema = new mongoose.Schema ({
         country: String
     },
     type: String,
+    createdAt: Date,
+    updatedAt: Date,
     quizzes: [{
         id: Number,
         title: String,
@@ -88,18 +75,8 @@ const userSchema = new mongoose.Schema ({
         duration: Number
     }]
 });
-// userSchema.plugin(passportLocalMongoose); //will help us to hash and salt password and save users into mongodb database
-// const secret = "pointMeInTheDirectionOfAlbuquerque";
-// userSchema.plugin(encrypt, { secret: secret, encryptedFields: ['password']});
 
-const User = new mongoose.model("User", userSchema);
-// passport.use(User.createStrategy());
- 
-// passport.serializeUser(User.serializeUser());
-// passport.deserializeUser(User.deserializeUser());
 
-//mongoose.connect("mongodb://localhost:27017/userDB", {useNewUrlParser: true, useUnifiedTopology: true});
-//mongoose.set("useCreateIndex", true);
 
 const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/userDB";
 mongoose.connect(mongoURI);

@@ -87,11 +87,12 @@
             </h5>
           </div>
           <div class="card-body">
+
             <!-- Question Text -->
-            <div class="mb-3">
+            <div class="mb-3 text-center">
               <label for="questionText" class="form-label fw-bold">Question Text *</label>
               <textarea 
-                class="form-control" 
+                class="form-control w-75 mx-auto" 
                 id="questionText"
                 rows="3"
                 [(ngModel)]="currentQuestion.questionText"
@@ -100,67 +101,63 @@
             </div>
 
             <!-- Question Type -->
-            <div class="mb-3">
-              <label for="questionType" class="form-label fw-bold">Question Type</label>
-              <select 
-                class="form-select" 
-                id="questionType"
-                [(ngModel)]="currentQuestion.questionType"
-                (ngModelChange)="onQuestionTypeChange()"
-                [disabled]="isSubmitting">
-                <option *ngFor="let type of questionTypes" [value]="type">{{ type }}</option>
-              </select>
-              <p class="form-text mt-2">
-                <i class="fas fa-info-circle"></i> Instructions: {{ currentQuestion.instructions }}
-              </p>
+            <div class="mb-3 text-center">
+              <label for="questionType" class="form-label fw-bold d-block mb-2">Question Type *</label>
+              <div>
+                <select 
+                  class="form-control w-50 mx-auto" 
+                  id="questionType"
+                  [(ngModel)]="currentQuestion.questionType"
+                  (ngModelChange)="onQuestionTypeChange()"
+                  [disabled]="isSubmitting">
+                  <option value="" disabled selected>Select a question type</option>
+                  <option *ngFor="let type of questionTypes" [value]="type">{{ QuestionTypeLabels[type] }}</option>
+                </select>
+              </div>
             </div>
 
             <!-- Answers -->
-            <div class="mb-3">
+            <div class="mb-3 text-center">
               <label class="form-label fw-bold">
                 <i class="fas fa-list-ul"></i> Answer Options *
               </label>
-              
-              <div *ngFor="let answer of currentQuestion.answers; let i = index" class="input-group mb-2">
-                <div class="input-group-prepend">
-                <div class="input-group-text">
-                  <input 
-                    class="form-check-input mt-0" 
-                    type="checkbox"
-                    [(ngModel)]="answer.isCorrect"
-                    [disabled]="isSubmitting"
-                    title="Mark as correct answer">
-                </div>
-                </div>
-                <input 
-                  type="text" 
-                  class="form-control"
-                  #answerInput
-                  [(ngModel)]="answer.text"
-                  placeholder="Answer option {{ i + 1 }}..."
-                  [disabled]="isSubmitting">
-                  <div class="input-group-append">
-                <button 
-                  class="btn btn-outline-danger" 
-                  type="button"
-                  (click)="removeAnswer(i)"
-                  [disabled]="currentQuestion.answers.length <= 1 || isSubmitting"
-                  title="Remove this answer">
-                  <i class="fas fa-times"></i>
-                </button>
+              <div class="w-75 mx-auto">
+                <div *ngFor="let answer of currentQuestion.answers; let i = index" class="input-group mb-2">
+                  <div class="input-group-prepend">
+                    <div class="input-group-text">
+                      <input 
+                        class="form-check-input mt-0" 
+                        type="checkbox"
+                        [(ngModel)]="answer.isCorrect"
+                        [disabled]="isSubmitting"
+                        title="Mark as correct answer">
+                    </div>
                   </div>
+                  <input 
+                    type="text" 
+                    class="form-control"
+                    #answerInput
+                    [(ngModel)]="answer.text"
+                    placeholder="Answer option {{ i + 1 }}..."
+                    [disabled]="isSubmitting">
+                  <div class="input-group-append">
+                    <button 
+                      class="btn btn-outline-danger" 
+                      type="button"
+                      (click)="removeAnswer(i)"
+                      [disabled]="currentQuestion.answers.length <= 1 || isSubmitting"
+                      title="Remove this answer">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                <button 
+                  class="btn btn-sm btn-outline-primary mt-2" 
+                  (click)="addAnswer()"
+                  [disabled]="isSubmitting">
+                  <i class="fas fa-plus"></i> Add Another Answer
+                </button>
               </div>
-
-              <button 
-                class="btn btn-sm btn-outline-primary" 
-                (click)="addAnswer()"
-                [disabled]="isSubmitting">
-                <i class="fas fa-plus"></i> Add Another Answer
-              </button>
-              
-              <p class="form-text mt-2">
-                <i class="fas fa-info-circle"></i> Check the box next to correct answer(s)
-              </p>
             </div>
 
             <!-- Add Question Button -->
@@ -171,9 +168,9 @@
                 [disabled]="isSubmitting">
                 <i class="fas fa-plus-circle"></i> Add Question
               </button>
-              <small class="text-muted mt-2">
+              <!-- <small class="text-muted mt-2">
                 <i class="fas fa-info-circle"></i> Click to save this question and start a new one
-              </small>
+              </small> -->
             </div>
           </div>
         </div>

@@ -46,7 +46,9 @@ export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
         zipCode: '',
         country: ''
       },
-      quizzes: []
+      quizzes: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
   }
 

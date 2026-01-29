@@ -35,7 +35,9 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
       lname: '',
       phone: '',
       address: null,
-      quizzes: []
+      quizzes: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     // Check for logout reason (e.g., inactivity timeout)

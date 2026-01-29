@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChildren, QueryList, ElementRef, AfterViewInit, 
 import { ActivatedRoute, Router } from '@angular/router';
 import { AdminQuizService } from '../../../services/admin-quiz.service';
 import { QuestionsService } from '../../../services/questions-service';
-import { QuestionType } from '../../../models/quiz';
+import { QuestionType, QuestionTypeLabels } from '../../../models/quiz';
 
 interface Answer {
   text: string;
@@ -12,7 +12,7 @@ interface Answer {
 interface Question {
   questionText: string;
   answers: Answer[];
-  questionType: QuestionType;
+  questionType: QuestionType | '';
   instructions: string;
 }
 
@@ -27,16 +27,17 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   quizTitle: string = '';
   questions: Question[] = [];
   
-  // Expose QuestionType enum to template
+  // Expose QuestionType enum and labels to template
   QuestionType = QuestionType;
+  QuestionTypeLabels = QuestionTypeLabels;
   questionTypes = Object.values(QuestionType);
   
   // Current question being edited
   currentQuestion: Question = {
     questionText: '',
     answers: [{ text: '', isCorrect: false }],
-    questionType: QuestionType.MultipleChoice,
-    instructions: this.getInstructions(QuestionType.MultipleChoice)
+    questionType: '',
+    instructions: ''
   };
 
   successMessage: string = '';
@@ -116,6 +117,9 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   }
 
   getInstructions(questionType: QuestionType): string {
+    if (!questionType || !this.questionTypes.includes(questionType as QuestionType)) {
+      return '';
+    }
     switch (questionType) {
       case QuestionType.TrueFalse:
         return 'Select the correct answer (True or False)';
@@ -129,7 +133,11 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   }
 
   onQuestionTypeChange() {
-    this.currentQuestion.instructions = this.getInstructions(this.currentQuestion.questionType);
+    if (this.currentQuestion.questionType && this.questionTypes.includes(this.currentQuestion.questionType as QuestionType)) {
+      this.currentQuestion.instructions = this.getInstructions(this.currentQuestion.questionType as QuestionType);
+    } else {
+      this.currentQuestion.instructions = '';
+    }
   }
 
   addAnswer() {
@@ -182,8 +190,8 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
     this.currentQuestion = {
       questionText: '',
       answers: [{ text: '', isCorrect: false }],
-      questionType: QuestionType.MultipleChoice,
-      instructions: this.getInstructions(QuestionType.MultipleChoice)
+      questionType: '',
+      instructions: ''
     };
   }
 
@@ -194,6 +202,10 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   editQuestion(index: number) {
     this.currentQuestion = { ...this.questions[index] };
     this.questions.splice(index, 1);
+    // If questionType is missing or invalid, set to ''
+    if (!this.currentQuestion.questionType || !this.questionTypes.includes(this.currentQuestion.questionType as QuestionType)) {
+      this.currentQuestion.questionType = '';
+    }
   }
 
   saveQuiz() {
