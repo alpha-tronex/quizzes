@@ -17,7 +17,7 @@ import { BreadcrumbComponent } from './breadcrumb/breadcrumb.component';
 import { LoginService } from './services/login-service';
 import { QuestionsService } from './services/questions-service';
 import { AuthInterceptor } from './services/auth.interceptor';
-
+import { SharedModule } from './shared/shared.module';
 
 @NgModule({ declarations: [
         AppComponent,
@@ -33,7 +33,8 @@ import { AuthInterceptor } from './services/auth.interceptor';
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         AppRoutingModule,
-        FormsModule], providers: [
+        FormsModule,
+        SharedModule], providers: [
         LoginService, 
         QuestionsService, 
         {

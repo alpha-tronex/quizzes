@@ -44,6 +44,7 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   errorMessage: string = '';
   isSubmitting: boolean = false;
   isLoading: boolean = true;
+  showCancelModal = false;
 
   @ViewChildren('answerInput') answerInputs!: QueryList<ElementRef>;
   @ViewChild('quizTitleInput') quizTitleInput!: ElementRef;
@@ -255,8 +256,14 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   }
 
   cancelQuiz() {
-    if (confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
-      this.router.navigate(['/admin/quiz-management']);
-    }
+    this.showCancelModal = true;
+    this.cdr.detectChanges();
+  }
+  onCancelModalConfirm() {
+    this.showCancelModal = false;
+    this.router.navigate(['/admin/quiz-management']);
+  }
+  onCancelModalDismiss() {
+    this.showCancelModal = false;
   }
 }

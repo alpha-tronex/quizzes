@@ -41,6 +41,7 @@ export class CreateQuizComponent implements OnInit, AfterViewInit {
   successMessage: string = '';
   errorMessage: string = '';
   isSubmitting: boolean = false;
+  showCancelModal = false;
 
   constructor(
     private adminQuizService: AdminQuizService,
@@ -207,8 +208,13 @@ getInstructions(questionType: QuestionType): string {
   }
 
   cancelQuiz() {
-    if (confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
-      this.router.navigate(['/admin/quizzes']);
-    }
+    this.showCancelModal = true;
+  }
+  onCancelModalConfirm() {
+    this.showCancelModal = false;
+    this.router.navigate(['/admin/quizzes']);
+  }
+  onCancelModalDismiss() {
+    this.showCancelModal = false;
   }
 }

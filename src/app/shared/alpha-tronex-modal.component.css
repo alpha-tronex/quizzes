@@ -1,0 +1,12 @@
+.modal-content.border-info {
+  border-top: 25px solid #0dcaf0;
+}
+.modal-content.border-warning {
+  border-top: 25px solid #ffc107;
+}
+.modal-content.border-danger {
+  border-top: 25px solid #dc3545;
+}
+.modal-content.border-success {
+  border-top: 25px solid #198754;
+}

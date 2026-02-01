@@ -36,9 +36,7 @@ if (fs.existsSync(distBrowserPath)) {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-
-
-
+// Define the User schema
 const userSchema = new mongoose.Schema ({
     fname: String,
     lname: String,
@@ -72,12 +70,16 @@ const userSchema = new mongoose.Schema ({
         }],
         score: Number,
         totalQuestions: Number,
-        duration: Number
+        duration: Number,
+        createdAt: Date,
+        updatedAt: Date
     }]
 });
 
+// Define the User model
+const User = mongoose.model("User", userSchema);
 
-
+// Connect to MongoDB
 const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/userDB";
 mongoose.connect(mongoURI);
 

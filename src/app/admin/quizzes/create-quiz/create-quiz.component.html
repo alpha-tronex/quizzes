@@ -1,9 +1,10 @@
 <section class="masthead bg-primary text-white text-center">
   <div class="container">
     <app-admin-breadcrumb></app-admin-breadcrumb>
-    
+    <app-admin-ngif-test></app-admin-ngif-test>
+    <app-ngif-test></app-ngif-test>
+
     <h2 class="mb-4">Create Quiz</h2>
-    
     <div class="card text-dark">
       <div class="card-body text-start">
         <!-- Success/Error Messages -->
@@ -22,14 +23,8 @@
           <label for="quizTitle" class="form-label fw-bold">
             <i class="fas fa-heading"></i> Quiz Title *
           </label>
-          <input 
-            type="text" 
-            class="form-control form-control-lg" 
-            id="quizTitle"
-            #quizTitleInput
-            [(ngModel)]="quizTitle"
-            placeholder="Enter quiz title..."
-            [disabled]="isSubmitting">
+          <input type="text" class="form-control form-control-lg" id="quizTitle" #quizTitleInput [(ngModel)]="quizTitle"
+            placeholder="Enter quiz title..." [disabled]="isSubmitting">
         </div>
 
         <!-- Questions List -->
@@ -41,23 +36,20 @@
             <div class="card mb-2" *ngFor="let question of questions; let i = index">
               <div class="card-header" [id]="'heading' + i">
                 <h2 class="mb-0">
-                  <button class="btn btn-link btn-block text-left" type="button" 
-                          data-toggle="collapse" 
-                          [attr.data-target]="'#question' + i"
-                          [attr.aria-expanded]="false"
-                          [attr.aria-controls]="'question' + i">
+                  <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
+                    [attr.data-target]="'#question' + i" [attr.aria-expanded]="false"
+                    [attr.aria-controls]="'question' + i">
                     <strong>Question {{ i + 1 }}:</strong>&nbsp;{{ question.questionText }}
                   </button>
                 </h2>
               </div>
-              <div [id]="'question' + i" class="collapse" 
-                   [attr.aria-labelledby]="'heading' + i"
-                   data-parent="#questionsAccordion">
+              <div [id]="'question' + i" class="collapse" [attr.aria-labelledby]="'heading' + i"
+                data-parent="#questionsAccordion">
                 <div class="card-body">
                   <ul class="list-group mb-3">
-                    <li *ngFor="let answer of question.answers; let j = index" 
-                        class="list-group-item d-flex justify-content-between align-items-center"
-                        [ngClass]="{'list-group-item-success': answer.isCorrect}">
+                    <li *ngFor="let answer of question.answers; let j = index"
+                      class="list-group-item d-flex justify-content-between align-items-center"
+                      [ngClass]="{'list-group-item-success': answer.isCorrect}">
                       {{ answer.text }}
                       <span *ngIf="answer.isCorrect" class="badge bg-success">
                         <i class="fas fa-check"></i> Correct
@@ -82,7 +74,7 @@
         <div class="card bg-light">
           <div class="card-header">
             <h5 class="mb-0">
-              <i class="fas fa-question-circle"></i> 
+              <i class="fas fa-question-circle"></i>
               {{ questions.length > 0 ? 'Add Another Question' : 'Add First Question' }}
             </h5>
           </div>
@@ -91,12 +83,8 @@
             <!-- Question Text -->
             <div class="mb-3 text-center">
               <label for="questionText" class="form-label fw-bold">Question Text *</label>
-              <textarea 
-                class="form-control w-75 mx-auto" 
-                id="questionText"
-                rows="3"
-                [(ngModel)]="currentQuestion.questionText"
-                placeholder="Enter your question..."
+              <textarea class="form-control w-75 mx-auto" id="questionText" rows="3"
+                [(ngModel)]="currentQuestion.questionText" placeholder="Enter your question..."
                 [disabled]="isSubmitting"></textarea>
             </div>
 
@@ -104,12 +92,8 @@
             <div class="mb-3 text-center">
               <label for="questionType" class="form-label fw-bold d-block mb-2">Question Type *</label>
               <div>
-                <select 
-                  class="form-control w-50 mx-auto" 
-                  id="questionType"
-                  [(ngModel)]="currentQuestion.questionType"
-                  (ngModelChange)="onQuestionTypeChange()"
-                  [disabled]="isSubmitting">
+                <select class="form-control w-50 mx-auto" id="questionType" [(ngModel)]="currentQuestion.questionType"
+                  (ngModelChange)="onQuestionTypeChange()" [disabled]="isSubmitting">
                   <option value="" disabled selected>Select a question type</option>
                   <option *ngFor="let type of questionTypes" [value]="type">{{ QuestionTypeLabels[type] }}</option>
                 </select>
@@ -125,36 +109,20 @@
                 <div *ngFor="let answer of currentQuestion.answers; let i = index" class="input-group mb-2">
                   <div class="input-group-prepend">
                     <div class="input-group-text">
-                      <input 
-                        class="form-check-input mt-0" 
-                        type="checkbox"
-                        [(ngModel)]="answer.isCorrect"
-                        [disabled]="isSubmitting"
-                        title="Mark as correct answer">
+                      <input class="form-check-input mt-0" type="checkbox" [(ngModel)]="answer.isCorrect"
+                        [disabled]="isSubmitting" title="Mark as correct answer">
                     </div>
                   </div>
-                  <input 
-                    type="text" 
-                    class="form-control"
-                    #answerInput
-                    [(ngModel)]="answer.text"
-                    placeholder="Answer option {{ i + 1 }}..."
-                    [disabled]="isSubmitting">
+                  <input type="text" class="form-control" #answerInput [(ngModel)]="answer.text"
+                    placeholder="Answer option {{ i + 1 }}..." [disabled]="isSubmitting">
                   <div class="input-group-append">
-                    <button 
-                      class="btn btn-outline-danger" 
-                      type="button"
-                      (click)="removeAnswer(i)"
-                      [disabled]="currentQuestion.answers.length <= 1 || isSubmitting"
-                      title="Remove this answer">
+                    <button class="btn btn-outline-danger" type="button" (click)="removeAnswer(i)"
+                      [disabled]="currentQuestion.answers.length <= 1 || isSubmitting" title="Remove this answer">
                       <i class="fas fa-times"></i>
                     </button>
                   </div>
                 </div>
-                <button 
-                  class="btn btn-sm btn-outline-primary mt-2" 
-                  (click)="addAnswer()"
-                  [disabled]="isSubmitting">
+                <button class="btn btn-sm btn-outline-primary mt-2" (click)="addAnswer()" [disabled]="isSubmitting">
                   <i class="fas fa-plus"></i> Add Another Answer
                 </button>
               </div>
@@ -162,10 +130,7 @@
 
             <!-- Add Question Button -->
             <div class="d-grid">
-              <button 
-                class="btn btn-success btn-lg mr-2" 
-                (click)="addQuestion()"
-                [disabled]="isSubmitting">
+              <button class="btn btn-success btn-lg mr-2" (click)="addQuestion()" [disabled]="isSubmitting">
                 <i class="fas fa-plus-circle"></i> Add Question
               </button>
               <!-- <small class="text-muted mt-2">
@@ -177,18 +142,21 @@
 
         <!-- Action Buttons -->
         <div class="mt-4 d-flex gap-2 justify-content-end">
-          <button 
-            class="btn btn-secondary mr-2" 
-            (click)="cancelQuiz()"
-            [disabled]="isSubmitting">
+          <button class="btn btn-secondary mr-2" (click)="cancelQuiz()" [disabled]="isSubmitting">
             <i class="fas fa-times"></i> Cancel
           </button>
-          <button 
-            class="btn btn-primary btn-lg" 
-            (click)="saveQuiz()"
+          <button class="btn btn-primary btn-lg" (click)="saveQuiz()"
             [disabled]="isSubmitting || questions.length === 0">
             <i class="fas fa-save"></i> {{ isSubmitting ? 'Saving...' : 'Save Quiz' }}
           </button>
+          <alpha-tronex-modal
+            [show]="showCancelModal"
+            [title]="'Cancel Quiz?'"
+            [type]="'warning'"
+            [content]="'Are you sure you want to cancel? All unsaved changes will be lost.'"
+            (confirm)="onCancelModalConfirm()"
+            (close)="onCancelModalDismiss()">
+          </alpha-tronex-modal>
         </div>
       </div>
     </div>
