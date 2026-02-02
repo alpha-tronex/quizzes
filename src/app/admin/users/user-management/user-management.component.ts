@@ -16,7 +16,8 @@ export class UserManagementComponent implements OnInit {
   errorMessage: string = '';
   reviewedQuiz: any = null;
   private modalInstance: any = null;
-  private confirmModalInstance: any = null;
+  // private confirmModalInstance: any = null;
+    showConfirmModal: boolean = false;
   confirmAction: 'promote' | 'delete' | null = null;
   confirmUser: User | null = null;
   confirmMessage: string = '';
@@ -97,7 +98,7 @@ export class UserManagementComponent implements OnInit {
       this.confirmAction = null; // Informational only
       this.confirmTitle = 'Cannot Demote Yourself';
       this.confirmMessage = 'You cannot demote your own account from administrator while logged in.';
-      this.showConfirmModal();
+      this.showConfirmModal = true;
       return;
     }
     
@@ -105,7 +106,7 @@ export class UserManagementComponent implements OnInit {
     this.confirmAction = 'promote';
     this.confirmTitle = 'Change User Type';
     this.confirmMessage = `Are you sure you want to ${action} user "${user.uname}"?`;
-    this.showConfirmModal();
+    this.showConfirmModal = true;
   }
 
   private executePromote(): void {
@@ -150,7 +151,7 @@ export class UserManagementComponent implements OnInit {
       this.confirmAction = null; // No action, just informational
       this.confirmTitle = 'Cannot Delete Account';
       this.confirmMessage = 'You cannot delete your own account while logged in.';
-      this.showConfirmModal();
+      this.showConfirmModal = true;
       return;
     }
 
@@ -158,7 +159,7 @@ export class UserManagementComponent implements OnInit {
     this.confirmAction = 'delete';
     this.confirmTitle = 'Delete User';
     this.confirmMessage = `Are you sure you want to delete user "${user.uname}"?`;
-    this.showConfirmModal();
+    this.showConfirmModal = true;
   }
 
   private executeDelete(): void {
@@ -243,22 +244,10 @@ export class UserManagementComponent implements OnInit {
     return question.answers[answerNum - 1];
   }
 
-  private showConfirmModal(): void {
-    const modalElement = document.getElementById('confirmModal');
-    if (modalElement) {
-      // Dispose of existing instance if any
-      if (this.confirmModalInstance) {
-        this.confirmModalInstance.dispose();
-      }
-      this.confirmModalInstance = new (window as any).bootstrap.Modal(modalElement);
-      this.confirmModalInstance.show();
-    }
-  }
+  // showConfirmModal is now a boolean property controlling modal visibility
 
   closeConfirmModal(): void {
-    if (this.confirmModalInstance) {
-      this.confirmModalInstance.hide();
-    }
+    this.showConfirmModal = false;
     // Reset confirmation state
     this.confirmAction = null;
     this.confirmUser = null;

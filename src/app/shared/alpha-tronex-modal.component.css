@@ -1,12 +1,17 @@
-.modal-content.border-info {
-  border-top: 25px solid #0dcaf0;
+
+.modal-header.header-info {
+  background-color: #0dcaf0;
+  color: #fff;
 }
-.modal-content.border-warning {
-  border-top: 25px solid #ffc107;
+.modal-header.header-warning {
+  background-color: #ffc107;
+  color: #212529;
 }
-.modal-content.border-danger {
-  border-top: 25px solid #dc3545;
+.modal-header.header-danger {
+  background-color: #dc3545;
+  color: #fff;
 }
-.modal-content.border-success {
-  border-top: 25px solid #198754;
+.modal-header.header-success {
+  background-color: #198754;
+  color: #fff;
 }

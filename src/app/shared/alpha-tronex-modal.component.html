@@ -1,12 +1,12 @@
 <div *ngIf="show" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.4);">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" [ngClass]="{
-      'border-info': type === 'info',
-      'border-warning': type === 'warning',
-      'border-danger': type === 'danger',
-      'border-success': type === 'success'
-    }">
-      <div class="modal-header">
+    <div class="modal-content pb-3">
+      <div class="modal-header" [ngClass]="{
+        'header-info': type === 'info',
+        'header-warning': type === 'warning',
+        'header-danger': type === 'danger',
+        'header-success': type === 'success'
+      }">
         <h5 class="modal-title">{{ title }}</h5>
         <button *ngIf="!disableClose" type="button" class="btn-close" aria-label="Close" (click)="onClose()"></button>
       </div>
@@ -18,8 +18,6 @@
       </div>
       <div class="modal-footer">
         <ng-content select="[modal-actions]"></ng-content>
-        <button *ngIf="type === 'danger' || type === 'warning'" type="button" class="btn btn-danger ms-2" (click)="onConfirm()">Confirm</button>
-        <button *ngIf="!disableClose" type="button" class="btn btn-secondary" (click)="onClose()">Close</button>
       </div>
     </div>
   </div>
