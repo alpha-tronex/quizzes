@@ -11,18 +11,16 @@ import { LoginService } from '../services/login-service';
 export class HeaderComponent implements OnInit, OnDestroy {
   subscription: any;
 
+  // Modal state for shared alpha-tronex popup
+  showPopup = false;
+  popupTitle = 'Under Construction';
+  popupMessage = '';
+
   constructor(private router: Router, private loginService: LoginService) { }
 
-  ngOnInit() {
-    // subscribe to this.loginService.loggedInStudent.uname
-    // this.subscription = this.loginService.loggedInStudent.subscribe((student => {
-    //   this.username = student.uname;
-    // });
-    // this.loggedIn = this.loginService.loggedInStudent.
-  }
+  ngOnInit() {}
 
   getUsername(): string {
-    // Check if user is logged in using localStorage
     if (localStorage.getItem('currentUser')) {
       return this.loginService.userName;
     }
@@ -30,7 +28,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   isAdmin(): boolean {
-    // Check if user is admin
     if (localStorage.getItem('currentUser')) {
       return this.loginService.isAdmin();
     }
@@ -40,9 +37,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   collapseNavbar(): void {
     const navbarToggler = document.querySelector('.navbar-toggler') as HTMLElement;
     const navbarCollapse = document.getElementById('navbarResponsive');
-    
     if (navbarCollapse && navbarCollapse.classList.contains('show')) {
-      // Simulate clicking the toggle button to use Bootstrap's built-in collapse animation
       if (navbarToggler) {
         navbarToggler.click();
       }
@@ -50,10 +45,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   logOff() {
-    //this.loginService.loggedInStudentChange.next(null);
     this.collapseNavbar();
     this.loginService.logout();
-    // take to home page
     this.router.navigate(['home']);
   }
 
@@ -62,4 +55,23 @@ export class HeaderComponent implements OnInit, OnDestroy {
     //   this.subscription.unsubscribe();
     // }
   }
+
+  // Show the shared alpha-tronex popup with a custom message
+  showUnderConstruction(event: Event, feature: string) {
+    event.preventDefault();
+    this.popupMessage = `${feature} is under construction.`;
+    this.showPopup = true;
+  }
+
+  // Hide the shared alpha-tronex popup
+  closePopup() {
+    this.showPopup = false;
+    this.popupMessage = '';
+  }
+
+  // Custom links for the dropdown menu
+  customLinks = [
+    { name: 'Lesson Management', icon: 'fas fa-book', url: '#' },
+    { name: 'Enrollment Management', icon: 'fas fa-user-check', url: '#' }
+  ];
 }

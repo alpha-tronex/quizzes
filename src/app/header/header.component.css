@@ -7,3 +7,35 @@
 #navbarResponsive.collapsing {
   transition: height .5s ease !important;
 }
+
+/* Add submenu styles for right-opening dropdown */
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu > .dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: 0;
+  display: none;
+  position: absolute;
+}
+
+.dropdown-submenu:hover > .dropdown-menu {
+  display: block;
+}
+
+.dropdown-submenu > .dropdown-item:after {
+  /* content: "▶"; */
+  float: right;
+  margin-left: 5px;
+  font-size: 0.8em;
+}
+
+.modal {
+  z-index: 1050;
+}
+.modal-backdrop {
+  z-index:99999;
+}

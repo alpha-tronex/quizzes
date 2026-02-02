@@ -19,7 +19,8 @@ import { QuestionsService } from './services/questions-service';
 import { AuthInterceptor } from './services/auth.interceptor';
 import { SharedModule } from './shared/shared.module';
 
-@NgModule({ declarations: [
+@NgModule({
+    declarations: [
         AppComponent,
         QuestionsComponent,
         HomeComponent,
@@ -35,13 +36,14 @@ import { SharedModule } from './shared/shared.module';
         AppRoutingModule,
         FormsModule,
         SharedModule], providers: [
-        LoginService, 
-        QuestionsService, 
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: AuthInterceptor,
-            multi: true
-        },
-        provideHttpClient(withInterceptorsFromDi())
-    ] })
+            LoginService,
+            QuestionsService,
+            {
+                provide: HTTP_INTERCEPTORS,
+                useClass: AuthInterceptor,
+                multi: true
+            },
+            provideHttpClient(withInterceptorsFromDi())
+        ]
+})
 export class AppModule { }
