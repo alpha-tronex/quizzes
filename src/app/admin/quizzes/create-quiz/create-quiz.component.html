@@ -154,6 +154,10 @@
             [content]="'Are you sure you want to cancel? All unsaved changes will be lost.'"
             (confirm)="onCancelModalConfirm()"
             (close)="onCancelModalDismiss()">
+            <div modal-actions>
+              <button type="button" class="btn btn-secondary" (click)="onCancelModalDismiss()">No, Keep Editing</button>
+              <button type="button" class="btn btn-danger ml-2 mr-3" (click)="onCancelModalConfirm()">Yes, Cancel Quiz</button>
+            </div>
           </alpha-tronex-modal>
         </div>
       </div>
