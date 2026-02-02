@@ -29,6 +29,8 @@ export class QuizManagementComponent implements OnInit {
   confirmTitle: string = '';
   confirmMessage: string = '';
 
+  public showConfirmModal: boolean = false;
+
   constructor(
     private adminUserService: AdminUserService,
     private adminQuizService: AdminQuizService
@@ -76,7 +78,7 @@ export class QuizManagementComponent implements OnInit {
     this.confirmAction = 'deleteUserQuiz';
     this.confirmTitle = 'Delete User Quiz Data';
     this.confirmMessage = `Are you sure you want to delete all quiz data for user "${user?.uname}"? This action cannot be undone.`;
-    this.showConfirmModal();
+    this.showConfirmModal = true;
   }
 
   private executeDeleteUserQuizData(): void {
@@ -101,7 +103,7 @@ export class QuizManagementComponent implements OnInit {
     this.confirmAction = 'deleteAllUserQuizzes';
     this.confirmTitle = 'Delete All Quiz Data';
     this.confirmMessage = 'Are you sure you want to delete ALL quiz data from ALL users? This action cannot be undone.';
-    this.showConfirmModal();
+    this.showConfirmModal = true;
   }
 
   // Handle user selection for specific quiz deletion
@@ -130,7 +132,7 @@ export class QuizManagementComponent implements OnInit {
     this.confirmAction = 'deleteSpecificUserQuiz';
     this.confirmTitle = 'Delete Specific Quiz Entry';
     this.confirmMessage = `Are you sure you want to delete the quiz "${quiz?.title}" from user "${user?.uname}"? This action cannot be undone.`;
-    this.showConfirmModal();
+    this.showConfirmModal = true;
   }
 
   private executeDeleteSpecificUserQuiz(): void {
@@ -179,7 +181,7 @@ export class QuizManagementComponent implements OnInit {
     this.confirmAction = 'deleteQuizFile';
     this.confirmTitle = 'Delete Quiz File';
     this.confirmMessage = `Are you sure you want to delete the quiz file "${quiz?.title}"? This action cannot be undone and users will no longer be able to take this quiz.`;
-    this.showConfirmModal();
+    this.showConfirmModal = true;
   }
 
   // Delete quiz file from list (with quiz ID directly)
@@ -189,7 +191,7 @@ export class QuizManagementComponent implements OnInit {
     this.confirmAction = 'deleteQuizFile';
     this.confirmTitle = 'Delete Quiz File';
     this.confirmMessage = `Are you sure you want to delete the quiz file "${quiz?.title}"? This action cannot be undone and users will no longer be able to take this quiz.`;
-    this.showConfirmModal();
+    this.showConfirmModal = true;
   }
 
   private executeDeleteQuizFile(): void {
@@ -214,7 +216,7 @@ export class QuizManagementComponent implements OnInit {
     this.confirmAction = 'deleteAllQuizFiles';
     this.confirmTitle = 'Delete All Quiz Files';
     this.confirmMessage = 'Are you sure you want to delete ALL quiz files? This action cannot be undone and users will no longer be able to take any quizzes.';
-    this.showConfirmModal();
+    this.showConfirmModal = true;
   }
 
   private executeDeleteAllQuizFiles(): void {
@@ -248,21 +250,8 @@ export class QuizManagementComponent implements OnInit {
     return name ? `${user.uname} (${name})` : user.uname;
   }
 
-  private showConfirmModal(): void {
-    const modalElement = document.getElementById('quizManagementConfirmModal');
-    if (modalElement) {
-      if (this.confirmModalInstance) {
-        this.confirmModalInstance.dispose();
-      }
-      this.confirmModalInstance = new (window as any).bootstrap.Modal(modalElement);
-      this.confirmModalInstance.show();
-    }
-  }
-
   closeConfirmModal(): void {
-    if (this.confirmModalInstance) {
-      this.confirmModalInstance.hide();
-    }
+    this.showConfirmModal = false;
     this.confirmAction = null;
     this.confirmTitle = '';
     this.confirmMessage = '';
