@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { User } from '@models/users';
 import { AdminUserService } from '@admin/services/admin-user.service';
 import { LoginService } from '@core/services/login-service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
     selector: 'app-user-management',
@@ -42,7 +43,8 @@ export class UserManagementComponent implements OnInit {
 
   constructor(
     private adminUserService: AdminUserService,
-    private loginService: LoginService
+    private loginService: LoginService,
+    private logger: LoggerService
   ) { }
 
   ngOnInit() {
@@ -59,7 +61,7 @@ export class UserManagementComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading users:', error);
+        this.logger.error('Error loading users', error);
         this.errorMessage = 'Failed to load users. Please try again.';
         this.loading = false;
       }
@@ -130,10 +132,10 @@ export class UserManagementComponent implements OnInit {
           this.users[userIndex].type = newType;
         }
         
-        console.log('User type updated successfully');
+        this.logger.info('User type updated successfully');
       },
       error: (error) => {
-        console.error('Error updating user type:', error);
+        this.logger.error('Error updating user type', error);
         alert('Failed to update user type: ' + error);
       }
     });
@@ -180,7 +182,7 @@ export class UserManagementComponent implements OnInit {
         alert('User deleted successfully');
       },
       error: (error) => {
-        console.error('Error deleting user:', error);
+        this.logger.error('Error deleting user', error);
         alert('Failed to delete user: ' + error);
       }
     });

@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import { Observable, Subject, throwError } from 'rxjs';
 import { catchError, retry, tap } from 'rxjs/operators';
 import { User } from '@models/users';
+import { LoggerService } from '@core/services/logger.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,7 @@ export class LoginService {
   http: HttpClient;
   loggedIn: boolean = false;
 
-  constructor(http: HttpClient) {
+  constructor(http: HttpClient, private logger: LoggerService) {
     this.http = http;
     /*
     this.loggedInStudentChange.subscribe((student) => {
@@ -44,34 +45,34 @@ export class LoginService {
       // retry(3),
       tap(response => {
         this.user = response;
-        console.log('Username:', this.user.uname);
+        this.logger.info('Logged in', { username: this.user?.uname });
         // Store user with token in localStorage for access across components
         localStorage.setItem('currentUser', JSON.stringify(response));
         // Signal that user is logged in (app.component will start idle monitoring)
         this.loggedIn = true;
       }),
       catchError((error) => {
-        console.log('Error in login:', error);
+        this.logger.error('Error in login', error);
         return this.handleError(error);
       })
     );
   }
 
   register(user: User): Observable<User> {
-    console.log(user);
+    this.logger.debug('Register payload', user);
     return this.http.post<User>('/api/register', JSON.stringify(user),
     { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) }).pipe(
       // retry(3),
       tap(response => {
         this.user = response;
-        console.log('Registered user:', this.user.uname);
+        this.logger.info('Registered user', { username: this.user?.uname });
         // Store user with token in localStorage for access across components
         // Signal that user is logged in (app.component will start idle monitoring)
         this.loggedIn = true;
         localStorage.setItem('currentUser', JSON.stringify(response));
       }),
       catchError((error) => {
-        console.log('Error in register:', error);
+        this.logger.error('Error in register', error);
         return this.handleError(error);
       })
     );
@@ -81,7 +82,7 @@ export class LoginService {
     return this.http.put<User>('/api/user/update', user).pipe(
       tap(response => {
         this.user = response;
-        console.log('User updated:', this.user.uname);
+        this.logger.info('User updated', { username: this.user?.uname });
         // Update localStorage with new user data (preserve token)
         const currentUser = localStorage.getItem('currentUser');
         if (currentUser) {
@@ -91,7 +92,7 @@ export class LoginService {
         }
       }),
       catchError((error) => {
-        console.log('Error in updateUser:', error);
+        this.logger.error('Error in updateUser', error);
         return this.handleError(error);
       })
     );
@@ -108,13 +109,13 @@ export class LoginService {
   handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       // A client-side or network error occurred. Handle it accordingly.
-      console.error('An error occurred:', error.error.message);
+      this.logger.error('Client/network error', error.error.message);
     } else {
       // The backend returned an unsuccessful response code.
       // The response body may contain clues as to what went wrong.
-      console.error(
-        `Backend returned code ${error.status}, ` +
-        `body was: ${JSON.stringify(error.error)}`);
+      this.logger.error(
+        `Backend returned code ${error.status}, body was: ${JSON.stringify(error.error)}`
+      );
     }
     // Propagate backend error body when available so components can show messages
     const backendError = error.error || 'Something bad happened; please try again later.';

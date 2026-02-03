@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AdminUserService } from '@admin/services/admin-user.service';
 import { AdminQuizService } from '@admin/services/admin-quiz.service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
     selector: 'app-quiz-management',
@@ -33,7 +34,8 @@ export class QuizManagementComponent implements OnInit {
 
   constructor(
     private adminUserService: AdminUserService,
-    private adminQuizService: AdminQuizService
+    private adminQuizService: AdminQuizService,
+    private logger: LoggerService
   ) { }
 
   ngOnInit() {
@@ -47,7 +49,7 @@ export class QuizManagementComponent implements OnInit {
         this.users = data;
       },
       error: (error) => {
-        console.error('Error loading users:', error);
+        this.logger.error('Error loading users', error);
         this.showMessage('Failed to load users', 'error');
       }
     });
@@ -61,7 +63,7 @@ export class QuizManagementComponent implements OnInit {
         this.quizzes = data;
       },
       error: (error) => {
-        console.error('Error loading quiz files:', error);
+        this.logger.error('Error loading quiz files', error);
         this.showMessage('Failed to load quiz files', 'error');
       }
     });
@@ -91,7 +93,7 @@ export class QuizManagementComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error deleting user quiz data:', error);
+        this.logger.error('Error deleting user quiz data', error);
         this.showMessage('Failed to delete user quiz data: ' + error.message, 'error');
         this.loading = false;
       }
@@ -147,7 +149,7 @@ export class QuizManagementComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error deleting specific quiz:', error);
+        this.logger.error('Error deleting specific quiz', error);
         this.showMessage('Failed to delete quiz entry: ' + error.message, 'error');
         this.loading = false;
       }
@@ -163,7 +165,7 @@ export class QuizManagementComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error deleting all user quiz data:', error);
+        this.logger.error('Error deleting all user quiz data', error);
         this.showMessage('Failed to delete all user quiz data: ' + error.message, 'error');
         this.loading = false;
       }
@@ -204,7 +206,7 @@ export class QuizManagementComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error deleting quiz file:', error);
+        this.logger.error('Error deleting quiz file', error);
         this.showMessage('Failed to delete quiz file: ' + error.message, 'error');
         this.loading = false;
       }
@@ -228,7 +230,7 @@ export class QuizManagementComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error deleting all quiz files:', error);
+        this.logger.error('Error deleting all quiz files', error);
         this.showMessage('Failed to delete all quiz files: ' + error.message, 'error');
         this.loading = false;
       }

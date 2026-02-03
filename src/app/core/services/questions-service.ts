@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
 import { Quiz } from '@models/quiz';
+import { LoggerService } from '@core/services/logger.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ import { Quiz } from '@models/quiz';
 export class QuestionsService {
   http: HttpClient;
 
-  constructor(http: HttpClient) {
+  constructor(http: HttpClient, private logger: LoggerService) {
     this.http = http;
   }
 
@@ -19,7 +20,7 @@ export class QuestionsService {
     return this.http.get<Quiz>(url).pipe(
       retry(3),
       catchError((error) => {
-        console.log('Error in getQuiz:', error);
+        this.logger.error('Error in getQuiz', error);
         return this.handleError(error);
       })
     );
@@ -29,7 +30,7 @@ export class QuestionsService {
     return this.http.get<any[]>('/api/quizzes').pipe(
       retry(1),
       catchError((error) => {
-        console.log('Error in getQuiz:', error);
+        this.logger.error('Error in getAvailableQuizzes', error);
         return this.handleError(error);
       })
     );
@@ -39,7 +40,7 @@ export class QuestionsService {
     return this.http.post<any>('/api/quiz', { username, quizData }).pipe(
       retry(1),
       catchError((error) => {
-        console.log('Error in getQuiz:', error);
+        this.logger.error('Error in saveQuiz', error);
         return this.handleError(error);
       })
     );
@@ -49,7 +50,7 @@ export class QuestionsService {
     return this.http.get<any>(`/api/quiz/history/${username}`).pipe(
       retry(1),
       catchError((error) => {
-        console.log('Error in getQuiz:', error);
+        this.logger.error('Error in getQuizHistory', error);
         return this.handleError(error);
       })
     );
@@ -58,13 +59,13 @@ export class QuestionsService {
   handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       // A client-side or network error occurred. Handle it accordingly.
-      console.error('An error occurred:', error.error.message);
+      this.logger.error('An error occurred', error.error.message);
     } else {
       // The backend returned an unsuccessful response code.
       // The response body may contain clues as to what went wrong.
-      console.error(
-        `Backend returned code ${error.status}, ` +
-        `body was: ${JSON.stringify(error.error)}`);
+      this.logger.error(
+        `Backend returned code ${error.status}, body was: ${JSON.stringify(error.error)}`
+      );
     }
     // Propagate backend error body when available so components can show messages
     const backendError = error.error || 'Something bad happened; please try again later.';

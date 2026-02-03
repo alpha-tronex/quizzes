@@ -3,6 +3,7 @@ import { User } from '@models/users';
 import { LoginService } from '@core/services/login-service';
 import { UtilService, State, Country } from '@shared/services/util.service';
 import { ValidationService } from '@shared/services/validation.service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
     selector: 'app-account',
@@ -25,7 +26,8 @@ export class AccountComponent implements OnInit {
   constructor(
     private loginService: LoginService,
     private utilService: UtilService,
-    private validationService: ValidationService
+    private validationService: ValidationService,
+    private logger: LoggerService
   ) { }
 
   ngOnInit() {
@@ -52,7 +54,7 @@ export class AccountComponent implements OnInit {
         this.states = data;
       },
       error: (error) => {
-        console.error('Error loading states:', error);
+        this.logger.error('Error loading states', error);
       }
     });
 
@@ -62,7 +64,7 @@ export class AccountComponent implements OnInit {
         this.countries = data;
       },
       error: (error) => {
-        console.error('Error loading countries:', error);
+        this.logger.error('Error loading countries', error);
       }
     });
   }
