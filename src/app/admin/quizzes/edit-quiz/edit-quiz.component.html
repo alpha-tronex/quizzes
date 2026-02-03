@@ -31,7 +31,7 @@
 
         <!-- Quiz Title -->
         <div class="mb-4">
-          <label for="quizTitle" class="form-label font-weight-bold">
+          <label for="quizTitle" class="form-label font-weight-bold text-center w-100">
             <i class="fas fa-heading"></i> Quiz Title *
           </label>
           <input type="text" class="form-control form-control-lg" id="quizTitle" #quizTitleInput [(ngModel)]="quizTitle"
@@ -40,7 +40,7 @@
 
         <!-- Questions List -->
         <div *ngIf="questions.length > 0" class="mb-4">
-          <h5 class="mb-3">
+          <h5 class="mb-3 text-center">
             <i class="fas fa-list"></i> Questions ({{ questions.length }})
           </h5>
           <div class="accordion" id="questionsAccordion">
@@ -152,7 +152,7 @@
             <i class="fas fa-times"></i> Cancel
           </button>
           <button class="btn btn-primary btn-lg" (click)="saveQuiz()"
-            [disabled]="isSubmitting || questions.length === 0">
+            [disabled]="isSubmitting || questions.length === 0 || isLoading">
             <i class="fas fa-save"></i> {{ isSubmitting ? 'Saving...' : 'Update Quiz' }}
           </button>
           <alpha-tronex-modal
@@ -162,6 +162,10 @@
             [content]="'Are you sure you want to cancel? All unsaved changes will be lost.'"
             (confirm)="onCancelModalConfirm()"
             (close)="onCancelModalDismiss()">
+            <div modal-actions>
+              <button type="button" class="btn btn-secondary" (click)="onCancelModalDismiss()">No, Keep Editing</button>
+              <button type="button" class="btn btn-danger ml-2 mr-3" (click)="onCancelModalConfirm()">Yes, Cancel Quiz</button>
+            </div>
           </alpha-tronex-modal>
         </div>
       </div>

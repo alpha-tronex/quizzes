@@ -39,6 +39,7 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
     questionType: '',
     instructions: ''
   };
+  editingIndex: number | null = null;
 
   successMessage: string = '';
   errorMessage: string = '';
@@ -180,13 +181,20 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // Add question to list
-    this.questions.push({ ...this.currentQuestion });
-    
+    if (this.editingIndex !== null) {
+      // Update the question in place
+      this.questions[this.editingIndex] = { ...this.currentQuestion };
+      this.successMessage = `Question ${this.editingIndex + 1} updated!`;
+      this.editingIndex = null;
+    } else {
+      // Add question to list
+      this.questions.push({ ...this.currentQuestion });
+      this.successMessage = `Question ${this.questions.length} saved! Form cleared for next question.`;
+    }
+
     this.errorMessage = '';
-    this.successMessage = `Question ${this.questions.length} saved! Form cleared for next question.`;
     setTimeout(() => this.successMessage = '', 3000);
-    
+
     // Clear the form immediately for the next question
     this.currentQuestion = {
       questionText: '',
@@ -202,7 +210,7 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
 
   editQuestion(index: number) {
     this.currentQuestion = { ...this.questions[index] };
-    this.questions.splice(index, 1);
+    this.editingIndex = index;
     // If questionType is missing or invalid, set to ''
     if (!this.currentQuestion.questionType || !this.questionTypes.includes(this.currentQuestion.questionType as QuestionType)) {
       this.currentQuestion.questionType = '';

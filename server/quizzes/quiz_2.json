@@ -29,6 +29,21 @@
       "correct": [
         1
       ]
+    },
+    {
+      "questionNum": 2,
+      "questionType": "SingleAnswer",
+      "instructions": "Select the correct answer",
+      "question": "How many years did Muhammed (SAS) teach Islam in Mecca before migrating to Medina?",
+      "answers": [
+        "10",
+        "15",
+        "13",
+        "8"
+      ],
+      "correct": [
+        3
+      ]
     }
   ]
 }

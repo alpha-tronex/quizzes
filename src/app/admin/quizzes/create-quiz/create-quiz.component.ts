@@ -212,7 +212,7 @@ getInstructions(questionType: QuestionType): string {
   }
   onCancelModalConfirm() {
     this.showCancelModal = false;
-    this.router.navigate(['/admin/quizzes']);
+    this.router.navigate(['/admin']);
   }
   onCancelModalDismiss() {
     this.showCancelModal = false;

@@ -47,17 +47,22 @@ export class AdminBreadcrumbComponent implements OnInit {
     ];
 
     let currentPath = '/admin';
-    segments.forEach(segment => {
+    segments.forEach((segment, idx) => {
       // Remove query parameters if any
       const cleanSegment = segment.split('?')[0];
-      currentPath += `/${cleanSegment}`;
-      
-      // Get label from routeLabels or use segment as fallback
-      const label = this.routeLabels[cleanSegment] || this.formatSegment(cleanSegment);
-      
+      let label = this.routeLabels[cleanSegment] || this.formatSegment(cleanSegment);
+      let url = currentPath + `/${cleanSegment}`;
+
+      // Special case: if on edit-quiz page, make 'Edit Quiz' breadcrumb point to quiz management
+      if (cleanSegment === 'edit-quiz') {
+        url = '/admin/quiz-management';
+      } else {
+        currentPath = url;
+      }
+
       this.breadcrumbs.push({
         label: label,
-        url: currentPath
+        url: url
       });
     });
   }
