@@ -14,9 +14,9 @@ import { AccountComponent } from './account/account.component';
 import { RegisterComponent } from './register/register.component';
 import { HistoryComponent } from './history/history.component';
 import { BreadcrumbComponent } from './breadcrumb/breadcrumb.component';
-import { LoginService } from './services/login-service';
-import { QuestionsService } from './services/questions-service';
-import { AuthInterceptor } from './services/auth.interceptor';
+import { LoginService } from '@core/services/login-service';
+import { QuestionsService } from '@core/services/questions-service';
+import { AuthInterceptor } from '@core/services/auth.interceptor';
 import { SharedModule } from './shared/shared.module';
 
 @NgModule({

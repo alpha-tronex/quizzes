@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { User } from '../models/users';
-import { LoginService } from '../services/login-service';
-import { UtilService, State, Country } from '../services/util.service';
-import { ValidationService } from '../services/validation.service';
+import { User } from '@models/users';
+import { LoginService } from '@core/services/login-service';
+import { UtilService, State, Country } from '@shared/services/util.service';
+import { ValidationService } from '@shared/services/validation.service';
 
 @Component({
     selector: 'app-account',

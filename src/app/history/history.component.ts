@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { QuestionsService } from '../services/questions-service';
-import { LoginService } from '../services/login-service';
+import { QuestionsService } from '@core/services/questions-service';
+import { LoginService } from '@core/services/login-service';
 
 @Component({
     selector: 'app-history',

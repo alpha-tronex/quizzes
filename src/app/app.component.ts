@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { LoginService } from './services/login-service';
-import { IdleTimeoutService } from './services/idle-timeout.service';
+import { LoginService } from '@core/services/login-service';
+import { IdleTimeoutService } from '@core/services/idle-timeout.service';
 
 @Component({
     selector: 'app-root',

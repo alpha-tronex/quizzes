@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { QuizUploadService } from '../../../services/quiz-upload.service';
-import { QuestionType } from '../../../models/quiz';
+import { QuizUploadService } from '@admin/services/quiz-upload.service';
+import { QuestionType } from '@models/quiz';
 
 @Component({
     selector: 'app-upload-quiz',

@@ -1,8 +1,8 @@
 import { Component, OnInit, ViewChildren, QueryList, ElementRef, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AdminQuizService } from '../../../services/admin-quiz.service';
-import { QuestionsService } from '../../../services/questions-service';
-import { QuestionType, QuestionTypeLabels } from '../../../models/quiz';
+import { AdminQuizService } from '@admin/services/admin-quiz.service';
+import { QuestionsService } from '@core/services/questions-service';
+import { QuestionType, QuestionTypeLabels } from '@models/quiz';
 
 interface Answer {
   text: string;

@@ -2,9 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, Subject, throwError } from 'rxjs';
 import { catchError, retry, tap } from 'rxjs/operators';
-import { User } from '../models/users';
+import { User } from '@models/users';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class LoginService {
   //loggedInStudentChange: Subject<User> = new Subject<User>();
   welcomePhrase: string = 'Welcome to ISRA learning. Please login or register to start taking quizzes!';
@@ -12,7 +14,7 @@ export class LoginService {
   http: HttpClient;
   loggedIn: boolean = false;
 
-  constructor(http?: HttpClient) {
+  constructor(http: HttpClient) {
     this.http = http;
     /*
     this.loggedInStudentChange.subscribe((student) => {

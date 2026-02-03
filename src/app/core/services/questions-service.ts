@@ -2,13 +2,15 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
-import { Quiz } from '../models/quiz';
+import { Quiz } from '@models/quiz';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class QuestionsService {
   http: HttpClient;
 
-  constructor(http?: HttpClient) {
+  constructor(http: HttpClient) {
     this.http = http;
   }
 

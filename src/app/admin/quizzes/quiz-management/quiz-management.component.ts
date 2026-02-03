@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { AdminUserService } from '../../../services/admin-user.service';
-import { AdminQuizService } from '../../../services/admin-quiz.service';
+import { AdminUserService } from '@admin/services/admin-user.service';
+import { AdminQuizService } from '@admin/services/admin-quiz.service';
 
 @Component({
     selector: 'app-quiz-management',

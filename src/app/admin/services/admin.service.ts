@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { User } from '../models/users';
+import { User } from '@models/users';
 
 /**
  * @deprecated This service has been split into AdminUserService and AdminQuizService.

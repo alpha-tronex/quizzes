@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 // import { BehaviorSubject, Observable } from 'rxjs';
-import { LoginService } from '../services/login-service';
-import { QuestionsService } from '../services/questions-service';
+import { LoginService } from '@core/services/login-service';
+import { QuestionsService } from '@core/services/questions-service';
 import { Router } from '@angular/router';
 
 @Component({

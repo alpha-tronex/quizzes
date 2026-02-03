@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { User } from '../../../models/users';
-import { AdminUserService } from '../../../services/admin-user.service';
-import { LoginService } from '../../../services/login-service';
+import { User } from '@models/users';
+import { AdminUserService } from '@admin/services/admin-user.service';
+import { LoginService } from '@core/services/login-service';
 
 @Component({
     selector: 'app-user-management',
