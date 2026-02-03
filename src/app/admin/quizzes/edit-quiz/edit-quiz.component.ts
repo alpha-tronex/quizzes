@@ -111,7 +111,7 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
           }
         });
       },
-      error: (error) => {
+      error: (_error) => {
         this.errorMessage = 'Error loading quiz';
         this.isLoading = false;
       }
@@ -250,7 +250,7 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
 
     // Update quiz
     this.adminQuizService.uploadQuiz(quizData).subscribe({
-      next: (response) => {
+      next: (_response) => {
         this.successMessage = 'Quiz updated successfully!';
         setTimeout(() => {
           this.router.navigate(['/admin/quiz-management']);

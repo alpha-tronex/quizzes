@@ -25,7 +25,7 @@
       "@core/*": ["src/app/core/*"],
       "@admin/*": ["src/app/admin/*"],
       "@shared/*": ["src/app/shared/*"],
-      "@models/*": ["src/app/models/*"],
+      "@models/*": ["src/app/shared/models/*"],
       "@env/*": ["src/environments/*"],
       "zone.js/dist/zone": ["./node_modules/zone.js/dist/zone"]
     }

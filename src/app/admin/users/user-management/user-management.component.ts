@@ -120,7 +120,7 @@ export class UserManagementComponent implements OnInit {
     const newType = currentType === 'admin' ? 'student' : 'admin';
     
     this.adminUserService.updateUserType(this.confirmUser.id, newType).subscribe({
-      next: (updatedUser) => {
+      next: (_updatedUser) => {
         // Update the selected user
         if (this.selectedUser && this.selectedUser.id === this.confirmUser!.id) {
           this.selectedUser.type = newType;

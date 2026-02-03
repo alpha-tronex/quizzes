@@ -194,7 +194,7 @@ getInstructions(questionType: QuestionType): string {
 
     // Save quiz
     this.adminQuizService.uploadQuiz(quizData).subscribe({
-      next: (response) => {
+      next: (_response) => {
         this.successMessage = 'Quiz created successfully!';
         setTimeout(() => {
           this.router.navigate(['/admin/quizzes']);

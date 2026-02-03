@@ -47,7 +47,7 @@ export class AdminBreadcrumbComponent implements OnInit {
     ];
 
     let currentPath = '/admin';
-    segments.forEach((segment, idx) => {
+    segments.forEach((segment) => {
       // Remove query parameters if any
       const cleanSegment = segment.split('?')[0];
       let label = this.routeLabels[cleanSegment] || this.formatSegment(cleanSegment);
