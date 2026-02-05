@@ -1,4 +1,13 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  Renderer2,
+  ViewChild
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { LoginService } from '@core/services/login-service';
 
@@ -8,19 +17,41 @@ import { LoginService } from '@core/services/login-service';
     styleUrls: ['./header.component.css'],
     standalone: false
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   subscription: any;
 
   quizSubmenuOpen = false;
+
+  @ViewChild('adminDropdownWrapper')
+  private adminDropdownWrapper?: ElementRef<HTMLElement>;
+
+  private removeAdminDropdownHideListener?: () => void;
 
   // Modal state for shared alpha-tronex popup
   showPopup = false;
   popupTitle = 'Under Construction';
   popupMessage = '';
 
-  constructor(private router: Router, private loginService: LoginService) { }
+  constructor(
+    private router: Router,
+    private loginService: LoginService,
+    private renderer: Renderer2
+  ) { }
 
   ngOnInit() {}
+
+  ngAfterViewInit(): void {
+    const wrapper = this.adminDropdownWrapper?.nativeElement;
+    if (!wrapper) {
+      return;
+    }
+
+    // If Bootstrap's dropdown JS is present, it will emit hide.bs.dropdown on close.
+    // This prevents the submenu staying open between opens.
+    this.removeAdminDropdownHideListener = this.renderer.listen(wrapper, 'hide.bs.dropdown', () => {
+      this.quizSubmenuOpen = false;
+    });
+  }
 
   getUsername(): string {
     if (localStorage.getItem('currentUser')) {
@@ -53,6 +84,26 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.quizSubmenuOpen = !this.quizSubmenuOpen;
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.quizSubmenuOpen) {
+      return;
+    }
+
+    const target = event.target as HTMLElement | null;
+    if (!target) {
+      this.quizSubmenuOpen = false;
+      return;
+    }
+
+    // Keep the submenu open if the click is inside it.
+    if (target.closest('.dropdown-submenu')) {
+      return;
+    }
+
+    this.quizSubmenuOpen = false;
+  }
+
   logOff() {
     this.collapseNavbar();
     this.loginService.logout();
@@ -60,6 +111,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.removeAdminDropdownHideListener) {
+      this.removeAdminDropdownHideListener();
+      this.removeAdminDropdownHideListener = undefined;
+    }
     // if (this.subscription) {
     //   this.subscription.unsubscribe();
     // }
