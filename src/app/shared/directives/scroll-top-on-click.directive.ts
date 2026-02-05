@@ -2,7 +2,8 @@ import { Directive, HostListener, Input } from '@angular/core';
 import { ScrollService } from '@core/services/scroll.service';
 
 @Directive({
-  selector: '[appScrollTopOnClick]'
+  selector: '[appScrollTopOnClick]',
+  standalone: false
 })
 export class ScrollTopOnClickDirective {
   @Input() appScrollTopOnClick: boolean | '' = true;
