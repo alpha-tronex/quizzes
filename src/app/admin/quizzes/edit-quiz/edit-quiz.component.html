@@ -71,7 +71,7 @@
                     <button class="btn btn-sm btn-warning" (click)="editQuestion(i)">
                       <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="btn btn-sm btn-danger" (click)="removeQuestion(i)">
+                    <button class="btn btn-sm btn-danger" (click)="openDeleteQuestionModal(i)" [disabled]="isSubmitting">
                       <i class="fas fa-trash"></i> Delete
                     </button>
                   </div>
@@ -79,6 +79,20 @@
               </div>
             </div>
           </div>
+
+        <alpha-tronex-modal
+          [show]="showDeleteModal"
+          [title]="'Delete Question?'"
+          [type]="'danger'"
+          [content]="deleteModalContent"
+          [scrollToTopOnHide]="true"
+          (confirm)="onDeleteModalConfirm()"
+          (close)="onDeleteModalDismiss()">
+          <div modal-actions>
+            <button type="button" class="btn btn-secondary" (click)="onDeleteModalDismiss()">Cancel</button>
+            <button type="button" class="btn btn-danger ml-2 mr-3" (click)="onDeleteModalConfirm()">Yes, Delete</button>
+          </div>
+        </alpha-tronex-modal>
         </div>
 
         <!-- Current Question Form -->
@@ -160,6 +174,7 @@
             [title]="'Cancel Quiz?'"
             [type]="'warning'"
             [content]="'Are you sure you want to cancel? All unsaved changes will be lost.'"
+            [scrollToTopOnHide]="true"
             (confirm)="onCancelModalConfirm()"
             (close)="onCancelModalDismiss()">
             <div modal-actions>

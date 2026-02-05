@@ -152,6 +152,7 @@
             [title]="'Cancel Quiz?'"
             [type]="'warning'"
             [content]="'Are you sure you want to cancel? All unsaved changes will be lost.'"
+            [scrollToTopOnHide]="true"
             (confirm)="onCancelModalConfirm()"
             (close)="onCancelModalDismiss()">
             <div modal-actions>

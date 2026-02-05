@@ -184,6 +184,7 @@
   [title]="confirmTitle"
   [type]="confirmAction === 'delete' ? 'danger' : (confirmAction === null ? 'warning' : 'info')"
   [content]="confirmMessage + (confirmAction === 'delete' ? ' This action cannot be undone.' : '')"
+  [scrollToTopOnHide]="true"
   (close)="closeConfirmModal()"
   (confirm)="confirmActionExecute()">
   <div modal-actions>

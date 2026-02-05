@@ -11,6 +11,8 @@ import { LoginService } from '@core/services/login-service';
 export class HeaderComponent implements OnInit, OnDestroy {
   subscription: any;
 
+  quizSubmenuOpen = false;
+
   // Modal state for shared alpha-tronex popup
   showPopup = false;
   popupTitle = 'Under Construction';
@@ -35,6 +37,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   collapseNavbar(): void {
+    this.quizSubmenuOpen = false;
     const navbarToggler = document.querySelector('.navbar-toggler') as HTMLElement;
     const navbarCollapse = document.getElementById('navbarResponsive');
     if (navbarCollapse && navbarCollapse.classList.contains('show')) {
@@ -42,6 +45,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
         navbarToggler.click();
       }
     }
+  }
+
+  toggleQuizSubmenu(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.quizSubmenuOpen = !this.quizSubmenuOpen;
   }
 
   logOff() {

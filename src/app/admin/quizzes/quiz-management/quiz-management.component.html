@@ -248,6 +248,7 @@
   [title]="confirmTitle"
   [type]="'danger'"
   [content]="confirmMessage + ' This action cannot be undone.'"
+  [scrollToTopOnHide]="true"
   (close)="closeConfirmModal()"
   (confirm)="confirmActionExecute()">
   <div modal-actions>

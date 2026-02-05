@@ -22,8 +22,30 @@
   position: absolute;
 }
 
+/* Allow click-toggle to open submenu (Bootstrap uses .show) */
+.dropdown-submenu > .dropdown-menu.show {
+  display: block;
+}
+
 .dropdown-submenu:hover > .dropdown-menu {
   display: block;
+}
+
+/* Mobile/tablet: keep submenu within viewport by rendering inline */
+@media (max-width: 991.98px) {
+  .dropdown-submenu > .dropdown-menu {
+    position: static;
+    top: auto;
+    left: auto;
+    margin-top: 0.25rem;
+    margin-left: 1rem;
+    width: calc(100% - 1rem);
+  }
+
+  /* Hover isn't reliable on touch devices */
+  .dropdown-submenu:hover > .dropdown-menu {
+    display: none;
+  }
 }
 
 .dropdown-submenu > .dropdown-item:after {

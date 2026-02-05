@@ -46,6 +46,8 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   isSubmitting: boolean = false;
   isLoading: boolean = true;
   showCancelModal = false;
+  showDeleteModal = false;
+  pendingDeleteIndex: number | null = null;
 
   @ViewChildren('answerInput') answerInputs!: QueryList<ElementRef>;
   @ViewChild('quizTitleInput') quizTitleInput!: ElementRef;
@@ -204,7 +206,52 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
     };
   }
 
+  openDeleteQuestionModal(index: number) {
+    this.pendingDeleteIndex = index;
+    this.showDeleteModal = true;
+    this.cdr.detectChanges();
+  }
+
+  onDeleteModalConfirm() {
+    if (this.pendingDeleteIndex === null) {
+      this.showDeleteModal = false;
+      return;
+    }
+
+    this.removeQuestion(this.pendingDeleteIndex);
+    this.pendingDeleteIndex = null;
+    this.showDeleteModal = false;
+  }
+
+  onDeleteModalDismiss() {
+    this.pendingDeleteIndex = null;
+    this.showDeleteModal = false;
+  }
+
+  get deleteModalContent(): string {
+    if (this.pendingDeleteIndex === null) {
+      return '';
+    }
+    const question = this.questions[this.pendingDeleteIndex];
+    const questionText = question?.questionText ? `"${question.questionText}"` : 'this question';
+    return `Are you sure you want to delete ${questionText}? This cannot be undone.`;
+  }
+
   removeQuestion(index: number) {
+    // Keep edit-in-place state consistent when questions shift
+    if (this.editingIndex !== null) {
+      if (this.editingIndex === index) {
+        this.editingIndex = null;
+        this.currentQuestion = {
+          questionText: '',
+          answers: [{ text: '', isCorrect: false }],
+          questionType: '',
+          instructions: ''
+        };
+      } else if (this.editingIndex > index) {
+        this.editingIndex = this.editingIndex - 1;
+      }
+    }
     this.questions.splice(index, 1);
   }
 

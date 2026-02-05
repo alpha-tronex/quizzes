@@ -4,6 +4,7 @@ import { LoginService } from '@core/services/login-service';
 import { UtilService, State, Country } from '@shared/services/util.service';
 import { ValidationService } from '@shared/services/validation.service';
 import { LoggerService } from '@core/services/logger.service';
+import { ScrollService } from '@core/services/scroll.service';
 
 @Component({
     selector: 'app-account',
@@ -27,7 +28,8 @@ export class AccountComponent implements OnInit {
     private loginService: LoginService,
     private utilService: UtilService,
     private validationService: ValidationService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private scroll: ScrollService
   ) { }
 
   ngOnInit() {
@@ -73,6 +75,7 @@ export class AccountComponent implements OnInit {
     this.editMode = !this.editMode;
     this.serverErrors = [];
     this.error = '';
+    this.scroll.toTop();
   }
 
   saveChanges(): void {
@@ -97,7 +100,7 @@ export class AccountComponent implements OnInit {
       this.clientErrors = validationResult.errors;
       this.invalidFields = new Set(validationResult.invalidFields);
       this.saving = false;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      this.scroll.toTop();
       return;
     }
     
@@ -106,6 +109,7 @@ export class AccountComponent implements OnInit {
         this.user = updatedUser;
         this.editMode = false;
         this.saving = false;
+        this.scroll.toTop();
       },
       error: (err) => {
         this.saving = false;
@@ -124,6 +128,7 @@ export class AccountComponent implements OnInit {
         } else {
           this.serverErrors = ['An error occurred while updating user information'];
         }
+        this.scroll.toTop();
       }
     });
   }

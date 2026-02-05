@@ -22,8 +22,17 @@
                   <a class="dropdown-item" [routerLink]="['admin/user-management']" (click)="collapseNavbar()"><i class="fas fa-users"></i> Users</a>
                   <div class="dropdown-divider"></div>
                   <div class="dropdown-submenu">
-                    <a class="dropdown-item dropdown-toggle" [routerLink]="['admin/quiz-management']" tabindex="-1"><i class="fas fa-trash-alt"></i> Quizzes</a>
-                    <div class="dropdown-menu">
+                    <a
+                      class="dropdown-item dropdown-toggle"
+                      href="#"
+                      tabindex="-1"
+                      [attr.aria-expanded]="quizSubmenuOpen"
+                      (click)="toggleQuizSubmenu($event)">
+                      <i class="fas fa-trash-alt"></i> Quizzes
+                    </a>
+                    <div class="dropdown-menu" [class.show]="quizSubmenuOpen">
+                      <a class="dropdown-item" [routerLink]="['admin/quiz-management']" (click)="collapseNavbar()"><i class="fas fa-list"></i> Quiz Management</a>
+                      <div class="dropdown-divider"></div>
                       <a class="dropdown-item" [routerLink]="['admin/create-quiz']" (click)="collapseNavbar()"><i class="fas fa-plus-circle"></i> Create Quiz</a>
                       <a class="dropdown-item" [routerLink]="['admin/upload-quiz']" (click)="collapseNavbar()"><i class="fas fa-upload"></i> Upload Quiz</a>
                       <a class="dropdown-item" [routerLink]="['admin/quiz-management']" (click)="collapseNavbar()"><i class="fas fa-edit"></i> Edit Quiz</a>
@@ -49,12 +58,15 @@
 <alpha-tronex-modal
   [show]="showPopup"
   [title]="popupTitle"
+  [scrollToTopOnHide]="true"
   (close)="closePopup()">
   <div class="text-center p-3">
     <img src="https://media.giphy.com/media/l3vR85PnGsBwu1PFK/giphy.gif" alt="Under Construction" style="max-width: 120px; display: block; margin: 0 auto 1rem;" />
     <div class="mb-2" style="font-size: 1.1rem;">{{ popupMessage }}</div>
   </div>
   <div modal-actions>
-    <button type="button" class="btn btn-primary mr-3" aria-label="Close dialog" (click)="closePopup()">Ok</button>
+    <button type="button" class="btn btn-primary mr-3" aria-label="Close dialog" (click)="closePopup()">
+      <i class="fas fa-check mr-1"></i> Ok
+    </button>
   </div>
 </alpha-tronex-modal>
