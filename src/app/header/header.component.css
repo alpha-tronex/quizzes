@@ -38,13 +38,24 @@
     top: auto;
     left: auto;
     margin-top: 0.25rem;
-    margin-left: 1rem;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
     width: calc(100% - 1rem);
   }
 
+  /* Center submenu items in responsive view */
+  .dropdown-submenu > .dropdown-menu .dropdown-item {
+    text-align: center;
+  }
+
   /* Hover isn't reliable on touch devices */
-  .dropdown-submenu:hover > .dropdown-menu {
+  .dropdown-submenu:hover > .dropdown-menu:not(.show) {
     display: none;
+  }
+
+  /* On small screens, `.show` should always win */
+  .dropdown-submenu > .dropdown-menu.show {
+    display: block;
   }
 }
 
