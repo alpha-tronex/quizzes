@@ -1,0 +1,53 @@
+# Production compose file for the Hetzner box (5.161.104.5).
+# Mirrors the fais-app/fais-mongo pattern in hetzner-infra/hetzner.md:
+# app container serves the built Angular SPA + API on one internal port,
+# bound to 127.0.0.1 only (nginx does the public-facing TLS termination
+# and reverse proxy — see hetzner-infra/nginx/quizmaster.alphatronex.com.conf).
+#
+# Port 8020 chosen because 8000, 8010, 8200 are already taken by
+# personal-assistant, fais-app, and vaultwarden respectively.
+#
+# Memory limits are deliberately conservative: this box has 2GB total RAM
+# and fais-app + fais-mongo alone already use ~1.2GB. Raise these only if
+# `docker stats` shows the containers actually needing more headroom.
+
+services:
+  quizmaster-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quizmaster-app
+    restart: unless-stopped
+    env_file:
+      - server/.env.production
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGODB_URI: mongodb://quizmaster-mongo:27017/userDB
+    ports:
+      - "127.0.0.1:8020:3000"
+    depends_on:
+      - quizmaster-mongo
+    mem_limit: 256m
+    networks:
+      - quizmaster-net
+
+  quizmaster-mongo:
+    image: mongo:8
+    container_name: quizmaster-mongo
+    restart: unless-stopped
+    command: ["--wiredTigerCacheSizeGB", "0.25"]
+    volumes:
+      - quizmaster_mongo_data:/data/db
+    mem_limit: 400m
+    networks:
+      - quizmaster-net
+    # Not published to the host — only reachable from quizmaster-app over
+    # the compose network, same as fais-mongo.
+
+volumes:
+  quizmaster_mongo_data:
+
+networks:
+  quizmaster-net:
+    driver: bridge

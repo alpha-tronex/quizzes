@@ -1,0 +1,14 @@
+node_modules
+server/node_modules
+dist
+coverage
+.angular
+.git
+.github
+e2e
+Read Me
+*.md
+.env
+.env.*
+.DS_Store
+npm-debug.log*
