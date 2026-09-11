@@ -1,5 +1,10 @@
 const validators = require('../utils/validators');
 const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
+const ApiError = require('../utils/apiError');
+
+const emptyAddress = {
+    street1: '', street2: '', street3: '', city: '', state: '', zipCode: '', country: ''
+};
 
 /**
  * Admin User Routes
@@ -9,10 +14,10 @@ module.exports = function(app, User) {
 
     // Get all users (admin only)
     app.route("/api/admin/users")
-        .get(verifyToken, verifyAdmin, async (req, res) => {
+        .get(verifyToken, verifyAdmin, async (req, res, next) => {
             try {
                 const users = await User.find({}, { password: 0 });
-                
+
                 const usersArray = users.map(user => ({
                     id: user._id,
                     fname: user.fname || '',
@@ -26,24 +31,23 @@ module.exports = function(app, User) {
 
                 res.status(200).json(usersArray);
             } catch (err) {
-                console.log('err: ' + err);
-                res.status(500).json({ error: 'Internal server error' });
+                next(err);
             }
         });
 
     // Get user by ID (admin only)
     app.route("/api/admin/user/:id")
-        .get(verifyToken, verifyAdmin, async (req, res) => {
+        .get(verifyToken, verifyAdmin, async (req, res, next) => {
             try {
                 const userId = req.params.id;
-                
+
                 const user = await User.findById(userId, { password: 0 });
-                
+
                 if (!user) {
-                    return res.status(404).json({ error: 'User not found' });
+                    return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
                 }
 
-                const userObj = {
+                res.status(200).json({
                     id: user._id,
                     fname: user.fname || '',
                     lname: user.lname || '',
@@ -51,35 +55,23 @@ module.exports = function(app, User) {
                     email: user.email || '',
                     phone: user.phone || '',
                     type: user.type || 'student',
-                    address: user.address || {
-                        street1: '',
-                        street2: '',
-                        street3: '',
-                        city: '',
-                        state: '',
-                        zipCode: '',
-                        country: ''
-                    },
+                    address: user.address || emptyAddress,
                     quizzes: user.quizzes || []
-                };
-
-                res.status(200).json(userObj);
+                });
             } catch (err) {
-                console.log('err: ' + err);
-                res.status(500).json({ error: 'Internal server error' });
+                next(err);
             }
-        });
+        })
 
-    // Update user (admin only)
-    app.route("/api/admin/user/:id")
-        .put(verifyToken, verifyAdmin, async (req, res) => {
+        // Update user (admin only)
+        .put(verifyToken, verifyAdmin, async (req, res, next) => {
             try {
                 const userId = req.params.id;
                 const { fname, lname, email, phone, uname, type, address } = req.body || {};
 
                 // Validation using validators module
                 const validationErrors = [];
-                
+
                 if (uname && uname.trim()) {
                     const unameValidation = validators.validateUsername(uname);
                     if (!unameValidation.valid) {
@@ -130,19 +122,19 @@ module.exports = function(app, User) {
                 }
 
                 if (validationErrors.length) {
-                    return res.status(400).json({ errors: validationErrors });
+                    return next(ApiError.badRequest('VALIDATION_ERROR', 'Validation failed', validationErrors));
                 }
 
                 // Check if username is taken by another user
                 if (uname) {
                     const existingUser = await User.findOne({ username: uname, _id: { $ne: userId } });
                     if (existingUser) {
-                        return res.status(409).json({ error: 'username already in use' });
+                        return next(ApiError.conflict('DUPLICATE_USERNAME', 'Username already in use'));
                     }
                 }
 
                 // Update user
-                const updateData = {};
+                const updateData = { updatedAt: new Date() };
                 if (fname !== undefined) updateData.fname = fname;
                 if (lname !== undefined) updateData.lname = lname;
                 if (email !== undefined) updateData.email = email;
@@ -150,7 +142,6 @@ module.exports = function(app, User) {
                 if (uname !== undefined) updateData.username = uname;
                 if (type !== undefined) updateData.type = type;
                 if (address !== undefined) updateData.address = address;
-                updateData.updatedAt = new Date();
 
                 const updatedUser = await User.findByIdAndUpdate(
                     userId,
@@ -159,10 +150,10 @@ module.exports = function(app, User) {
                 );
 
                 if (!updatedUser) {
-                    return res.status(404).json({ error: 'User not found' });
+                    return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
                 }
 
-                const userObj = {
+                res.status(200).json({
                     id: updatedUser._id,
                     fname: updatedUser.fname || '',
                     lname: updatedUser.lname || '',
@@ -170,52 +161,39 @@ module.exports = function(app, User) {
                     email: updatedUser.email || '',
                     phone: updatedUser.phone || '',
                     type: updatedUser.type || 'student',
-                    address: updatedUser.address || {
-                        street1: '',
-                        street2: '',
-                        street3: '',
-                        city: '',
-                        state: '',
-                        zipCode: '',
-                        country: ''
-                    }
-                };
-
-                res.status(200).json(userObj);
+                    address: updatedUser.address || emptyAddress
+                });
             } catch (err) {
-                console.log('err: ' + err);
-                res.status(500).json({ error: 'Internal server error' });
+                next(err);
             }
-        });
+        })
 
-    // Delete user (admin only)
-    app.route("/api/admin/user/:id")
-        .delete(verifyToken, verifyAdmin, async (req, res) => {
+        // Delete user (admin only)
+        .delete(verifyToken, verifyAdmin, async (req, res, next) => {
             try {
                 const userId = req.params.id;
-                
+
                 const deletedUser = await User.findByIdAndDelete(userId);
-                
+
                 if (!deletedUser) {
-                    return res.status(404).json({ error: 'User not found' });
+                    return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
                 }
 
                 res.status(200).json({ message: 'User deleted successfully', id: userId });
             } catch (err) {
-                console.log('err: ' + err);
-                res.status(500).json({ error: 'Internal server error' });
+                next(err);
             }
         });
 
     // Update user type (promote/demote admin)
     app.route("/api/admin/user/:id/type")
-        .patch(verifyToken, verifyAdmin, async (req, res) => {
+        .patch(verifyToken, verifyAdmin, async (req, res, next) => {
             try {
                 const userId = req.params.id;
                 const { type } = req.body || {};
 
                 if (!type || !['student', 'admin'].includes(type)) {
-                    return res.status(400).json({ error: 'Invalid user type. Must be student or admin' });
+                    return next(ApiError.badRequest('INVALID_TYPE', 'Invalid user type. Must be student or admin'));
                 }
 
                 const updatedUser = await User.findByIdAndUpdate(
@@ -225,10 +203,10 @@ module.exports = function(app, User) {
                 );
 
                 if (!updatedUser) {
-                    return res.status(404).json({ error: 'User not found' });
+                    return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
                 }
 
-                const userObj = {
+                res.status(200).json({
                     id: updatedUser._id,
                     fname: updatedUser.fname || '',
                     lname: updatedUser.lname || '',
@@ -236,21 +214,18 @@ module.exports = function(app, User) {
                     email: updatedUser.email || '',
                     phone: updatedUser.phone || '',
                     type: updatedUser.type || 'student'
-                };
-
-                res.status(200).json(userObj);
+                });
             } catch (err) {
-                console.log('err: ' + err);
-                res.status(500).json({ error: 'Internal server error' });
+                next(err);
             }
         });
 
     // Delete all quiz data from a specific user
     app.route("/api/admin/user/:id/quizzes")
-        .delete(verifyToken, verifyAdmin, async (req, res) => {
+        .delete(verifyToken, verifyAdmin, async (req, res, next) => {
             try {
                 const userId = req.params.id;
-                
+
                 const updatedUser = await User.findByIdAndUpdate(
                     userId,
                     { $set: { quizzes: [] } },
@@ -258,26 +233,25 @@ module.exports = function(app, User) {
                 );
 
                 if (!updatedUser) {
-                    return res.status(404).json({ error: 'User not found' });
+                    return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
                 }
 
-                res.status(200).json({ 
-                    message: 'User quiz data deleted successfully', 
-                    userId: userId 
+                res.status(200).json({
+                    message: 'User quiz data deleted successfully',
+                    userId: userId
                 });
             } catch (err) {
-                console.log('err: ' + err);
-                res.status(500).json({ error: 'Internal server error' });
+                next(err);
             }
         });
 
     // Delete a specific quiz from a specific user
     app.route("/api/admin/user/:userId/quiz/:quizId")
-        .delete(verifyToken, verifyAdmin, async (req, res) => {
+        .delete(verifyToken, verifyAdmin, async (req, res, next) => {
             try {
                 const userId = req.params.userId;
                 const quizId = req.params.quizId;
-                
+
                 const updatedUser = await User.findByIdAndUpdate(
                     userId,
                     { $pull: { quizzes: { _id: quizId } } },
@@ -285,36 +259,34 @@ module.exports = function(app, User) {
                 );
 
                 if (!updatedUser) {
-                    return res.status(404).json({ error: 'User not found' });
+                    return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
                 }
 
-                res.status(200).json({ 
-                    message: 'Quiz entry deleted successfully', 
+                res.status(200).json({
+                    message: 'Quiz entry deleted successfully',
                     userId: userId,
                     quizId: quizId
                 });
             } catch (err) {
-                console.log('err: ' + err);
-                res.status(500).json({ error: 'Internal server error' });
+                next(err);
             }
         });
 
     // Delete all quiz data from all users
     app.route("/api/admin/quizzes/all-users-data")
-        .delete(verifyToken, verifyAdmin, async (req, res) => {
+        .delete(verifyToken, verifyAdmin, async (req, res, next) => {
             try {
                 const result = await User.updateMany(
                     {},
                     { $set: { quizzes: [] } }
                 );
 
-                res.status(200).json({ 
+                res.status(200).json({
                     message: 'All users quiz data deleted successfully',
-                    modifiedCount: result.modifiedCount 
+                    modifiedCount: result.modifiedCount
                 });
             } catch (err) {
-                console.log('err: ' + err);
-                res.status(500).json({ error: 'Internal server error' });
+                next(err);
             }
         });
 

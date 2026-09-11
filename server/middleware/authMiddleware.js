@@ -1,30 +1,44 @@
 const jwt = require('jsonwebtoken');
+const ApiError = require('../utils/apiError');
 
-// Secret key for JWT (should be in environment variable in production)
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
+// Fail fast: refuse to boot rather than silently fall back to a shared,
+// publicly-known default secret. Set JWT_SECRET in the environment (see
+// .env.example / server/.env.production.example).
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+    throw new Error(
+        'JWT_SECRET environment variable is not set. Refusing to start without it — ' +
+        'set JWT_SECRET in your environment before starting the server (see .env.example).'
+    );
+}
+
+// Extended token lifetime instead of a refresh-token flow: acceptable for
+// this app's data sensitivity (quiz scores, not financial/health data). See
+// docs/BACKEND.md, "Token lifetime strategy". Configurable via env so it can
+// be tightened later without a code change.
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '30d';
 
 /**
  * Middleware to verify JWT token
  */
 function verifyToken(req, res, next) {
-    // Get token from header
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
-        return res.status(401).json({ error: 'Access denied. No token provided.' });
+        return next(ApiError.unauthorized('NO_TOKEN', 'Access denied. No token provided.'));
     }
 
     try {
-        // Verify token
         const decoded = jwt.verify(token, JWT_SECRET);
         req.user = decoded; // Add user info to request object
         next();
     } catch (err) {
         if (err.name === 'TokenExpiredError') {
-            return res.status(401).json({ error: 'Token expired. Please login again.' });
+            return next(ApiError.unauthorized('TOKEN_EXPIRED', 'Token expired. Please login again.'));
         }
-        return res.status(403).json({ error: 'Invalid token.' });
+        return next(new ApiError(403, 'INVALID_TOKEN', 'Invalid token.'));
     }
 }
 
@@ -33,7 +47,7 @@ function verifyToken(req, res, next) {
  */
 function verifyAdmin(req, res, next) {
     if (!req.user || req.user.type !== 'admin') {
-        return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+        return next(ApiError.forbidden('ADMIN_REQUIRED', 'Access denied. Admin privileges required.'));
     }
     next();
 }
@@ -49,13 +63,13 @@ function generateToken(user) {
         email: user.email
     };
 
-    // Token expires in 24 hours
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
 module.exports = {
     verifyToken,
     verifyAdmin,
     generateToken,
-    JWT_SECRET
+    JWT_SECRET,
+    JWT_EXPIRES_IN
 };

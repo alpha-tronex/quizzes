@@ -1,0 +1,100 @@
+require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+
+const User = require('./models/User');
+const Quiz = require('./models/Quiz');
+
+const authRoutes = require('./routes/authRoutes');
+const quizRoutes = require('./routes/quizRoutes');
+const adminUserRoutes = require('./routes/adminUserRoutes');
+const adminQuizRoutes = require('./routes/adminQuizRoutes');
+const utilRoutes = require('./routes/utilRoutes');
+const errorHandler = require('./middleware/errorHandler');
+
+/**
+ * Express app factory — no `.listen()` here. Splitting this out from the
+ * network bootstrap (server.js) lets Supertest exercise the app in-process
+ * without a live port, and keeps server.js a thin, easy-to-reason-about
+ * entrypoint.
+ */
+function createApp() {
+    const app = express();
+
+    // Serve Angular app (support multiple dev/prod layouts)
+    const distBrowserPath = path.join(__dirname, '../dist/browser');
+    const distPath = path.join(__dirname, '../dist');
+    const srcPath = path.join(__dirname, '../src');
+
+    // CORS: disabled (same-origin only) unless CORS_ORIGINS is explicitly set.
+    // The mobile app (Expo web / dev tooling) needs this set to its dev server
+    // origin(s); native mobile fetch isn't subject to browser CORS at all, so
+    // this only matters for browser-based clients. See .env.example.
+    const corsOrigins = (process.env.CORS_ORIGINS || '')
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean);
+
+    app.use(cors({
+        origin: corsOrigins.length ? corsOrigins : false,
+        credentials: true
+    }));
+
+    if (fs.existsSync(distBrowserPath)) {
+        app.use(express.static(distBrowserPath));
+    } else if (fs.existsSync(distPath)) {
+        app.use(express.static(distPath));
+    } else {
+        // fallback to serving the source index during development
+        app.use(express.static(srcPath));
+    }
+
+    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({ extended: true }));
+
+    // Setup authentication routes
+    authRoutes(app, User);
+
+    // Setup quiz routes (student-facing)
+    quizRoutes(app, User, Quiz);
+
+    // Setup admin routes
+    adminUserRoutes(app, User);
+    adminQuizRoutes(app, Quiz);
+
+    // Setup utility routes
+    utilRoutes(app);
+
+    // Serve Angular app for any other GET request (must be after API routes)
+    app.use((req, res, next) => {
+        // If the request is for API, skip
+        if (req.path && req.path.startsWith('/api/')) {
+            return next();
+        }
+
+        let indexFile;
+        if (fs.existsSync(path.join(distBrowserPath, 'index.html'))) {
+            indexFile = path.join(distBrowserPath, 'index.html');
+        } else if (fs.existsSync(path.join(distPath, 'index.html'))) {
+            indexFile = path.join(distPath, 'index.html');
+        } else {
+            indexFile = path.join(srcPath, 'index.html');
+        }
+
+        // Set cache control headers for Safari compatibility
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.sendFile(indexFile);
+    });
+
+    // Centralized error handler — must be registered last
+    app.use(errorHandler);
+
+    return app;
+}
+
+module.exports = createApp;

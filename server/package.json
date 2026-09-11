@@ -4,18 +4,36 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "jest --runInBand",
+    "test:watch": "jest --runInBand --watch",
+    "start": "node server.js",
+    "migrate:quizzes": "node scripts/migrate_quizzes_to_mongo.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.2",
+    "cors": "^2.8.5",
     "dotenv": "^8.6.0",
     "express": "^5.2.1",
     "https": "^1.0.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.15.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^10.1.2",
+    "supertest": "^7.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFiles": [
+      "<rootDir>/tests/jest.env.js"
+    ],
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "testTimeout": 20000
   }
 }

@@ -1,18 +1,19 @@
 const bcrypt = require('bcrypt');
 const validators = require('../utils/validators');
 const { generateToken, verifyToken } = require('../middleware/authMiddleware');
+const ApiError = require('../utils/apiError');
 const saltRounds = 10;
 
 module.exports = function(app, User) {
 
     app.route("/api/register")
-        .post(async (req, res) => {
+        .post(async (req, res, next) => {
             try {
                 const { fname, lname, uname, email, pass, phone, address } = req.body || {};
 
                 // Validation using validators module
                 const validationErrors = [];
-                
+
                 // Required fields: uname and pass
                 const unameValidation = validators.validateUsername(uname);
                 if (!unameValidation.valid) {
@@ -61,7 +62,7 @@ module.exports = function(app, User) {
                 }
 
                 if (validationErrors.length) {
-                    return res.status(400).json({ errors: validationErrors });
+                    return next(ApiError.badRequest('VALIDATION_ERROR', 'Validation failed', validationErrors));
                 }
 
                 // ensure username/email uniqueness (only check email if provided)
@@ -71,7 +72,7 @@ module.exports = function(app, User) {
                 }
                 const existing = await User.findOne({ $or: uniqueQuery });
                 if (existing) {
-                    return res.status(409).json({ errors: ['Username or email already in use'] });
+                    return next(ApiError.conflict('DUPLICATE_USER', 'Username or email already in use'));
                 }
 
                 const hash = await bcrypt.hash(pass, saltRounds);
@@ -86,14 +87,8 @@ module.exports = function(app, User) {
                     createdAt: new Date(),
                     updatedAt: new Date()
                 });
-                console.log('before save');
 
                 await user.save();
-
-                console.log('username: ' + user.username);
-                console.log('email: ' + user.email);
-
-                console.log('after save');
 
                 // Generate JWT token
                 const token = generateToken(user);
@@ -113,74 +108,65 @@ module.exports = function(app, User) {
                 res.status(200).json(userObj);
 
             } catch (err) {
-                console.log('err' + err);
-                res.status(500).send(err);
+                next(err);
             }
         })
 
     app.route("/api/login")
-        .post(async (req,res) => {
-        try {
-            console.log("uname: " + req.body.uname);
-            console.log("pass: " + req.body.pass);
-            
-            const uname = req.body.uname;
-            const pass = req.body.pass;
+        .post(async (req, res, next) => {
+            try {
+                const uname = req.body.uname;
+                const pass = req.body.pass;
 
-            // cannot query password field if it is encrypted
-            const foundUser = await User.findOne({username: uname});
-            console.log("foundUser: " + foundUser);
+                // cannot query password field if it is encrypted
+                const foundUser = await User.findOne({ username: uname });
 
-            if (!foundUser) {
-                return res.status(401).json({ error: 'Invalid credentials' });
-            }
-
-            console.log("in if (foundUser)");
-            bcrypt.compare(pass, foundUser.password, function(err, result) {
-                console.log('result: ' + result);
-                if (result === true) {
-                    // Generate JWT token
-                    const token = generateToken(foundUser);
-
-                    const userObj = {
-                        id: foundUser._id,
-                        fname: foundUser.fname,
-                        lname: foundUser.lname,
-                        uname: foundUser.username,
-                        email: foundUser.email,
-                        phone: foundUser.phone,
-                        address: foundUser.address,
-                        pass: '', // Don't send the hashed password
-                        confirmPass: '',
-                        type: foundUser.type,
-                        token: token
-                    };
-                    res.status(200).json(userObj);
-                    console.log("status 200 success");
-                } else {
-                    res.status(401).json({ error: 'Invalid credentials' });
+                if (!foundUser) {
+                    return next(ApiError.unauthorized('INVALID_CREDENTIALS', 'Invalid username or password'));
                 }
-                console.log("in crypto");
-            });
 
-        } catch (err) {
-            console.log('err' + err);
-            res.status(500).send(err);
-        }
-    });
+                const match = await bcrypt.compare(pass, foundUser.password);
+
+                if (!match) {
+                    return next(ApiError.unauthorized('INVALID_CREDENTIALS', 'Invalid username or password'));
+                }
+
+                // Generate JWT token
+                const token = generateToken(foundUser);
+
+                const userObj = {
+                    id: foundUser._id,
+                    fname: foundUser.fname,
+                    lname: foundUser.lname,
+                    uname: foundUser.username,
+                    email: foundUser.email,
+                    phone: foundUser.phone,
+                    address: foundUser.address,
+                    pass: '', // Don't send the hashed password
+                    confirmPass: '',
+                    type: foundUser.type,
+                    token: token
+                };
+                res.status(200).json(userObj);
+            } catch (err) {
+                next(err);
+            }
+        });
 
     app.route("/api/logout")
-        .get((req,res) => {
+        .get((req, res) => {
             // kill the session cookie, then
             res.redirect("/");
-    });
+        });
 
+    // Note: requires auth — this lists every user's name/email/phone/type,
+    // which shouldn't be publicly readable.
     app.route("/api/users")
-        .get(async (req, res) => {
+        .get(verifyToken, async (req, res, next) => {
             try {
                 // Fetch all users but exclude password field
                 const users = await User.find({}, { password: 0 });
-                
+
                 const userList = users.map(user => ({
                     id: user._id,
                     fname: user.fname || '',
@@ -193,22 +179,21 @@ module.exports = function(app, User) {
 
                 res.status(200).json(userList);
             } catch (err) {
-                console.log('err: ' + err);
-                res.status(500).json({ error: 'Internal server error' });
+                next(err);
             }
         });
 
     app.route("/api/user/update")
-        .put(verifyToken, async (req, res) => {
+        .put(verifyToken, async (req, res, next) => {
             try {
                 const { id, fname, lname, email, phone, address } = req.body || {};
 
+                if (!id) {
+                    return next(ApiError.badRequest('MISSING_ID', 'User ID is required'));
+                }
+
                 // Validation using validators module
                 const validationErrors = [];
-                
-                if (!id) {
-                    return res.status(400).json({ error: 'User ID is required' });
-                }
 
                 // Optional fields: validate only if provided and not empty
                 if (fname && fname.trim()) {
@@ -247,7 +232,7 @@ module.exports = function(app, User) {
                 }
 
                 if (validationErrors.length) {
-                    return res.status(400).json({ errors: validationErrors });
+                    return next(ApiError.badRequest('VALIDATION_ERROR', 'Validation failed', validationErrors));
                 }
 
                 // Update user
@@ -265,7 +250,7 @@ module.exports = function(app, User) {
                 );
 
                 if (!updatedUser) {
-                    return res.status(404).json({ error: 'User not found' });
+                    return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
                 }
 
                 const userObj = {
@@ -283,8 +268,7 @@ module.exports = function(app, User) {
 
                 res.status(200).json(userObj);
             } catch (err) {
-                console.log('err: ' + err);
-                res.status(500).json({ error: 'Internal server error' });
+                next(err);
             }
         });
 
