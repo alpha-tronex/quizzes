@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild, ElementRef, AfterViewInit } fr
 import { Subscription } from 'rxjs';
 import { User } from '@models/users';
 import { Router } from '@angular/router';
-import { LoginService } from '@core/services/login-service';
+import { LoginService, NormalizedApiError } from '@core/services/login-service';
 import { ValidationService } from '@shared/services/validation.service';
 
 @Component({
@@ -82,20 +82,10 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
         this.user = user;
         this.router.navigate(['home']);
       },
-      error: (error) => {
-        if (error && typeof error === 'object') {
-          if (error.error && typeof error.error === 'string') {
-            this.serverErrors = [error.error];
-          } else if (error.message) {
-            this.serverErrors = [error.message];
-          } else {
-            this.serverErrors = ['Unable to login. Please try again.'];
-          }
-        } else if (typeof error === 'string') {
-          this.serverErrors = [error];
-        } else {
-          this.serverErrors = ['An error occurred during login.'];
-        }
+      error: (error: NormalizedApiError) => {
+        // LoginService.handleError() always normalizes to { message, details }
+        // before this subscriber sees it — see login-service.ts.
+        this.serverErrors = error?.details?.length ? error.details : ['Unable to login. Please try again.'];
       }
     });
   }

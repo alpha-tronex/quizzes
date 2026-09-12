@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { User } from '@models/users';
-import { LoginService } from '@core/services/login-service';
+import { LoginService, NormalizedApiError } from '@core/services/login-service';
 import { UtilService, State, Country } from '@shared/services/util.service';
 import { ValidationService } from '@shared/services/validation.service';
 import { LoggerService } from '@core/services/logger.service';
@@ -111,23 +111,11 @@ export class AccountComponent implements OnInit {
         this.saving = false;
         this.scroll.toTop();
       },
-      error: (err) => {
+      error: (err: NormalizedApiError) => {
         this.saving = false;
-        if (err && typeof err === 'object') {
-          if (Array.isArray(err.errors)) {
-            this.serverErrors = err.errors;
-          } else if (err.error && Array.isArray(err.error.errors)) {
-            this.serverErrors = err.error.errors;
-          } else if (err.message) {
-            this.serverErrors = [err.message];
-          } else {
-            this.serverErrors = [JSON.stringify(err)];
-          }
-        } else if (typeof err === 'string') {
-          this.serverErrors = [err];
-        } else {
-          this.serverErrors = ['An error occurred while updating user information'];
-        }
+        // LoginService.handleError() always normalizes to { message, details }
+        // before this subscriber sees it — see login-service.ts.
+        this.serverErrors = err?.details?.length ? err.details : ['An error occurred while updating user information'];
         this.scroll.toTop();
       }
     });

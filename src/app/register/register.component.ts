@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild, ElementRef, AfterViewInit } fr
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { User } from '@models/users';
-import { LoginService } from '@core/services/login-service';
+import { LoginService, NormalizedApiError } from '@core/services/login-service';
 import { ValidationService } from '@shared/services/validation.service';
 
 @Component({
@@ -98,26 +98,10 @@ export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
         this.user = user;
         this.router.navigate(['home']);
       },
-      error: (err) => {
-        // err may be an object like { errors: [...] } or a string
-        if (err && typeof err === 'object') {
-          if (Array.isArray(err.errors)) {
-            this.serverErrors = err.errors;
-          } else if (err.error && Array.isArray(err.error.errors)) {
-            this.serverErrors = err.error.errors;
-          } else if (err.error && err.error.error) {
-            // Handle single error field (e.g., { error: "message" })
-            this.serverErrors = [err.error.error];
-          } else if (err.message) {
-            this.serverErrors = [err.message];
-          } else {
-            this.serverErrors = ['An error occurred during registration'];
-          }
-        } else if (typeof err === 'string') {
-          this.serverErrors = [err];
-        } else {
-          this.serverErrors = ['An unknown error occurred'];
-        }
+      error: (err: NormalizedApiError) => {
+        // LoginService.handleError() always normalizes to { message, details }
+        // before this subscriber sees it — see login-service.ts.
+        this.serverErrors = err?.details?.length ? err.details : ['An error occurred during registration'];
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });

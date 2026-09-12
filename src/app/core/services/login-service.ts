@@ -5,6 +5,21 @@ import { catchError, tap } from 'rxjs/operators';
 import { User } from '@models/users';
 import { LoggerService } from '@core/services/logger.service';
 
+/**
+ * Every failed request that goes through `handleError` below rejects with
+ * one of these instead of the raw HTTP error body, so components never need
+ * to guess which of the backend's historical error shapes they got.
+ * `details` is always a non-empty array of user-facing strings (falling back
+ * to `[message]` when the backend didn't send a field-level breakdown), so
+ * components can display `details` directly without their own shape checks.
+ */
+export interface NormalizedApiError {
+  message: string;
+  details: string[];
+}
+
+const GENERIC_ERROR_MESSAGE = 'Something went wrong. Please try again.';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -117,8 +132,52 @@ export class LoginService {
         `Backend returned code ${error.status}, body was: ${JSON.stringify(error.error)}`
       );
     }
-    // Propagate backend error body when available so components can show messages
-    const backendError = error.error || 'Something bad happened; please try again later.';
-    return throwError(backendError);
+    return throwError(this.normalizeError(error));
+  }
+
+  /**
+   * Reduces every error shape the backend has ever sent down to one
+   * consistent `NormalizedApiError`:
+   *  - current: `{ error: { code, message, details? } }` (server/utils/apiError.js)
+   *  - legacy: `{ error: 'some string' }`
+   *  - legacy: `{ errors: ['some', 'strings'] }`
+   *  - a network/client-side failure with no response body at all
+   */
+  private normalizeError(error: HttpErrorResponse): NormalizedApiError {
+    if (error.error instanceof ErrorEvent) {
+      const message = 'Unable to reach the server. Please check your connection and try again.';
+      return { message, details: [message] };
+    }
+
+    const body = error.error;
+
+    if (body && typeof body === 'object') {
+      // Current unified shape.
+      if (body.error && typeof body.error === 'object') {
+        const message = typeof body.error.message === 'string' && body.error.message
+          ? body.error.message
+          : GENERIC_ERROR_MESSAGE;
+        const details = Array.isArray(body.error.details) && body.error.details.length
+          ? body.error.details
+          : [message];
+        return { message, details };
+      }
+
+      // Legacy `{ error: 'string' }`.
+      if (typeof body.error === 'string' && body.error) {
+        return { message: body.error, details: [body.error] };
+      }
+
+      // Legacy `{ errors: string[] }`.
+      if (Array.isArray(body.errors) && body.errors.length) {
+        return { message: body.errors[0], details: body.errors };
+      }
+    }
+
+    if (typeof body === 'string' && body) {
+      return { message: body, details: [body] };
+    }
+
+    return { message: GENERIC_ERROR_MESSAGE, details: [GENERIC_ERROR_MESSAGE] };
   }
 }
