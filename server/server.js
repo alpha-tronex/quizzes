@@ -1,4 +1,8 @@
-require('dotenv').config();
+// Anchored to this file's directory (repo root's .env), not process.cwd() —
+// `dotenv.config()` with no path resolves relative to cwd, which breaks
+// depending on whether you run `npm start` from the repo root or from
+// server/. Resolving from __dirname makes it work either way.
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const mongoose = require('mongoose');
 const createApp = require('./app');
 

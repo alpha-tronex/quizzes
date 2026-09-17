@@ -1,4 +1,7 @@
-require('dotenv').config();
+// Anchored to this file's directory (repo root's .env), not process.cwd() —
+// see server.js for why. app.js is also required directly by Supertest in
+// tests, so it needs the same cwd-independent resolution on its own.
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
