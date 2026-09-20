@@ -27,11 +27,6 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private removeAdminDropdownHideListener?: () => void;
 
-  // Modal state for shared alpha-tronex popup
-  showPopup = false;
-  popupTitle = 'Under Construction';
-  popupMessage = '';
-
   constructor(
     private router: Router,
     private loginService: LoginService,
@@ -119,23 +114,4 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     //   this.subscription.unsubscribe();
     // }
   }
-
-  // Show the shared alpha-tronex popup with a custom message
-  showUnderConstruction(event: Event, feature: string) {
-    event.preventDefault();
-    this.popupMessage = `${feature} is under construction.`;
-    this.showPopup = true;
-  }
-
-  // Hide the shared alpha-tronex popup
-  closePopup() {
-    this.showPopup = false;
-    this.popupMessage = '';
-  }
-
-  // Custom links for the dropdown menu
-  customLinks = [
-    { name: 'Lesson Management', icon: 'fas fa-book', url: '#' },
-    { name: 'Enrollment Management', icon: 'fas fa-user-check', url: '#' }
-  ];
 }

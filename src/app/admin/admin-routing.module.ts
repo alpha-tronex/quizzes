@@ -7,6 +7,8 @@ import { CreateQuizComponent } from './quizzes/create-quiz/create-quiz.component
 import { EditQuizComponent } from './quizzes/edit-quiz/edit-quiz.component';
 import { UploadQuizComponent } from './quizzes/upload-quiz/upload-quiz.component';
 import { QuizManagementComponent } from './quizzes/quiz-management/quiz-management.component';
+import { CohortManagementComponent } from './cohorts/cohort-management/cohort-management.component';
+import { CohortFormComponent } from './cohorts/cohort-form/cohort-form.component';
 
 const routes: Routes = [
   { path: '', component: AdminDashboardComponent },
@@ -15,7 +17,10 @@ const routes: Routes = [
   { path: 'create-quiz', component: CreateQuizComponent },
   { path: 'edit-quiz/:id', component: EditQuizComponent },
   { path: 'upload-quiz', component: UploadQuizComponent },
-  { path: 'quiz-management', component: QuizManagementComponent }
+  { path: 'quiz-management', component: QuizManagementComponent },
+  { path: 'cohort-management', component: CohortManagementComponent },
+  { path: 'create-cohort', component: CohortFormComponent },
+  { path: 'edit-cohort/:id', component: CohortFormComponent }
 ];
 
 @NgModule({

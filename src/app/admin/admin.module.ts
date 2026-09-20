@@ -12,6 +12,8 @@ import { CreateQuizComponent } from './quizzes/create-quiz/create-quiz.component
 import { EditQuizComponent } from './quizzes/edit-quiz/edit-quiz.component';
 import { UploadQuizComponent } from './quizzes/upload-quiz/upload-quiz.component';
 import { QuizManagementComponent } from './quizzes/quiz-management/quiz-management.component';
+import { CohortManagementComponent } from './cohorts/cohort-management/cohort-management.component';
+import { CohortFormComponent } from './cohorts/cohort-form/cohort-form.component';
 import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
@@ -24,7 +26,9 @@ import { SharedModule } from '../shared/shared.module';
     EditQuizComponent,
     UploadQuizComponent,
     UserDetailsComponent,
-    QuizManagementComponent
+    QuizManagementComponent,
+    CohortManagementComponent,
+    CohortFormComponent
   ],
   imports: [
     CommonModule,

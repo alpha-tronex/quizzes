@@ -23,7 +23,10 @@ export class AdminBreadcrumbComponent implements OnInit {
     'create-quiz': 'Create Quiz',
     'upload-quiz': 'Upload Quiz',
     'quiz-management': 'Quiz Management',
-    'edit-quiz': 'Edit Quiz'
+    'edit-quiz': 'Edit Quiz',
+    'cohort-management': 'Cohort Management',
+    'create-cohort': 'Create Cohort',
+    'edit-cohort': 'Edit Cohort'
   };
 
   constructor(private router: Router) { }
@@ -59,6 +62,8 @@ export class AdminBreadcrumbComponent implements OnInit {
         url = '/admin/quiz-management';
       } else if (cleanSegment === 'user-details') {
         url = '/admin/user-management';
+      } else if (cleanSegment === 'edit-cohort') {
+        url = '/admin/cohort-management';
       } else {
         currentPath = url;
       }

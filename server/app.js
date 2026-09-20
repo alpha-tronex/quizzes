@@ -10,11 +10,13 @@ const path = require('path');
 
 const User = require('./models/User');
 const Quiz = require('./models/Quiz');
+const Cohort = require('./models/Cohort');
 
 const authRoutes = require('./routes/authRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const adminUserRoutes = require('./routes/adminUserRoutes');
 const adminQuizRoutes = require('./routes/adminQuizRoutes');
+const adminCohortRoutes = require('./routes/adminCohortRoutes');
 const utilRoutes = require('./routes/utilRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -62,11 +64,12 @@ function createApp() {
     authRoutes(app, User);
 
     // Setup quiz routes (student-facing)
-    quizRoutes(app, User, Quiz);
+    quizRoutes(app, User, Quiz, Cohort);
 
     // Setup admin routes
     adminUserRoutes(app, User);
     adminQuizRoutes(app, Quiz);
+    adminCohortRoutes(app, Cohort, User, Quiz);
 
     // Setup utility routes
     utilRoutes(app);

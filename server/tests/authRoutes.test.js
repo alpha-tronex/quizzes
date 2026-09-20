@@ -148,7 +148,7 @@ describe('PUT /api/user/update', () => {
 
     test('returns 404 for a well-formed but nonexistent user id', async () => {
         const { token } = await createUser(User);
-        const fakeId = '64b64b64b64b64b64b64b64'; // valid ObjectId shape, doesn't exist
+        const fakeId = '64b64b64b64b64b64b64b64b'; // valid ObjectId shape, doesn't exist
         const res = await request(app)
             .put('/api/user/update')
             .set('Authorization', `Bearer ${token}`)

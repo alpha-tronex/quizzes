@@ -2,6 +2,7 @@ const request = require('supertest');
 const createApp = require('../app');
 const User = require('../models/User');
 const Quiz = require('../models/Quiz');
+const Cohort = require('../models/Cohort');
 const testDb = require('./testDb');
 const { createUser } = require('./testHelpers');
 
@@ -59,6 +60,92 @@ describe('GET /api/quizzes', () => {
     });
 });
 
+function daysFromNow(days) {
+    return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+}
+
+describe('GET /api/quizzes — cohort filtering', () => {
+    test('a student in zero cohorts still sees every quiz (unrestricted default)', async () => {
+        await seedQuiz({ quizId: 0, title: 'Islam 101' });
+        await seedQuiz({ quizId: 1, title: 'Islam 201' });
+        const { token } = await createUser(User, { username: 'nocohort', type: 'student' });
+
+        const res = await request(app).get('/api/quizzes').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toHaveLength(2);
+    });
+
+    test('a student in an active cohort only sees that cohort\'s quizzes', async () => {
+        await seedQuiz({ quizId: 0, title: 'In Cohort' });
+        await seedQuiz({ quizId: 1, title: 'Not In Cohort' });
+        const { token, user } = await createUser(User, { username: 'cohortstudent', type: 'student' });
+        await Cohort.create({
+            name: 'Active Cohort',
+            startDate: daysFromNow(-1),
+            endDate: daysFromNow(10),
+            students: [user._id],
+            quizzes: [0]
+        });
+
+        const res = await request(app).get('/api/quizzes').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([{ id: 0, title: 'In Cohort' }]);
+    });
+
+    test('a student whose only cohort has not started yet sees no quizzes', async () => {
+        await seedQuiz({ quizId: 0, title: 'Future Quiz' });
+        const { token, user } = await createUser(User, { username: 'futurestudent', type: 'student' });
+        await Cohort.create({
+            name: 'Future Cohort',
+            startDate: daysFromNow(5),
+            endDate: daysFromNow(15),
+            students: [user._id],
+            quizzes: [0]
+        });
+
+        const res = await request(app).get('/api/quizzes').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([]);
+    });
+
+    test('a student in two active cohorts sees the union of both quiz sets', async () => {
+        await seedQuiz({ quizId: 0, title: 'Cohort A Quiz' });
+        await seedQuiz({ quizId: 1, title: 'Cohort B Quiz' });
+        const { token, user } = await createUser(User, { username: 'multicohort', type: 'student' });
+        await Cohort.create({
+            name: 'Cohort A', startDate: daysFromNow(-1), endDate: daysFromNow(10),
+            students: [user._id], quizzes: [0]
+        });
+        await Cohort.create({
+            name: 'Cohort B', startDate: daysFromNow(-2), endDate: daysFromNow(5),
+            students: [user._id], quizzes: [1]
+        });
+
+        const res = await request(app).get('/api/quizzes').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual(expect.arrayContaining([
+            { id: 0, title: 'Cohort A Quiz' },
+            { id: 1, title: 'Cohort B Quiz' }
+        ]));
+        expect(res.body).toHaveLength(2);
+    });
+
+    test('an admin sees every quiz regardless of cohort membership', async () => {
+        await seedQuiz({ quizId: 0, title: 'Quiz A' });
+        await seedQuiz({ quizId: 1, title: 'Quiz B' });
+        const { token } = await createUser(User, { username: 'quizadmin', type: 'admin' });
+
+        const res = await request(app).get('/api/quizzes').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toHaveLength(2);
+    });
+});
+
 describe('GET /api/quiz', () => {
     test('gets the default quiz (id 0) when no id is given', async () => {
         await seedQuiz({ quizId: 0, title: 'Default Quiz' });
@@ -89,6 +176,36 @@ describe('GET /api/quiz', () => {
 
         expect(res.status).toBe(404);
         expect(res.body.error.code).toBe('QUIZ_NOT_FOUND');
+    });
+});
+
+describe('GET /api/quiz — cohort filtering', () => {
+    test('403s when a student requests a quiz outside their active cohort', async () => {
+        await seedQuiz({ quizId: 5, title: 'Outside Cohort' });
+        const { token, user } = await createUser(User, { username: 'restrictedstudent', type: 'student' });
+        await Cohort.create({
+            name: 'Some Cohort', startDate: daysFromNow(-1), endDate: daysFromNow(10),
+            students: [user._id], quizzes: [0]
+        });
+
+        const res = await request(app).get('/api/quiz?id=5').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(403);
+        expect(res.body.error.code).toBe('QUIZ_NOT_IN_COHORT');
+    });
+
+    test('allows a student to fetch a quiz that is part of their active cohort', async () => {
+        await seedQuiz({ quizId: 5, title: 'In Cohort' });
+        const { token, user } = await createUser(User, { username: 'allowedstudent', type: 'student' });
+        await Cohort.create({
+            name: 'Some Cohort', startDate: daysFromNow(-1), endDate: daysFromNow(10),
+            students: [user._id], quizzes: [5]
+        });
+
+        const res = await request(app).get('/api/quiz?id=5').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.id).toBe(5);
     });
 });
 
@@ -129,6 +246,80 @@ describe('POST /api/quiz', () => {
 
         expect(res.status).toBe(404);
         expect(res.body.error.code).toBe('USER_NOT_FOUND');
+    });
+
+    test('403s when a student tries to save an attempt onto a different existing account', async () => {
+        const { token } = await createUser(User, { username: 'attacker' });
+        const { user: victim } = await createUser(User, { username: 'victim' });
+        const quizData = { id: 0, title: 'Islam 101', score: 3, totalQuestions: 3, questions: [] };
+
+        const res = await request(app)
+            .post('/api/quiz')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: victim.username, quizData });
+
+        expect(res.status).toBe(403);
+        expect(res.body.error.code).toBe('USERNAME_MISMATCH');
+
+        const reloaded = await User.findById(victim._id);
+        expect(reloaded.quizzes).toHaveLength(0);
+    });
+
+    test('allows an admin to save an attempt on behalf of another user', async () => {
+        const { token } = await createUser(User, { username: 'quizadmin2', type: 'admin' });
+        const { user: student } = await createUser(User, { username: 'onbehalfstudent' });
+        const quizData = { id: 0, title: 'Islam 101', score: 3, totalQuestions: 3, questions: [] };
+
+        const res = await request(app)
+            .post('/api/quiz')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: student.username, quizData });
+
+        expect(res.status).toBe(200);
+
+        const reloaded = await User.findById(student._id);
+        expect(reloaded.quizzes).toHaveLength(1);
+    });
+});
+
+describe('POST /api/quiz — cohort filtering', () => {
+    test('403s when a student tries to save an attempt for a quiz outside their active cohort', async () => {
+        const { token, user } = await createUser(User, { username: 'blockedsaver', type: 'student' });
+        await Cohort.create({
+            name: 'Some Cohort', startDate: daysFromNow(-1), endDate: daysFromNow(10),
+            students: [user._id], quizzes: [0]
+        });
+        const quizData = { id: 5, title: 'Outside Cohort', score: 1, totalQuestions: 1, questions: [] };
+
+        const res = await request(app)
+            .post('/api/quiz')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: user.username, quizData });
+
+        expect(res.status).toBe(403);
+        expect(res.body.error.code).toBe('QUIZ_NOT_IN_COHORT');
+
+        const reloaded = await User.findById(user._id);
+        expect(reloaded.quizzes).toHaveLength(0);
+    });
+
+    test('allows saving an attempt for a quiz inside an active cohort', async () => {
+        const { token, user } = await createUser(User, { username: 'allowedsaver', type: 'student' });
+        await Cohort.create({
+            name: 'Some Cohort', startDate: daysFromNow(-1), endDate: daysFromNow(10),
+            students: [user._id], quizzes: [5]
+        });
+        const quizData = { id: 5, title: 'Inside Cohort', score: 1, totalQuestions: 1, questions: [] };
+
+        const res = await request(app)
+            .post('/api/quiz')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: user.username, quizData });
+
+        expect(res.status).toBe(200);
+
+        const reloaded = await User.findById(user._id);
+        expect(reloaded.quizzes).toHaveLength(1);
     });
 });
 

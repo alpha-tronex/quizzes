@@ -21,6 +21,8 @@
                   <div class="dropdown-divider"></div>
                   <a class="dropdown-item" [routerLink]="['admin/user-management']" (click)="collapseNavbar()"><i class="fas fa-users"></i> Users</a>
                   <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" [routerLink]="['admin/cohort-management']" (click)="collapseNavbar()"><i class="fas fa-layer-group"></i> Cohorts</a>
+                  <div class="dropdown-divider"></div>
                   <div class="dropdown-submenu">
                     <a
                       class="dropdown-item dropdown-toggle"
@@ -38,14 +40,6 @@
                       <a class="dropdown-item" [routerLink]="['admin/quiz-management']" (click)="collapseNavbar()"><i class="fas fa-edit"></i> Edit Quiz</a>
                     </div>
                   </div>
-                  <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="#" (click)="showUnderConstruction($event, 'Lesson Management')">
-                    <i class="fas fa-book"></i> Lessons
-                  </a>
-                  <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="#" (click)="showUnderConstruction($event, 'Enrollment Management')">
-                    <i class="fas fa-user-check"></i> Enrollments
-                  </a>
                 </div>
               </li>
               <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" [routerLink]="['login']" *ngIf="!getUsername()" (click)="collapseNavbar()">Login</a></li>
@@ -55,18 +49,3 @@
       </div>
   </div>
 </nav>
-<alpha-tronex-modal
-  [show]="showPopup"
-  [title]="popupTitle"
-  [scrollToTopOnHide]="true"
-  (close)="closePopup()">
-  <div class="text-center p-3">
-    <img src="https://media.giphy.com/media/l3vR85PnGsBwu1PFK/giphy.gif" alt="Under Construction" style="max-width: 120px; display: block; margin: 0 auto 1rem;" />
-    <div class="mb-2" style="font-size: 1.1rem;">{{ popupMessage }}</div>
-  </div>
-  <div modal-actions>
-    <button type="button" class="btn btn-primary mr-3" aria-label="Close dialog" (click)="closePopup()">
-      <i class="fas fa-check mr-1"></i> Ok
-    </button>
-  </div>
-</alpha-tronex-modal>

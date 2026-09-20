@@ -63,7 +63,7 @@ describe('GET /api/admin/user/:id', () => {
     test('404s for a nonexistent user', async () => {
         const { token } = await createUser(User, { type: 'admin' });
         const res = await request(app)
-            .get('/api/admin/user/64b64b64b64b64b64b64b64')
+            .get('/api/admin/user/64b64b64b64b64b64b64b64b')
             .set('Authorization', `Bearer ${token}`);
 
         expect(res.status).toBe(404);

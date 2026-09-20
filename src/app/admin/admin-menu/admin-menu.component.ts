@@ -43,6 +43,13 @@ export class AdminMenuComponent {
       icon: 'fas fa-cogs',
       route: '/admin/quiz-management',
       color: 'warning'
+    },
+    {
+      title: 'Cohort Management',
+      description: 'Group students and restrict quizzes by date range',
+      icon: 'fas fa-layer-group',
+      route: '/admin/cohort-management',
+      color: 'danger'
     }
   ];
 }

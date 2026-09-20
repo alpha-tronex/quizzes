@@ -1,0 +1,117 @@
+<section class="masthead bg-primary text-white text-center">
+  <div class="container">
+    <app-admin-breadcrumb></app-admin-breadcrumb>
+
+    <h2 class="mb-4">Cohort Management</h2>
+
+    <div class="card text-dark">
+      <div class="card-body">
+        <div *ngIf="message" class="alert" [ngClass]="messageType === 'success' ? 'alert-success' : 'alert-danger'">
+          {{ message }}
+        </div>
+
+        <!-- Dashboard Statistics -->
+        <div class="row mb-4">
+          <div class="col-md-4 col-sm-6 mb-3">
+            <div class="card bg-primary text-white h-100">
+              <div class="card-body text-center">
+                <i class="fas fa-layer-group fa-3x mb-2"></i>
+                <h3 class="mb-0">{{ totalCohorts }}</h3>
+                <p class="mb-0">Total Cohorts</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 col-sm-6 mb-3">
+            <div class="card bg-success text-white h-100">
+              <div class="card-body text-center">
+                <i class="fas fa-play-circle fa-3x mb-2"></i>
+                <h3 class="mb-0">{{ activeCohorts }}</h3>
+                <p class="mb-0">Active Now</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 col-sm-6 mb-3">
+            <div class="card bg-info text-white h-100">
+              <div class="card-body text-center">
+                <i class="fas fa-user-graduate fa-3x mb-2"></i>
+                <h3 class="mb-0">{{ totalStudentEnrollments }}</h3>
+                <p class="mb-0">Student Enrollments</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row text-start mb-3">
+          <div class="col-12 d-flex justify-content-end">
+            <button class="btn btn-success" [routerLink]="['/admin/create-cohort']">
+              <i class="fas fa-plus-circle"></i> Create Cohort
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="loading" class="text-center py-4">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2">Loading cohorts...</p>
+        </div>
+
+        <div *ngIf="!loading && cohorts.length === 0" class="text-center py-4 text-muted">
+          <i class="fas fa-layer-group fa-2x mb-2"></i>
+          <p>No cohorts yet. Create one to start restricting quizzes to a group of students.</p>
+        </div>
+
+        <div *ngIf="!loading && cohorts.length > 0" class="table-responsive text-start">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Students</th>
+                <th>Quizzes</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cohort of cohorts">
+                <td>{{ cohort.name }}</td>
+                <td><span class="badge" [ngClass]="statusBadgeClass(cohort)">{{ cohortStatus(cohort) }}</span></td>
+                <td>{{ formatDate(cohort.startDate) }}</td>
+                <td>{{ formatDate(cohort.endDate) }}</td>
+                <td>{{ cohort.students.length }}</td>
+                <td>{{ cohort.quizzes.length }}</td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-secondary me-2" [routerLink]="['/admin/edit-cohort', cohort.id]">
+                    <i class="fas fa-edit"></i> Edit
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteCohort(cohort)">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Confirmation Modal -->
+<alpha-tronex-modal
+  [show]="showConfirmModal"
+  [title]="'Delete Cohort'"
+  [type]="'danger'"
+  [content]="confirmCohort ? ('Are you sure you want to delete \'' + confirmCohort.name + '\'? Students in this cohort will lose access to its quizzes. This action cannot be undone.') : ''"
+  [scrollToTopOnHide]="true"
+  (close)="closeConfirmModal()"
+  (confirm)="confirmDelete()">
+  <div modal-actions>
+    <button type="button" class="btn btn-secondary" (click)="closeConfirmModal()">Cancel</button>
+    <button type="button" class="btn btn-danger ml-2 mr-2" (click)="confirmDelete()">
+      <i class="fas fa-trash"></i> Confirm Delete
+    </button>
+  </div>
+</alpha-tronex-modal>
