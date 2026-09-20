@@ -126,6 +126,81 @@ describe('PATCH /api/admin/user/:id/type', () => {
     });
 });
 
+describe('POST /api/admin/user/:userId/reopen-quiz/:quizId', () => {
+    test('adds the quizId to reopenedQuizIds for a student who took that quiz', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+        const { user: student } = await createUser(User, {
+            username: 'reopencandidate',
+            quizzes: [{ id: 3, title: 'Islam 101', score: 1, totalQuestions: 1 }]
+        });
+
+        const res = await request(app)
+            .post(`/api/admin/user/${student._id}/reopen-quiz/3`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.reopenedQuizIds).toEqual([3]);
+
+        const reloaded = await User.findById(student._id);
+        expect(reloaded.reopenedQuizIds).toEqual([3]);
+    });
+
+    test('is idempotent when reopening an already-reopened quiz', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+        const { user: student } = await createUser(User, {
+            username: 'doublereopen',
+            quizzes: [{ id: 3, title: 'Islam 101', score: 1, totalQuestions: 1 }]
+        });
+
+        await request(app)
+            .post(`/api/admin/user/${student._id}/reopen-quiz/3`)
+            .set('Authorization', `Bearer ${token}`);
+        const res = await request(app)
+            .post(`/api/admin/user/${student._id}/reopen-quiz/3`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.reopenedQuizIds).toEqual([3]);
+    });
+
+    test('404s when the student never took that quiz', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+        const { user: student } = await createUser(User, { username: 'nevertook' });
+
+        const res = await request(app)
+            .post(`/api/admin/user/${student._id}/reopen-quiz/3`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(404);
+        expect(res.body.error.code).toBe('QUIZ_NOT_TAKEN');
+    });
+
+    test('404s for a nonexistent user', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+
+        const res = await request(app)
+            .post('/api/admin/user/64b64b64b64b64b64b64b64b/reopen-quiz/3')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(404);
+        expect(res.body.error.code).toBe('USER_NOT_FOUND');
+    });
+
+    test('rejects a non-admin caller', async () => {
+        const { token } = await createUser(User, { type: 'student' });
+        const { user: student } = await createUser(User, {
+            username: 'unauthorizedtarget',
+            quizzes: [{ id: 3, title: 'Islam 101', score: 1, totalQuestions: 1 }]
+        });
+
+        const res = await request(app)
+            .post(`/api/admin/user/${student._id}/reopen-quiz/3`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(403);
+    });
+});
+
 describe('DELETE /api/admin/user/:id', () => {
     test('deletes a user', async () => {
         const { token } = await createUser(User, { type: 'admin' });

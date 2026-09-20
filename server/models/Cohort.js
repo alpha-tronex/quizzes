@@ -21,9 +21,19 @@ const cohortSchema = new mongoose.Schema({
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    quizzes: [{ type: Number }]
+    quizzes: [{ type: Number }],
+    // Marks the single designated fallback cohort used for students with no
+    // real cohort membership (never-assigned students, and App/Play Store
+    // reviewer accounts, which are just plain student accounts — see
+    // server/utils/cohortAccess.js). Not exposed on the admin create/edit
+    // payload (adminCohortRoutes.js's validateCohortPayload never sets it) —
+    // it's only ever set by server/scripts/seed_guest_cohort.js, so it can't
+    // be toggled by accident through the admin UI. The partial unique index
+    // below enforces at most one Guest cohort exists at the DB level.
+    isGuest: { type: Boolean, default: false }
 }, { timestamps: true });
 
 cohortSchema.index({ students: 1 });
+cohortSchema.index({ isGuest: 1 }, { unique: true, partialFilterExpression: { isGuest: true } });
 
 module.exports = mongoose.models.Cohort || mongoose.model('Cohort', cohortSchema);

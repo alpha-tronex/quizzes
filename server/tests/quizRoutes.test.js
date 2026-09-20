@@ -54,9 +54,51 @@ describe('GET /api/quizzes', () => {
 
         expect(res.status).toBe(200);
         expect(res.body).toEqual(expect.arrayContaining([
-            { id: 0, title: 'Islam 101' },
-            { id: 1, title: 'Islam 201' }
+            { id: 0, title: 'Islam 101', taken: false, locked: false },
+            { id: 1, title: 'Islam 201', taken: false, locked: false }
         ]));
+    });
+});
+
+describe('GET /api/quizzes — taken/locked status', () => {
+    test('a never-taken quiz is neither taken nor locked', async () => {
+        await seedQuiz({ quizId: 0, title: 'Fresh Quiz' });
+        const { token } = await createUser(User, { username: 'freshtaker', type: 'student' });
+
+        const res = await request(app).get('/api/quizzes').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([{ id: 0, title: 'Fresh Quiz', taken: false, locked: false }]);
+    });
+
+    test('a completed quiz is taken and locked', async () => {
+        await seedQuiz({ quizId: 0, title: 'Completed Quiz' });
+        const { token } = await createUser(User, {
+            username: 'lockedtaker',
+            type: 'student',
+            quizzes: [{ id: 0, title: 'Completed Quiz', score: 1, totalQuestions: 1 }]
+        });
+
+        const res = await request(app).get('/api/quizzes').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([{ id: 0, title: 'Completed Quiz', taken: true, locked: true }]);
+    });
+
+    test('a reopened quiz is taken but not locked', async () => {
+        await seedQuiz({ quizId: 0, title: 'Reopened Quiz' });
+        const { token, user } = await createUser(User, {
+            username: 'reopenedtaker',
+            type: 'student',
+            quizzes: [{ id: 0, title: 'Reopened Quiz', score: 1, totalQuestions: 1 }]
+        });
+        user.reopenedQuizIds = [0];
+        await user.save();
+
+        const res = await request(app).get('/api/quizzes').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([{ id: 0, title: 'Reopened Quiz', taken: true, locked: false }]);
     });
 });
 
@@ -65,15 +107,43 @@ function daysFromNow(days) {
 }
 
 describe('GET /api/quizzes — cohort filtering', () => {
-    test('a student in zero cohorts still sees every quiz (unrestricted default)', async () => {
-        await seedQuiz({ quizId: 0, title: 'Islam 101' });
-        await seedQuiz({ quizId: 1, title: 'Islam 201' });
+    test('a student in zero cohorts sees only the active Guest cohort\'s quizzes', async () => {
+        await seedQuiz({ quizId: 0, title: 'Guest Quiz' });
+        await seedQuiz({ quizId: 1, title: 'Not A Guest Quiz' });
+        await Cohort.create({
+            name: 'Guest', isGuest: true, startDate: daysFromNow(-1), endDate: daysFromNow(365),
+            students: [], quizzes: [0]
+        });
         const { token } = await createUser(User, { username: 'nocohort', type: 'student' });
 
         const res = await request(app).get('/api/quizzes').set('Authorization', `Bearer ${token}`);
 
         expect(res.status).toBe(200);
-        expect(res.body).toHaveLength(2);
+        expect(res.body).toEqual([{ id: 0, title: 'Guest Quiz', taken: false, locked: false }]);
+    });
+
+    test('a student in zero cohorts sees no quizzes when no Guest cohort has been seeded', async () => {
+        await seedQuiz({ quizId: 0, title: 'Islam 101' });
+        const { token } = await createUser(User, { username: 'noguestseeded', type: 'student' });
+
+        const res = await request(app).get('/api/quizzes').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([]);
+    });
+
+    test('a student in zero cohorts sees no quizzes when the Guest cohort exists but is not currently active', async () => {
+        await seedQuiz({ quizId: 0, title: 'Islam 101' });
+        await Cohort.create({
+            name: 'Guest', isGuest: true, startDate: daysFromNow(-30), endDate: daysFromNow(-10),
+            students: [], quizzes: [0]
+        });
+        const { token } = await createUser(User, { username: 'expiredguest', type: 'student' });
+
+        const res = await request(app).get('/api/quizzes').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([]);
     });
 
     test('a student in an active cohort only sees that cohort\'s quizzes', async () => {
@@ -91,7 +161,7 @@ describe('GET /api/quizzes — cohort filtering', () => {
         const res = await request(app).get('/api/quizzes').set('Authorization', `Bearer ${token}`);
 
         expect(res.status).toBe(200);
-        expect(res.body).toEqual([{ id: 0, title: 'In Cohort' }]);
+        expect(res.body).toEqual([{ id: 0, title: 'In Cohort', taken: false, locked: false }]);
     });
 
     test('a student whose only cohort has not started yet sees no quizzes', async () => {
@@ -128,8 +198,8 @@ describe('GET /api/quizzes — cohort filtering', () => {
 
         expect(res.status).toBe(200);
         expect(res.body).toEqual(expect.arrayContaining([
-            { id: 0, title: 'Cohort A Quiz' },
-            { id: 1, title: 'Cohort B Quiz' }
+            { id: 0, title: 'Cohort A Quiz', taken: false, locked: false },
+            { id: 1, title: 'Cohort B Quiz', taken: false, locked: false }
         ]));
         expect(res.body).toHaveLength(2);
     });
@@ -206,6 +276,34 @@ describe('GET /api/quiz — cohort filtering', () => {
 
         expect(res.status).toBe(200);
         expect(res.body.id).toBe(5);
+    });
+
+    test('allows a no-cohort student to fetch a quiz that is part of the active Guest cohort', async () => {
+        await seedQuiz({ quizId: 7, title: 'Guest Quiz' });
+        await Cohort.create({
+            name: 'Guest', isGuest: true, startDate: daysFromNow(-1), endDate: daysFromNow(365),
+            students: [], quizzes: [7]
+        });
+        const { token } = await createUser(User, { username: 'guestreader', type: 'student' });
+
+        const res = await request(app).get('/api/quiz?id=7').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.id).toBe(7);
+    });
+
+    test('403s when a no-cohort student requests a quiz outside the Guest cohort', async () => {
+        await seedQuiz({ quizId: 8, title: 'Not A Guest Quiz' });
+        await Cohort.create({
+            name: 'Guest', isGuest: true, startDate: daysFromNow(-1), endDate: daysFromNow(365),
+            students: [], quizzes: [7]
+        });
+        const { token } = await createUser(User, { username: 'guestoutsider', type: 'student' });
+
+        const res = await request(app).get('/api/quiz?id=8').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(403);
+        expect(res.body.error.code).toBe('QUIZ_NOT_IN_COHORT');
     });
 });
 
@@ -320,6 +418,108 @@ describe('POST /api/quiz — cohort filtering', () => {
 
         const reloaded = await User.findById(user._id);
         expect(reloaded.quizzes).toHaveLength(1);
+    });
+
+    test('allows a no-cohort student to save an attempt for a quiz inside the active Guest cohort', async () => {
+        const { token, user } = await createUser(User, { username: 'guestsaver', type: 'student' });
+        await Cohort.create({
+            name: 'Guest', isGuest: true, startDate: daysFromNow(-1), endDate: daysFromNow(365),
+            students: [], quizzes: [9]
+        });
+        const quizData = { id: 9, title: 'Guest Quiz', score: 1, totalQuestions: 1, questions: [] };
+
+        const res = await request(app)
+            .post('/api/quiz')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: user.username, quizData });
+
+        expect(res.status).toBe(200);
+
+        const reloaded = await User.findById(user._id);
+        expect(reloaded.quizzes).toHaveLength(1);
+    });
+});
+
+describe('POST /api/quiz — retake lock', () => {
+    test('409s when a student tries to retake a quiz they already completed', async () => {
+        const { token, user } = await createUser(User, {
+            username: 'relocked',
+            quizzes: [{ id: 0, title: 'Islam 101', score: 1, totalQuestions: 1 }]
+        });
+        const quizData = { id: 0, title: 'Islam 101', score: 2, totalQuestions: 2, questions: [] };
+
+        const res = await request(app)
+            .post('/api/quiz')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: user.username, quizData });
+
+        expect(res.status).toBe(409);
+        expect(res.body.error.code).toBe('QUIZ_LOCKED');
+
+        const reloaded = await User.findById(user._id);
+        expect(reloaded.quizzes).toHaveLength(1);
+    });
+
+    test('allows a retake once an admin has reopened the quiz, then relocks it', async () => {
+        const { token, user } = await createUser(User, {
+            username: 'reopenedretaker',
+            quizzes: [{ id: 0, title: 'Islam 101', score: 1, totalQuestions: 1 }]
+        });
+        user.reopenedQuizIds = [0];
+        await user.save();
+        const quizData = { id: 0, title: 'Islam 101', score: 2, totalQuestions: 2, questions: [] };
+
+        const res = await request(app)
+            .post('/api/quiz')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: user.username, quizData });
+
+        expect(res.status).toBe(200);
+
+        const reloaded = await User.findById(user._id);
+        expect(reloaded.quizzes).toHaveLength(2);
+        // The reopen grant is single-use — it's consumed by this save, so a
+        // further attempt would 409 again.
+        expect(reloaded.reopenedQuizIds).toEqual([]);
+
+        const secondAttempt = await request(app)
+            .post('/api/quiz')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: user.username, quizData });
+
+        expect(secondAttempt.status).toBe(409);
+        expect(secondAttempt.body.error.code).toBe('QUIZ_LOCKED');
+    });
+
+    test('an admin can save an attempt on a locked quiz on the student\'s behalf', async () => {
+        const { token } = await createUser(User, { username: 'lockadmin', type: 'admin' });
+        const { user: student } = await createUser(User, {
+            username: 'lockedstudent',
+            quizzes: [{ id: 0, title: 'Islam 101', score: 1, totalQuestions: 1 }]
+        });
+        const quizData = { id: 0, title: 'Islam 101', score: 2, totalQuestions: 2, questions: [] };
+
+        const res = await request(app)
+            .post('/api/quiz')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: student.username, quizData });
+
+        expect(res.status).toBe(200);
+
+        const reloaded = await User.findById(student._id);
+        expect(reloaded.quizzes).toHaveLength(2);
+    });
+
+    test('a first-time attempt is unaffected by the lock', async () => {
+        const { token, user } = await createUser(User, { username: 'firsttimer' });
+        const quizData = { id: 0, title: 'Islam 101', score: 1, totalQuestions: 1, questions: [] };
+
+        const res = await request(app)
+            .post('/api/quiz')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: user.username, quizData });
+
+        expect(res.status).toBe(200);
     });
 });
 

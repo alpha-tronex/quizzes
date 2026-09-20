@@ -1,8 +1,21 @@
 const { verifyToken } = require('../middleware/authMiddleware');
 const ApiError = require('../utils/apiError');
+const { getActiveCohorts, hasAnyRealCohortMembership, getActiveGuestCohort } = require('../utils/cohortAccess');
+const { buildQuizStatusMap } = require('../utils/quizStatus');
 
-function toQuizSummary(quiz) {
-    return { id: quiz.quizId, title: quiz.title };
+/**
+ * `statusMap` (see quizStatus.js) is only built for students — admins see
+ * every quiz as never taken/locked, since the retake lock is a per-student
+ * concept and admins aren't subject to it (see POST /api/quiz below).
+ */
+function toQuizSummary(quiz, statusMap) {
+    const status = statusMap ? statusMap.get(quiz.quizId) : undefined;
+    return {
+        id: quiz.quizId,
+        title: quiz.title,
+        taken: Boolean(status && status.taken),
+        locked: Boolean(status && status.locked)
+    };
 }
 
 function toQuizResponse(quiz) {
@@ -10,32 +23,30 @@ function toQuizResponse(quiz) {
 }
 
 /**
- * Cohort-based access control for students. Returns:
- *   - `null` if the user has never belonged to any cohort at all — this
- *     means "no restriction", preserving today's unfiltered behavior for
- *     every existing/legacy student account with no cohort assigned.
- *   - a `Set<number>` of accessible `Quiz.quizId`s otherwise, scoped to
- *     cohorts the user is currently a member of AND that are presently
- *     active (startDate <= now <= endDate). A student who belongs only to a
- *     not-yet-started or already-ended cohort gets an empty Set (i.e. zero
- *     accessible quizzes right now), not `null` — membership existing at all
- *     is what turns scoping on; the active-date check narrows it from there.
+ * Cohort-based access control for students. Always returns a `Set<number>`
+ * of accessible `Quiz.quizId`s:
+ *   - A student with zero *real* (non-guest) cohort membership — including a
+ *     never-assigned legacy account or an App/Play Store reviewer account —
+ *     falls back to the active Guest cohort's quiz set (empty Set if no
+ *     Guest cohort is currently active/seeded). This used to mean
+ *     unrestricted access to every quiz; see cohortAccess.js for the
+ *     rationale behind the change.
+ *   - Otherwise, the union of quizzes from every real cohort the student is
+ *     currently active in (current membership AND startDate <= now <=
+ *     endDate). A student who belongs only to a not-yet-started or
+ *     already-ended cohort gets an empty Set, not the Guest fallback —
+ *     having ever had real cohort membership opts them out of Guest.
  * Admins should never call this — they always see every quiz, checked by the
  * caller via `req.user.type !== 'admin'` before invoking it.
  */
 async function getAccessibleQuizIds(userId, Cohort) {
-    const hasAnyCohort = await Cohort.exists({ students: userId });
-    if (!hasAnyCohort) {
-        return null;
+    const hasRealCohort = await hasAnyRealCohortMembership(userId, Cohort);
+    if (!hasRealCohort) {
+        const guestCohort = await getActiveGuestCohort(Cohort);
+        return guestCohort ? new Set(guestCohort.quizzes) : new Set();
     }
 
-    const now = new Date();
-    const activeCohorts = await Cohort.find({
-        students: userId,
-        startDate: { $lte: now },
-        endDate: { $gte: now }
-    });
-
+    const activeCohorts = await getActiveCohorts(userId, Cohort);
     const accessibleIds = new Set();
     activeCohorts.forEach(cohort => cohort.quizzes.forEach(quizId => accessibleIds.add(quizId)));
     return accessibleIds;
@@ -46,15 +57,20 @@ module.exports = function(app, User, Quiz, Cohort) {
     app.get("/api/quizzes", verifyToken, async (req, res, next) => {
         try {
             let filter = {};
+            let statusMap = null;
             if (req.user.type !== 'admin') {
                 const accessibleIds = await getAccessibleQuizIds(req.user.id, Cohort);
-                if (accessibleIds !== null) {
-                    filter = { quizId: { $in: Array.from(accessibleIds) } };
-                }
+                filter = { quizId: { $in: Array.from(accessibleIds) } };
+
+                const currentUser = await User.findById(req.user.id, { quizzes: 1, reopenedQuizIds: 1 });
+                statusMap = buildQuizStatusMap(
+                    currentUser ? currentUser.quizzes : [],
+                    currentUser ? currentUser.reopenedQuizIds : []
+                );
             }
 
             const quizzes = await Quiz.find(filter).sort({ quizId: 1 });
-            res.json(quizzes.map(toQuizSummary));
+            res.json(quizzes.map((quiz) => toQuizSummary(quiz, statusMap)));
         } catch (err) {
             next(err);
         }
@@ -73,7 +89,7 @@ module.exports = function(app, User, Quiz, Cohort) {
 
                 if (req.user.type !== 'admin') {
                     const accessibleIds = await getAccessibleQuizIds(req.user.id, Cohort);
-                    if (accessibleIds !== null && !accessibleIds.has(quizId)) {
+                    if (!accessibleIds.has(quizId)) {
                         return next(ApiError.forbidden(
                             'QUIZ_NOT_IN_COHORT',
                             'This quiz is not part of any of your active cohorts'
@@ -114,10 +130,24 @@ module.exports = function(app, User, Quiz, Cohort) {
                 if (req.user.type !== 'admin') {
                     const accessibleIds = await getAccessibleQuizIds(req.user.id, Cohort);
                     const quizId = Number(quizData.id);
-                    if (accessibleIds !== null && !accessibleIds.has(quizId)) {
+                    if (!accessibleIds.has(quizId)) {
                         return next(ApiError.forbidden(
                             'QUIZ_NOT_IN_COHORT',
                             'This quiz is not part of any of your active cohorts'
+                        ));
+                    }
+
+                    // A quiz already completed once is locked from retakes
+                    // until an admin reopens it — admins themselves bypass
+                    // this (same exemption as the cohort check above) so
+                    // they can backfill/re-record an attempt on a student's
+                    // behalf regardless of lock state.
+                    const statusMap = buildQuizStatusMap(user.quizzes, user.reopenedQuizIds);
+                    const status = statusMap.get(quizId);
+                    if (status && status.locked) {
+                        return next(ApiError.conflict(
+                            'QUIZ_LOCKED',
+                            'This quiz has already been completed. Ask an admin to reopen it before retaking.'
                         ));
                     }
                 }
@@ -125,6 +155,16 @@ module.exports = function(app, User, Quiz, Cohort) {
                 // Add the completed quiz to user's quizzes array
                 user.quizzes.push(quizData);
                 user.updatedAt = new Date();
+
+                // A reopened quiz grants exactly one more attempt, then
+                // auto-relocks — consume the grant on any successful save
+                // for this quizId, whether submitted by the student
+                // themselves or backfilled by an admin.
+                const savedQuizId = Number(quizData.id);
+                if (user.reopenedQuizIds && user.reopenedQuizIds.includes(savedQuizId)) {
+                    user.reopenedQuizIds = user.reopenedQuizIds.filter((id) => id !== savedQuizId);
+                }
+
                 await user.save();
 
                 res.status(200).json({ message: 'Quiz saved successfully', quiz: quizData });

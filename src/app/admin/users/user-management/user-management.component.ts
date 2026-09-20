@@ -16,6 +16,9 @@ export class UserManagementComponent implements OnInit {
   loading: boolean = false;
   errorMessage: string = '';
   reviewedQuiz: any = null;
+  // `quiz.id` currently being reopened, so only that row's button shows a
+  // pending state — see reopenQuiz().
+  reopeningQuizId: number | null = null;
   private modalInstance: any = null;
   // private confirmModalInstance: any = null;
     showConfirmModal: boolean = false;
@@ -237,6 +240,36 @@ export class UserManagementComponent implements OnInit {
     if (this.modalInstance) {
       this.modalInstance.hide();
     }
+  }
+
+  // A quiz stays reopened (one more attempt available) until the student
+  // submits a retake, at which point the server clears it from
+  // reopenedQuizIds again — see POST /api/quiz.
+  isQuizReopened(quiz: any): boolean {
+    return !!this.selectedUser?.reopenedQuizIds?.includes(quiz.id);
+  }
+
+  reopenQuiz(quiz: any): void {
+    if (!this.selectedUser || !this.selectedUser.id || this.isQuizReopened(quiz)) {
+      return;
+    }
+
+    this.reopeningQuizId = quiz.id;
+
+    this.adminUserService.reopenQuiz(this.selectedUser.id, quiz.id).subscribe({
+      next: () => {
+        if (this.selectedUser) {
+          this.selectedUser.reopenedQuizIds = [...(this.selectedUser.reopenedQuizIds || []), quiz.id];
+        }
+        this.reopeningQuizId = null;
+        this.logger.info('Quiz reopened for user', { userId: this.selectedUser?.id, quizId: quiz.id });
+      },
+      error: (error) => {
+        this.logger.error('Error reopening quiz', error);
+        alert('Failed to reopen quiz: ' + error);
+        this.reopeningQuizId = null;
+      }
+    });
   }
 
   getAnswerText(question: any, answerNum: number): string {

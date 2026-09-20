@@ -39,7 +39,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     createdAt: Date,
     updatedAt: Date,
-    quizzes: [quizAttemptSchema]
+    quizzes: [quizAttemptSchema],
+    // Public `Quiz.quizId`s an admin has granted this student one more
+    // attempt at, after they'd already completed (and thus locked) that
+    // quiz — see server/utils/quizStatus.js. Consumed (removed) the next
+    // time an attempt for that quizId is saved; see POST /api/quiz.
+    reopenedQuizIds: { type: [Number], default: [] }
 });
 
 // Guard against OverwriteModelError when this module is required multiple times

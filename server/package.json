@@ -7,7 +7,8 @@
     "test": "jest --runInBand",
     "test:watch": "jest --runInBand --watch",
     "start": "node server.js",
-    "migrate:quizzes": "node scripts/migrate_quizzes_to_mongo.js"
+    "migrate:quizzes": "node scripts/migrate_quizzes_to_mongo.js",
+    "seed:guest": "node scripts/seed_guest_cohort.js"
   },
   "author": "",
   "license": "ISC",

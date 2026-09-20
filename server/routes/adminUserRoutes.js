@@ -26,7 +26,8 @@ module.exports = function(app, User) {
                     email: user.email || '',
                     phone: user.phone || '',
                     type: user.type || 'student',
-                    quizzes: user.quizzes || []
+                    quizzes: user.quizzes || [],
+                    reopenedQuizIds: user.reopenedQuizIds || []
                 }));
 
                 res.status(200).json(usersArray);
@@ -56,7 +57,8 @@ module.exports = function(app, User) {
                     phone: user.phone || '',
                     type: user.type || 'student',
                     address: user.address || emptyAddress,
-                    quizzes: user.quizzes || []
+                    quizzes: user.quizzes || [],
+                    reopenedQuizIds: user.reopenedQuizIds || []
                 });
             } catch (err) {
                 next(err);
@@ -266,6 +268,51 @@ module.exports = function(app, User) {
                     message: 'Quiz entry deleted successfully',
                     userId: userId,
                     quizId: quizId
+                });
+            } catch (err) {
+                next(err);
+            }
+        });
+
+    // Grant a student one more attempt at a quiz they've already completed
+    // (and which is therefore locked — see utils/quizStatus.js and POST
+    // /api/quiz's QUIZ_LOCKED check). Idempotent: reopening an
+    // already-reopened quiz is a no-op rather than an error. The grant is
+    // consumed automatically (see quizRoutes.js) the next time an attempt
+    // for this quizId is saved, at which point the quiz relocks.
+    app.route("/api/admin/user/:userId/reopen-quiz/:quizId")
+        .post(verifyToken, verifyAdmin, async (req, res, next) => {
+            try {
+                const userId = req.params.userId;
+                const quizId = Number(req.params.quizId);
+
+                if (!Number.isFinite(quizId)) {
+                    return next(ApiError.badRequest('INVALID_QUIZ_ID', 'quizId must be a number'));
+                }
+
+                const user = await User.findById(userId);
+                if (!user) {
+                    return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
+                }
+
+                const hasAttempt = (user.quizzes || []).some(attempt => attempt.id === quizId);
+                if (!hasAttempt) {
+                    return next(ApiError.notFound(
+                        'QUIZ_NOT_TAKEN',
+                        'This user has no completed attempt for that quiz to reopen'
+                    ));
+                }
+
+                if (!user.reopenedQuizIds.includes(quizId)) {
+                    user.reopenedQuizIds.push(quizId);
+                    await user.save();
+                }
+
+                res.status(200).json({
+                    message: 'Quiz reopened successfully',
+                    userId: userId,
+                    quizId: quizId,
+                    reopenedQuizIds: user.reopenedQuizIds
                 });
             } catch (err) {
                 next(err);

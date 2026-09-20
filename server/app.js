@@ -14,6 +14,7 @@ const Cohort = require('./models/Cohort');
 
 const authRoutes = require('./routes/authRoutes');
 const quizRoutes = require('./routes/quizRoutes');
+const cohortRoutes = require('./routes/cohortRoutes');
 const adminUserRoutes = require('./routes/adminUserRoutes');
 const adminQuizRoutes = require('./routes/adminQuizRoutes');
 const adminCohortRoutes = require('./routes/adminCohortRoutes');
@@ -65,6 +66,9 @@ function createApp() {
 
     // Setup quiz routes (student-facing)
     quizRoutes(app, User, Quiz, Cohort);
+
+    // Setup cohort-info route (student-facing)
+    cohortRoutes(app, Cohort);
 
     // Setup admin routes
     adminUserRoutes(app, User);

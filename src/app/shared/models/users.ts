@@ -33,6 +33,11 @@ export class User {
     confirmPass: string;
     type: string;
     quizzes?: Quiz[];
+    // Public `Quiz.quizId`s an admin has granted this student one more
+    // attempt at, after they'd already completed (and thus locked) that
+    // quiz. See server/utils/quizStatus.js and admin-user.service.ts's
+    // reopenQuiz().
+    reopenedQuizIds?: number[];
     token?: string; // JWT token for authentication
     createdAt: Date;
     updatedAt: Date;

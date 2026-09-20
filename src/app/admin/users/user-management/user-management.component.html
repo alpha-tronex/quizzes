@@ -152,11 +152,19 @@
                           </td>
                           <td>{{ formatDuration(quiz.duration) }}</td>
                           <td>
-                            <button 
-                              class="btn btn-sm btn-info" 
+                            <button
+                              class="btn btn-sm btn-info"
                               (click)="reviewQuiz(quiz)"
                               title="Review quiz details">
                               Review
+                            </button>
+                            <button
+                              class="btn btn-sm ms-1"
+                              [ngClass]="isQuizReopened(quiz) ? 'btn-outline-secondary' : 'btn-warning'"
+                              [disabled]="isQuizReopened(quiz) || reopeningQuizId === quiz.id"
+                              (click)="reopenQuiz(quiz)"
+                              [title]="isQuizReopened(quiz) ? 'Student has one more attempt available' : 'Grant this student one more attempt'">
+                              {{ reopeningQuizId === quiz.id ? 'Reopening…' : (isQuizReopened(quiz) ? 'Reopened' : 'Reopen') }}
                             </button>
                           </td>
                         </tr>
