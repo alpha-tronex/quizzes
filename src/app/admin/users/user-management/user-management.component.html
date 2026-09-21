@@ -159,12 +159,20 @@
                               Review
                             </button>
                             <button
-                              class="btn btn-sm ms-1"
-                              [ngClass]="isQuizReopened(quiz) ? 'btn-outline-secondary' : 'btn-warning'"
-                              [disabled]="isQuizReopened(quiz) || reopeningQuizId === quiz.id"
+                              *ngIf="!isQuizReopened(quiz)"
+                              class="btn btn-sm btn-warning ms-1"
+                              [disabled]="reopeningQuizId === quiz.id"
                               (click)="reopenQuiz(quiz)"
-                              [title]="isQuizReopened(quiz) ? 'Student has one more attempt available' : 'Grant this student one more attempt'">
-                              {{ reopeningQuizId === quiz.id ? 'Reopening…' : (isQuizReopened(quiz) ? 'Reopened' : 'Reopen') }}
+                              title="Grant this student one more attempt">
+                              {{ reopeningQuizId === quiz.id ? 'Reopening…' : 'Reopen' }}
+                            </button>
+                            <button
+                              *ngIf="isQuizReopened(quiz)"
+                              class="btn btn-sm btn-outline-secondary ms-1"
+                              [disabled]="revokingQuizId === quiz.id"
+                              (click)="revokeReopen(quiz)"
+                              title="Cancel this student's extra attempt">
+                              {{ revokingQuizId === quiz.id ? 'Cancelling…' : 'Reopened (click to cancel)' }}
                             </button>
                           </td>
                         </tr>

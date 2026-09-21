@@ -66,6 +66,16 @@ export class AdminUserService {
     );
   }
 
+  // Revokes an outstanding reopen grant made in error (e.g. the wrong row
+  // was clicked) before the student uses it — see reopenQuiz() above and
+  // server/routes/adminUserRoutes.js's DELETE handler.
+  revokeReopen(userId: string, quizId: number): Observable<any> {
+    return this.http.delete(`/api/admin/user/${userId}/reopen-quiz/${quizId}`).pipe(
+      tap(() => this.logger.info('Reopen grant revoked for user', { userId, quizId })),
+      catchError((error) => this.handleError(error))
+    );
+  }
+
   // Server errors arrive as { error: { code, message, details? } } (see
   // server/utils/apiError.js), so `error.error?.error` is an object, not a
   // string — pull its `.message` out rather than surfacing "[object

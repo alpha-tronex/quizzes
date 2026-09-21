@@ -201,6 +201,87 @@ describe('POST /api/admin/user/:userId/reopen-quiz/:quizId', () => {
     });
 });
 
+describe('DELETE /api/admin/user/:userId/reopen-quiz/:quizId', () => {
+    test('removes the quizId from reopenedQuizIds', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+        const { user: student } = await createUser(User, {
+            username: 'revokecandidate',
+            quizzes: [{ id: 3, title: 'Islam 101', score: 1, totalQuestions: 1 }],
+            reopenedQuizIds: [3]
+        });
+
+        const res = await request(app)
+            .delete(`/api/admin/user/${student._id}/reopen-quiz/3`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.reopenedQuizIds).toEqual([]);
+
+        const reloaded = await User.findById(student._id);
+        expect(reloaded.reopenedQuizIds).toEqual([]);
+    });
+
+    test('leaves other reopened quizzes untouched', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+        const { user: student } = await createUser(User, {
+            username: 'partialrevoke',
+            quizzes: [
+                { id: 2, title: 'Islam 101.2', score: 1, totalQuestions: 1 },
+                { id: 0, title: 'Hasan Test', score: 1, totalQuestions: 1 }
+            ],
+            reopenedQuizIds: [2, 0]
+        });
+
+        const res = await request(app)
+            .delete(`/api/admin/user/${student._id}/reopen-quiz/2`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.reopenedQuizIds).toEqual([0]);
+    });
+
+    test('is idempotent when the quizId is not currently reopened', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+        const { user: student } = await createUser(User, {
+            username: 'nothingtorevoke',
+            quizzes: [{ id: 3, title: 'Islam 101', score: 1, totalQuestions: 1 }]
+        });
+
+        const res = await request(app)
+            .delete(`/api/admin/user/${student._id}/reopen-quiz/3`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.reopenedQuizIds).toEqual([]);
+    });
+
+    test('404s for a nonexistent user', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+
+        const res = await request(app)
+            .delete('/api/admin/user/64b64b64b64b64b64b64b64b/reopen-quiz/3')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(404);
+        expect(res.body.error.code).toBe('USER_NOT_FOUND');
+    });
+
+    test('rejects a non-admin caller', async () => {
+        const { token } = await createUser(User, { type: 'student' });
+        const { user: student } = await createUser(User, {
+            username: 'unauthorizedrevoke',
+            quizzes: [{ id: 3, title: 'Islam 101', score: 1, totalQuestions: 1 }],
+            reopenedQuizIds: [3]
+        });
+
+        const res = await request(app)
+            .delete(`/api/admin/user/${student._id}/reopen-quiz/3`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(403);
+    });
+});
+
 describe('DELETE /api/admin/user/:id', () => {
     test('deletes a user', async () => {
         const { token } = await createUser(User, { type: 'admin' });

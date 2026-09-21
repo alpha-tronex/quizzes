@@ -16,14 +16,19 @@ export class UserManagementComponent implements OnInit {
   loading: boolean = false;
   errorMessage: string = '';
   reviewedQuiz: any = null;
-  // `quiz.id` currently being reopened, so only that row's button shows a
-  // pending state — see reopenQuiz().
+  // `quiz.id` currently being reopened/revoked, so only that row's button
+  // shows a pending state — see executeReopenQuiz()/executeRevokeReopen().
   reopeningQuizId: number | null = null;
+  revokingQuizId: number | null = null;
   private modalInstance: any = null;
   // private confirmModalInstance: any = null;
     showConfirmModal: boolean = false;
-  confirmAction: 'promote' | 'delete' | null = null;
+  confirmAction: 'promote' | 'delete' | 'reopen-quiz' | 'revoke-reopen' | null = null;
   confirmUser: User | null = null;
+  // Set alongside confirmUser when confirmAction is 'reopen-quiz' or
+  // 'revoke-reopen' — the confirm modal only carries one payload object, so
+  // these two actions need the target quiz as well as the target user.
+  confirmQuiz: any = null;
   confirmMessage: string = '';
   confirmTitle: string = '';
 
@@ -249,25 +254,85 @@ export class UserManagementComponent implements OnInit {
     return !!this.selectedUser?.reopenedQuizIds?.includes(quiz.id);
   }
 
+  // Opens the confirm modal rather than reopening immediately — a misclick
+  // here silently grants the wrong student (or the wrong quiz) an extra
+  // attempt, so it goes through the same confirm-before-acting pattern as
+  // deleteUser()/changeUserType() rather than firing on a single click.
   reopenQuiz(quiz: any): void {
     if (!this.selectedUser || !this.selectedUser.id || this.isQuizReopened(quiz)) {
       return;
     }
 
+    this.confirmUser = this.selectedUser;
+    this.confirmQuiz = quiz;
+    this.confirmAction = 'reopen-quiz';
+    this.confirmTitle = 'Reopen Quiz';
+    this.confirmMessage = `Grant "${this.selectedUser.uname}" one more attempt at "${quiz.title}"?`;
+    this.showConfirmModal = true;
+  }
+
+  private executeReopenQuiz(): void {
+    if (!this.confirmUser || !this.confirmUser.id || !this.confirmQuiz) {
+      return;
+    }
+
+    const user = this.confirmUser;
+    const quiz = this.confirmQuiz;
     this.reopeningQuizId = quiz.id;
 
-    this.adminUserService.reopenQuiz(this.selectedUser.id, quiz.id).subscribe({
+    this.adminUserService.reopenQuiz(user.id!, quiz.id).subscribe({
       next: () => {
-        if (this.selectedUser) {
+        if (this.selectedUser && this.selectedUser.id === user.id) {
           this.selectedUser.reopenedQuizIds = [...(this.selectedUser.reopenedQuizIds || []), quiz.id];
         }
         this.reopeningQuizId = null;
-        this.logger.info('Quiz reopened for user', { userId: this.selectedUser?.id, quizId: quiz.id });
+        this.logger.info('Quiz reopened for user', { userId: user.id, quizId: quiz.id });
       },
       error: (error) => {
         this.logger.error('Error reopening quiz', error);
         alert('Failed to reopen quiz: ' + error);
         this.reopeningQuizId = null;
+      }
+    });
+  }
+
+  // Cancels an outstanding reopen grant before the student uses it — the
+  // undo path for a misclick on reopenQuiz(). Also confirm-gated, same
+  // rationale.
+  revokeReopen(quiz: any): void {
+    if (!this.selectedUser || !this.selectedUser.id || !this.isQuizReopened(quiz)) {
+      return;
+    }
+
+    this.confirmUser = this.selectedUser;
+    this.confirmQuiz = quiz;
+    this.confirmAction = 'revoke-reopen';
+    this.confirmTitle = 'Cancel Reopen';
+    this.confirmMessage = `Cancel "${this.selectedUser.uname}"'s extra attempt at "${quiz.title}"?`;
+    this.showConfirmModal = true;
+  }
+
+  private executeRevokeReopen(): void {
+    if (!this.confirmUser || !this.confirmUser.id || !this.confirmQuiz) {
+      return;
+    }
+
+    const user = this.confirmUser;
+    const quiz = this.confirmQuiz;
+    this.revokingQuizId = quiz.id;
+
+    this.adminUserService.revokeReopen(user.id!, quiz.id).subscribe({
+      next: () => {
+        if (this.selectedUser && this.selectedUser.id === user.id) {
+          this.selectedUser.reopenedQuizIds = (this.selectedUser.reopenedQuizIds || []).filter(id => id !== quiz.id);
+        }
+        this.revokingQuizId = null;
+        this.logger.info('Reopen grant revoked for user', { userId: user.id, quizId: quiz.id });
+      },
+      error: (error) => {
+        this.logger.error('Error revoking reopen grant', error);
+        alert('Failed to cancel reopen: ' + error);
+        this.revokingQuizId = null;
       }
     });
   }
@@ -286,6 +351,7 @@ export class UserManagementComponent implements OnInit {
     // Reset confirmation state
     this.confirmAction = null;
     this.confirmUser = null;
+    this.confirmQuiz = null;
     this.confirmMessage = '';
     this.confirmTitle = '';
   }
@@ -295,16 +361,26 @@ export class UserManagementComponent implements OnInit {
       this.executePromote();
     } else if (this.confirmAction === 'delete') {
       this.executeDelete();
+    } else if (this.confirmAction === 'reopen-quiz') {
+      this.executeReopenQuiz();
+    } else if (this.confirmAction === 'revoke-reopen') {
+      this.executeRevokeReopen();
     }
     this.closeConfirmModal();
   }
 
   getConfirmButtonClass(): string {
-    return this.confirmAction === 'delete' ? 'btn-danger' : 'btn-primary';
+    if (this.confirmAction === 'delete') return 'btn-danger';
+    if (this.confirmAction === 'reopen-quiz') return 'btn-warning';
+    if (this.confirmAction === 'revoke-reopen') return 'btn-secondary';
+    return 'btn-primary';
   }
 
   getConfirmButtonText(): string {
-    return this.confirmAction === 'delete' ? 'Delete' : 'Confirm';
+    if (this.confirmAction === 'delete') return 'Delete';
+    if (this.confirmAction === 'reopen-quiz') return 'Reopen';
+    if (this.confirmAction === 'revoke-reopen') return 'Cancel Reopen';
+    return 'Confirm';
   }
 
 }

@@ -18,7 +18,8 @@ async function createUser(User, overrides = {}) {
         type: overrides.type || 'student',
         createdAt: new Date(),
         updatedAt: new Date(),
-        quizzes: overrides.quizzes || []
+        quizzes: overrides.quizzes || [],
+        reopenedQuizIds: overrides.reopenedQuizIds || []
     });
 
     const token = generateToken(user);

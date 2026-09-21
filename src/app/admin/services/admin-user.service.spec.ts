@@ -50,4 +50,32 @@ describe('AdminUserService', () => {
       { status: 404, statusText: 'Not Found' }
     );
   });
+
+  it('revokeReopen() DELETEs /api/admin/user/:userId/reopen-quiz/:quizId', () => {
+    const response = { message: 'Reopen grant revoked successfully', userId: 'u1', quizId: 5, reopenedQuizIds: [] };
+
+    service.revokeReopen('u1', 5).subscribe(result => {
+      expect(result).toEqual(response);
+    });
+
+    const req = httpMock.expectOne('/api/admin/user/u1/reopen-quiz/5');
+    expect(req.request.method).toBe('DELETE');
+    req.flush(response);
+  });
+
+  it('revokeReopen() surfaces the backend error message on failure', (done) => {
+    service.revokeReopen('u1', 5).subscribe({
+      next: () => fail('expected an error'),
+      error: (message: string) => {
+        expect(message).toBe('User not found');
+        done();
+      }
+    });
+
+    const req = httpMock.expectOne('/api/admin/user/u1/reopen-quiz/5');
+    req.flush(
+      { error: { code: 'USER_NOT_FOUND', message: 'User not found' } },
+      { status: 404, statusText: 'Not Found' }
+    );
+  });
 });

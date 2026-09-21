@@ -274,12 +274,14 @@ module.exports = function(app, User) {
             }
         });
 
-    // Grant a student one more attempt at a quiz they've already completed
-    // (and which is therefore locked — see utils/quizStatus.js and POST
-    // /api/quiz's QUIZ_LOCKED check). Idempotent: reopening an
+    // POST grants a student one more attempt at a quiz they've already
+    // completed (and which is therefore locked — see utils/quizStatus.js and
+    // POST /api/quiz's QUIZ_LOCKED check). Idempotent: reopening an
     // already-reopened quiz is a no-op rather than an error. The grant is
     // consumed automatically (see quizRoutes.js) the next time an attempt
     // for this quizId is saved, at which point the quiz relocks.
+    // DELETE revokes an outstanding grant (e.g. the wrong quiz was reopened
+    // by mistake) before the student retakes it.
     app.route("/api/admin/user/:userId/reopen-quiz/:quizId")
         .post(verifyToken, verifyAdmin, async (req, res, next) => {
             try {
@@ -310,6 +312,40 @@ module.exports = function(app, User) {
 
                 res.status(200).json({
                     message: 'Quiz reopened successfully',
+                    userId: userId,
+                    quizId: quizId,
+                    reopenedQuizIds: user.reopenedQuizIds
+                });
+            } catch (err) {
+                next(err);
+            }
+        })
+
+        // Revoke a reopen grant made in error (e.g. the wrong row was
+        // clicked) before the student has used it. Idempotent: revoking a
+        // quizId that isn't currently reopened is a no-op rather than an
+        // error, same as reopening one that already is.
+        .delete(verifyToken, verifyAdmin, async (req, res, next) => {
+            try {
+                const userId = req.params.userId;
+                const quizId = Number(req.params.quizId);
+
+                if (!Number.isFinite(quizId)) {
+                    return next(ApiError.badRequest('INVALID_QUIZ_ID', 'quizId must be a number'));
+                }
+
+                const user = await User.findById(userId);
+                if (!user) {
+                    return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
+                }
+
+                if (user.reopenedQuizIds.includes(quizId)) {
+                    user.reopenedQuizIds = user.reopenedQuizIds.filter((id) => id !== quizId);
+                    await user.save();
+                }
+
+                res.status(200).json({
+                    message: 'Reopen grant revoked successfully',
                     userId: userId,
                     quizId: quizId,
                     reopenedQuizIds: user.reopenedQuizIds
