@@ -80,7 +80,27 @@ curl -i http://127.0.0.1:8020/
 
 Expect a 200 with the Angular `index.html` back from the curl.
 
-## 6. Wire up nginx
+## 6. Seed the Guest cohort
+
+One-time (safe to re-run): creates the 3 sample quizzes and the `isGuest`
+cohort that unlocks them, so a student who isn't a member of any real
+cohort — a fresh registration, a legacy no-cohort account, an App/Play
+Store reviewer account — gets those 3 quizzes instead of an empty list.
+See `server/utils/cohortAccess.js` and `server/scripts/seed_guest_cohort.js`
+for how the fallback works. This has to run inside the app container so it
+can reach `quizmaster-mongo` over the compose network:
+
+```bash
+docker compose -f docker-compose.prod.yml exec quizmaster-app \
+  node server/scripts/seed_guest_cohort.js
+```
+
+Easy to miss because nothing else in this runbook fails or errors without
+it — the app just silently shows no-cohort students an empty quiz list.
+Re-run after any change to the 3 quiz definitions in
+`seed_guest_cohort.js` (it upserts by title, so it's safe to run again).
+
+## 7. Wire up nginx
 
 ```bash
 # on the server, from the hetzner-infra repo checkout
@@ -95,7 +115,7 @@ sudo systemctl reload nginx
 the other vhosts on this box use — check `ls /etc/nginx/sites-enabled/`
 first if unsure.)
 
-## 7. TLS via Certbot
+## 8. TLS via Certbot
 
 ```bash
 sudo certbot --nginx -d quizmaster.alphatronex.com
@@ -106,17 +126,19 @@ HTTP→HTTPS redirect — same as every other vhost in `hetzner-infra/nginx/`.
 Copy the resulting file back into the `hetzner-infra` repo afterward so the
 repo matches what's actually live (matches the existing convention there).
 
-## 8. Verify
+## 9. Verify
 
 - `https://quizmaster.alphatronex.com` loads the app.
 - Register a test account, log in, take a quiz, confirm it appears in
   history.
+- The same test account (no cohort) sees the 3 Guest quizzes, not an
+  empty list — confirms step 6 actually took.
 - `docker logs quizmaster-app` and `docker logs quizmaster-mongo` show no
   errors.
 - `docker stats --no-stream` — confirm both containers are well under
   their `mem_limit`, and the box overall isn't swapping.
 
-## 9. After go-live
+## 10. After go-live
 
 - Decide whether to decommission the Render service (`render.yaml` in this
   repo) or leave it as a fallback for a few days before deleting it.
