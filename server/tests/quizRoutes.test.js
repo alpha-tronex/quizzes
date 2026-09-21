@@ -309,6 +309,11 @@ describe('GET /api/quiz — cohort filtering', () => {
 
 describe('POST /api/quiz', () => {
     test('saves a completed quiz onto the user record', async () => {
+        await seedQuiz({ quizId: 0, title: 'Islam 101' });
+        await Cohort.create({
+            name: 'Guest', isGuest: true, startDate: daysFromNow(-1), endDate: daysFromNow(365),
+            students: [], quizzes: [0]
+        });
         const { token, user } = await createUser(User, { username: 'quiztaker' });
         const quizData = { id: 0, title: 'Islam 101', score: 3, totalQuestions: 3, questions: [] };
 
@@ -364,6 +369,7 @@ describe('POST /api/quiz', () => {
     });
 
     test('allows an admin to save an attempt on behalf of another user', async () => {
+        await seedQuiz({ quizId: 0, title: 'Islam 101' });
         const { token } = await createUser(User, { username: 'quizadmin2', type: 'admin' });
         const { user: student } = await createUser(User, { username: 'onbehalfstudent' });
         const quizData = { id: 0, title: 'Islam 101', score: 3, totalQuestions: 3, questions: [] };
@@ -377,6 +383,136 @@ describe('POST /api/quiz', () => {
 
         const reloaded = await User.findById(student._id);
         expect(reloaded.quizzes).toHaveLength(1);
+    });
+});
+
+describe('POST /api/quiz — authoritative scoring', () => {
+    // Regression coverage for the fix that stopped trusting the client's
+    // submitted score/isCorrect (see quizScoring.js and the client-side
+    // 1-based/0-based indexing bug it defends against).
+    //
+    // These tests submit as a plain student, which is also subject to the
+    // (unrelated) cohort-access check earlier in the same route — so each
+    // one also grants Guest-cohort access to the quiz being scored, the same
+    // way the "POST /api/quiz — cohort filtering" tests below do.
+    async function seedScoringQuiz(quizId) {
+        await Cohort.create({
+            name: 'Guest', isGuest: true, startDate: daysFromNow(-1), endDate: daysFromNow(365),
+            students: [], quizzes: [quizId]
+        });
+        return seedQuiz({
+            quizId,
+            title: 'Basic Algebra',
+            questions: [
+                { questionNum: 0, questionType: 'SingleAnswer', instructions: '', question: 'Solve for x: 2x + 3 = 11', answers: ['3', '4', '5', '6'], correct: [1] },
+                { questionNum: 1, questionType: 'TrueFalse', instructions: '', question: 'True or false: 5 is prime.', answers: ['True', 'False'], correct: [0] }
+            ]
+        });
+    }
+
+    test('recomputes score/isCorrect from the canonical quiz, ignoring a lying client', async () => {
+        await seedScoringQuiz(0);
+        const { token, user } = await createUser(User, { username: 'honestscorer' });
+        const quizData = {
+            id: 0,
+            title: 'Basic Algebra',
+            // Client claims a perfect score with bogus per-question data.
+            score: 99,
+            totalQuestions: 99,
+            questions: [
+                { questionNum: 0, question: 'Solve for x: 2x + 3 = 11', answers: ['3', '4', '5', '6'], selection: [1], correct: [1], isCorrect: true },
+                { questionNum: 1, question: 'True or false: 5 is prime.', answers: ['True', 'False'], selection: [0], correct: [0], isCorrect: true }
+            ]
+        };
+
+        const res = await request(app)
+            .post('/api/quiz')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: user.username, quizData });
+
+        expect(res.status).toBe(200);
+        expect(res.body.quiz).toMatchObject({ score: 2, totalQuestions: 2 });
+
+        const reloaded = await User.findById(user._id);
+        expect(reloaded.quizzes[0].score).toBe(2);
+        expect(reloaded.quizzes[0].totalQuestions).toBe(2);
+        expect(reloaded.quizzes[0].questions[0].isCorrect).toBe(true);
+        expect(reloaded.quizzes[0].questions[1].isCorrect).toBe(true);
+    });
+
+    test('marks a question correct at index 0, the case the old client-trust bug could never satisfy', async () => {
+        await seedScoringQuiz(0);
+        const { token, user } = await createUser(User, { username: 'indexzeroscorer' });
+        const quizData = {
+            id: 0,
+            title: 'Basic Algebra',
+            score: 0,
+            totalQuestions: 2,
+            questions: [
+                { questionNum: 0, question: 'Solve for x: 2x + 3 = 11', answers: ['3', '4', '5', '6'], selection: [1] },
+                // Student picked "True" (index 0), which is the actual
+                // correct answer — the client under the old bug would have
+                // submitted isCorrect: false here regardless.
+                { questionNum: 1, question: 'True or false: 5 is prime.', answers: ['True', 'False'], selection: [0], isCorrect: false }
+            ]
+        };
+
+        const res = await request(app)
+            .post('/api/quiz')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: user.username, quizData });
+
+        expect(res.status).toBe(200);
+
+        const reloaded = await User.findById(user._id);
+        expect(reloaded.quizzes[0].questions[1].isCorrect).toBe(true);
+        expect(reloaded.quizzes[0].score).toBe(2);
+    });
+
+    test('scores a wrong answer as incorrect even if the client claims otherwise', async () => {
+        await seedScoringQuiz(0);
+        const { token, user } = await createUser(User, { username: 'wrongscorer' });
+        const quizData = {
+            id: 0,
+            title: 'Basic Algebra',
+            score: 2,
+            totalQuestions: 2,
+            questions: [
+                { questionNum: 0, question: 'Solve for x: 2x + 3 = 11', answers: ['3', '4', '5', '6'], selection: [0], isCorrect: true },
+                { questionNum: 1, question: 'True or false: 5 is prime.', answers: ['True', 'False'], selection: [0], isCorrect: true }
+            ]
+        };
+
+        const res = await request(app)
+            .post('/api/quiz')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: user.username, quizData });
+
+        expect(res.status).toBe(200);
+
+        const reloaded = await User.findById(user._id);
+        expect(reloaded.quizzes[0].questions[0].isCorrect).toBe(false);
+        expect(reloaded.quizzes[0].score).toBe(1);
+    });
+
+    test('falls back to the client-submitted score when no canonical quiz exists for the id', async () => {
+        // No seedQuiz() call — quizId 42 has no matching Quiz document. Use
+        // an admin so this doesn't also get rejected by the (unrelated)
+        // cohort-membership check that non-admins go through first.
+        const { token } = await createUser(User, { username: 'orphanadmin', type: 'admin' });
+        const { user: student } = await createUser(User, { username: 'orphanscorer' });
+        const quizData = { id: 42, title: 'Orphaned Quiz', score: 1, totalQuestions: 1, questions: [] };
+
+        const res = await request(app)
+            .post('/api/quiz')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ username: student.username, quizData });
+
+        expect(res.status).toBe(200);
+
+        const reloaded = await User.findById(student._id);
+        expect(reloaded.quizzes[0].score).toBe(1);
+        expect(reloaded.quizzes[0].totalQuestions).toBe(1);
     });
 });
 
@@ -441,7 +577,20 @@ describe('POST /api/quiz — cohort filtering', () => {
 });
 
 describe('POST /api/quiz — retake lock', () => {
+    // Every case here submits as a plain student, so (like the "cohort
+    // filtering" tests above) each needs Guest-cohort access to quizId 0 —
+    // otherwise the unrelated cohort check earlier in the route would reject
+    // the request before the lock logic under test is ever reached.
+    async function grantGuestAccessToQuiz0() {
+        await seedQuiz({ quizId: 0, title: 'Islam 101' });
+        await Cohort.create({
+            name: 'Guest', isGuest: true, startDate: daysFromNow(-1), endDate: daysFromNow(365),
+            students: [], quizzes: [0]
+        });
+    }
+
     test('409s when a student tries to retake a quiz they already completed', async () => {
+        await grantGuestAccessToQuiz0();
         const { token, user } = await createUser(User, {
             username: 'relocked',
             quizzes: [{ id: 0, title: 'Islam 101', score: 1, totalQuestions: 1 }]
@@ -461,6 +610,7 @@ describe('POST /api/quiz — retake lock', () => {
     });
 
     test('allows a retake once an admin has reopened the quiz, then relocks it', async () => {
+        await grantGuestAccessToQuiz0();
         const { token, user } = await createUser(User, {
             username: 'reopenedretaker',
             quizzes: [{ id: 0, title: 'Islam 101', score: 1, totalQuestions: 1 }]
@@ -511,6 +661,7 @@ describe('POST /api/quiz — retake lock', () => {
     });
 
     test('a first-time attempt is unaffected by the lock', async () => {
+        await grantGuestAccessToQuiz0();
         const { token, user } = await createUser(User, { username: 'firsttimer' });
         const quizData = { id: 0, title: 'Islam 101', score: 1, totalQuestions: 1, questions: [] };
 

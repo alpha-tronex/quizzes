@@ -2,6 +2,7 @@ const { verifyToken } = require('../middleware/authMiddleware');
 const ApiError = require('../utils/apiError');
 const { getActiveCohorts, hasAnyRealCohortMembership, getActiveGuestCohort } = require('../utils/cohortAccess');
 const { buildQuizStatusMap } = require('../utils/quizStatus');
+const { computeAuthoritativeScore } = require('../utils/quizScoring');
 
 /**
  * `statusMap` (see quizStatus.js) is only built for students — admins see
@@ -152,8 +153,28 @@ module.exports = function(app, User, Quiz, Cohort) {
                     }
                 }
 
+                // Recompute score/isCorrect authoritatively from the canonical
+                // Quiz document rather than trusting the client's submitted
+                // values — see quizScoring.js for why. Falls back to the
+                // client-submitted values only if the canonical quiz can't be
+                // found (shouldn't happen in practice, since a quiz must
+                // exist to have been fetched/taken in the first place).
+                const canonicalQuiz = await Quiz.findOne({ quizId: Number(quizData.id) });
+                let quizToSave = quizData;
+                if (canonicalQuiz) {
+                    const { questions, score, totalQuestions } = computeAuthoritativeScore(
+                        canonicalQuiz, quizData.questions
+                    );
+                    quizToSave = { ...quizData, questions, score, totalQuestions };
+                } else {
+                    console.warn(
+                        `POST /api/quiz: no canonical Quiz found for quizId=${quizData.id}; ` +
+                        'trusting client-submitted score/isCorrect for this attempt.'
+                    );
+                }
+
                 // Add the completed quiz to user's quizzes array
-                user.quizzes.push(quizData);
+                user.quizzes.push(quizToSave);
                 user.updatedAt = new Date();
 
                 // A reopened quiz grants exactly one more attempt, then
@@ -167,7 +188,7 @@ module.exports = function(app, User, Quiz, Cohort) {
 
                 await user.save();
 
-                res.status(200).json({ message: 'Quiz saved successfully', quiz: quizData });
+                res.status(200).json({ message: 'Quiz saved successfully', quiz: quizToSave });
             } catch (err) {
                 next(err);
             }
