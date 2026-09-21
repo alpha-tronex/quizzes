@@ -66,6 +66,10 @@ export class QuestionsComponent implements OnInit {
     }
   }
 
+  // answerNum is the 0-based index of the answer within curQuestion.answers
+  // (passed straight through from the template's *ngFor;let i = index), so
+  // it lines up directly with the Quiz schema's 0-based `correct` indices —
+  // see getAnswerText()/isQuestionCorrect() above.
   recordMultiChoiceAnswer(answerNum: number) {
     if (!this.curQuestion.selection) {
       this.curQuestion.selection = [];
@@ -193,27 +197,33 @@ export class QuestionsComponent implements OnInit {
     });
   }
 
+  // `answerNum` is a plain 0-based index into question.answers, matching how
+  // selection/correct are stored (see recordSingleAnswer/recordMultiChoiceAnswer
+  // below and the Quiz schema's `correct: [Number]`). Any "N." label shown to
+  // the user is derived separately at the display layer (answerNum + 1) —
+  // never baked into the stored/compared value itself.
   getAnswerText(question: Question, answerNum: number): string {
-    if (!question.answers || answerNum < 1 || answerNum > question.answers.length) {
+    if (!question.answers || answerNum < 0 || answerNum >= question.answers.length) {
       return '';
     }
-    return question.answers[answerNum - 1];
+    return question.answers[answerNum];
   }
 
   isQuestionCorrect(question: Question): boolean {
     if (!question.selection || !question.correct) {
       return false;
     }
-    
+
     // Check if both arrays have the same length and contain the same elements
     if (question.selection.length !== question.correct.length) {
       return false;
     }
-    
-    // Sort both arrays and compare
-    const sortedSelection = [...question.selection].sort();
-    const sortedCorrect = [...question.correct].sort();
-    
+
+    // Sort numerically (default Array.sort() is lexicographic and would
+    // mis-order e.g. [2, 10] as [10, 2]) and compare.
+    const sortedSelection = [...question.selection].sort((a, b) => a - b);
+    const sortedCorrect = [...question.correct].sort((a, b) => a - b);
+
     return sortedSelection.every((val, index) => val === sortedCorrect[index]);
   }
 

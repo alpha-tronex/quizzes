@@ -413,11 +413,18 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     });
   }
 
+  // `answerNum` is a plain 0-based index into question.answers, matching how
+  // selection/correct are now stored throughout (see questions.component.ts's
+  // getAnswerText()) — this used to subtract 1, treating answerNum as a
+  // 1-based display position, which mismatched the 0-based `correct`/
+  // `selection` values and could look up the wrong answer text (or return
+  // 'N/A' for a correct answer at index 0). The template applies `+ 1`
+  // separately, purely for the on-screen "N." label.
   getAnswerText(question: any, answerNum: number): string {
-    if (!question.answers || answerNum < 1 || answerNum > question.answers.length) {
+    if (!question.answers || answerNum < 0 || answerNum >= question.answers.length) {
       return 'N/A';
     }
-    return question.answers[answerNum - 1];
+    return question.answers[answerNum];
   }
 
   // showConfirmModal is now a boolean property controlling modal visibility

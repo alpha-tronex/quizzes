@@ -303,4 +303,35 @@ describe('UserManagementComponent', () => {
       expect(component.refreshSelectedUser).not.toHaveBeenCalled();
     }));
   });
+
+  // Regression tests for the same 1-based/0-based scoring bug fixed in
+  // questions.component.ts: the admin review modal's getAnswerText()
+  // subtracted 1 from answerNum, treating `selection`/`correct` as 1-based
+  // positions when they are actually stored 0-based (matching Quiz.correct
+  // in the DB). This made the review modal show wrong or 'N/A' answer text
+  // for any answer at index 0, independent of the underlying scoring bug.
+  describe('getAnswerText() (0-based, matching Quiz.correct)', () => {
+    const question = {
+      answers: ['True', 'False', 'Maybe']
+    };
+
+    it('indexes answers[] directly with no off-by-one', () => {
+      expect(component.getAnswerText(question, 0)).toBe('True');
+      expect(component.getAnswerText(question, 1)).toBe('False');
+      expect(component.getAnswerText(question, 2)).toBe('Maybe');
+    });
+
+    it('resolves the correct text for an answer at index 0 (previously mishandled)', () => {
+      expect(component.getAnswerText(question, 0)).toBe('True');
+    });
+
+    it('returns N/A for an out-of-range index', () => {
+      expect(component.getAnswerText(question, -1)).toBe('N/A');
+      expect(component.getAnswerText(question, 3)).toBe('N/A');
+    });
+
+    it('returns N/A when the question has no answers', () => {
+      expect(component.getAnswerText({ answers: null }, 0)).toBe('N/A');
+    });
+  });
 });

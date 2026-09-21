@@ -268,7 +268,7 @@
           <strong>Student's Answer(s):</strong>
           <div class="ms-3" [ngClass]="question.isCorrect ? 'text-success' : 'text-danger'">
             <span *ngFor="let sel of question.selection; let last = last">
-              <small>{{ sel }}. {{ getAnswerText(question, sel) }}</small><span *ngIf="!last"><br></span>
+              <small>{{ sel + 1 }}. {{ getAnswerText(question, sel) }}</small><span *ngIf="!last"><br></span>
             </span>
           </div>
         </div>
@@ -277,7 +277,7 @@
           <strong>Correct Answer(s):</strong>
           <div class="ms-3 text-success">
             <span *ngFor="let cor of question.correct; let last = last">
-              <small>{{ cor }}. {{ getAnswerText(question, cor) }}</small><span *ngIf="!last"><br></span>
+              <small>{{ cor + 1 }}. {{ getAnswerText(question, cor) }}</small><span *ngIf="!last"><br></span>
             </span>
           </div>
         </div>

@@ -18,8 +18,8 @@
                   <input type="text" class="form-control" [value]="answer" style="max-width: 99%;" disabled>
                 </div>
                 <div class="d-flex align-items-center justify-content-center" style="width: 2rem;">
-                  <input type="checkbox" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;" 
-                    [checked]="isAnswerSelected(i + 1)" (change)="recordMultiChoiceAnswer(i + 1)">
+                  <input type="checkbox" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;"
+                    [checked]="isAnswerSelected(i)" (change)="recordMultiChoiceAnswer(i)">
                 </div>
               </div>
             </ng-template>
@@ -30,8 +30,8 @@
                   <input type="text" class="form-control" [value]="answer" style="max-width: 99%;" disabled>
                 </div>
                 <div class="d-flex align-items-center justify-content-center" style="width: 2rem;">
-                  <input type="radio" name="answer" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;" 
-                    [checked]="isAnswerSelected(i + 1)" (change)="recordSingleAnswer(i + 1)">
+                  <input type="radio" name="answer" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;"
+                    [checked]="isAnswerSelected(i)" (change)="recordSingleAnswer(i)">
                 </div>
               </div>
             </ng-template>
@@ -42,8 +42,8 @@
                   <input type="text" class="form-control" [value]="answer" style="max-width: 99%;" disabled>
                 </div>
                 <div class="d-flex align-items-center justify-content-center" style="width: 2rem;">
-                  <input type="radio" name="answer" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;" 
-                    [checked]="isAnswerSelected(i + 1)" (change)="recordSingleAnswer(i + 1)">
+                  <input type="radio" name="answer" class="form-check-input m-0" style="width: 1.5rem; height: 1.5rem;"
+                    [checked]="isAnswerSelected(i)" (change)="recordSingleAnswer(i)">
                 </div>
               </div>
             </ng-template>
