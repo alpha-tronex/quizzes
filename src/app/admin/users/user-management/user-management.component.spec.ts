@@ -1,7 +1,7 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 
 import { UserManagementComponent } from './user-management.component';
 import { AdminUserService } from '@admin/services/admin-user.service';
@@ -43,6 +43,36 @@ describe('UserManagementComponent', () => {
       component.selectedUser = { id: 'u1', reopenedQuizIds: [5] } as unknown as User;
 
       expect(component.isQuizReopened({ id: 5 })).toBe(true);
+    });
+  });
+
+  describe('isLatestAttemptForQuiz()', () => {
+    it('is true when the quiz has only one attempt', () => {
+      const attempt = { id: 5, completedAt: '2026-01-01T00:00:00.000Z' };
+      component.selectedUser = { id: 'u1', quizzes: [attempt] } as unknown as User;
+
+      expect(component.isLatestAttemptForQuiz(attempt)).toBe(true);
+    });
+
+    it('is true only for the most recently completed attempt among duplicates', () => {
+      // Mirrors "Hasan Test" reopened twice: three attempts, same quiz id.
+      const first = { id: 5, title: 'Hasan Test', completedAt: '2026-01-01T00:00:00.000Z' };
+      const second = { id: 5, title: 'Hasan Test', completedAt: '2026-02-01T00:00:00.000Z' };
+      const third = { id: 5, title: 'Hasan Test', completedAt: '2026-03-01T00:00:00.000Z' };
+      component.selectedUser = { id: 'u1', quizzes: [first, second, third] } as unknown as User;
+
+      expect(component.isLatestAttemptForQuiz(first)).toBe(false);
+      expect(component.isLatestAttemptForQuiz(second)).toBe(false);
+      expect(component.isLatestAttemptForQuiz(third)).toBe(true);
+    });
+
+    it('treats attempts of different quizzes independently', () => {
+      const quizA = { id: 5, completedAt: '2026-01-01T00:00:00.000Z' };
+      const quizB = { id: 9, completedAt: '2026-01-15T00:00:00.000Z' };
+      component.selectedUser = { id: 'u1', quizzes: [quizA, quizB] } as unknown as User;
+
+      expect(component.isLatestAttemptForQuiz(quizA)).toBe(true);
+      expect(component.isLatestAttemptForQuiz(quizB)).toBe(true);
     });
   });
 
@@ -108,6 +138,25 @@ describe('UserManagementComponent', () => {
     });
   });
 
+  describe('reviewQuiz()', () => {
+    it('sets the reviewed quiz and opens the review modal', () => {
+      const quiz = { id: 5, title: 'Hasan Test' };
+
+      component.reviewQuiz(quiz);
+
+      expect(component.reviewedQuiz).toBe(quiz);
+      expect(component.showReviewModal).toBe(true);
+    });
+
+    it('closeReviewModal() hides the review modal', () => {
+      component.reviewQuiz({ id: 5, title: 'Hasan Test' });
+
+      component.closeReviewModal();
+
+      expect(component.showReviewModal).toBe(false);
+    });
+  });
+
   describe('revokeReopen()', () => {
     it('does nothing if there is no selected user', () => {
       component.selectedUser = null;
@@ -167,5 +216,91 @@ describe('UserManagementComponent', () => {
       expect(component.selectedUser!.reopenedQuizIds).toEqual([5]);
       expect(window.alert).toHaveBeenCalledWith('Failed to cancel reopen: User not found');
     });
+  });
+
+  describe('refreshSelectedUser()', () => {
+    it('does nothing when there is no selected user', () => {
+      component.selectedUser = null;
+      spyOn(adminUserService, 'getUserById');
+
+      component.refreshSelectedUser();
+
+      expect(adminUserService.getUserById).not.toHaveBeenCalled();
+    });
+
+    it('updates selectedUser and the matching entry in users on success', () => {
+      const stale = { id: 'u1', uname: 'student1', reopenedQuizIds: [] } as unknown as User;
+      const fresh = { id: 'u1', uname: 'student1', reopenedQuizIds: [5] } as unknown as User;
+      component.selectedUser = stale;
+      component.users = [stale];
+      spyOn(adminUserService, 'getUserById').and.returnValue(of(fresh));
+
+      component.refreshSelectedUser();
+
+      expect(adminUserService.getUserById).toHaveBeenCalledWith('u1');
+      expect(component.selectedUser).toBe(fresh);
+      expect(component.users[0]).toBe(fresh);
+    });
+
+    it('discards the response if the admin switched to a different user while the request was in flight', () => {
+      const userA = { id: 'u1', uname: 'student1' } as unknown as User;
+      const userB = { id: 'u2', uname: 'student2' } as unknown as User;
+      const freshA = { id: 'u1', uname: 'student1', reopenedQuizIds: [5] } as unknown as User;
+      component.selectedUser = userA;
+      component.users = [userA, userB];
+      const pending = new Subject<User>();
+      spyOn(adminUserService, 'getUserById').and.returnValue(pending.asObservable());
+
+      component.refreshSelectedUser();
+      component.selectedUser = userB; // admin switched users before the response arrived
+      pending.next(freshA);
+
+      expect(component.selectedUser).toBe(userB);
+      expect(component.users[0]).toBe(userA);
+    });
+
+    it('logs the error and leaves selectedUser unchanged on failure', () => {
+      const user = { id: 'u1', uname: 'student1' } as unknown as User;
+      component.selectedUser = user;
+      spyOn(adminUserService, 'getUserById').and.returnValue(throwError(() => 'Network error'));
+
+      component.refreshSelectedUser();
+
+      expect(component.selectedUser).toBe(user);
+    });
+  });
+
+  describe('lifecycle: focus + poll refresh', () => {
+    it('refreshes the selected user when the window regains focus', () => {
+      spyOn(component, 'refreshSelectedUser');
+
+      window.dispatchEvent(new Event('focus'));
+
+      expect(component.refreshSelectedUser).toHaveBeenCalled();
+    });
+
+    it('polls refreshSelectedUser on an interval', fakeAsync(() => {
+      spyOn(component, 'refreshSelectedUser');
+
+      tick(component.refreshPollMs);
+      expect(component.refreshSelectedUser).toHaveBeenCalledTimes(1);
+
+      tick(component.refreshPollMs);
+      expect(component.refreshSelectedUser).toHaveBeenCalledTimes(2);
+
+      // Clear the interval ourselves so fakeAsync doesn't flag it as a
+      // leftover periodic timer at the end of this test.
+      component.ngOnDestroy();
+    }));
+
+    it('ngOnDestroy stops both the focus listener and the poll interval', fakeAsync(() => {
+      spyOn(component, 'refreshSelectedUser');
+
+      component.ngOnDestroy();
+      window.dispatchEvent(new Event('focus'));
+      tick(component.refreshPollMs);
+
+      expect(component.refreshSelectedUser).not.toHaveBeenCalled();
+    }));
   });
 });

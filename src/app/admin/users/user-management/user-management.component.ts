@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { User } from '@models/users';
 import { AdminUserService } from '@admin/services/admin-user.service';
 import { LoginService } from '@core/services/login-service';
@@ -10,19 +10,27 @@ import { LoggerService } from '@core/services/logger.service';
     styleUrls: ['./user-management.component.css'],
     standalone: false
 })
-export class UserManagementComponent implements OnInit {
+export class UserManagementComponent implements OnInit, OnDestroy {
+  // How often to silently re-fetch the selected user while this page is
+  // open, so a student completing/retaking a quiz eventually resets the
+  // Reopen/Revoke buttons without the admin needing to reload the page.
+  // Kept short-ish since it's a lightweight single-user fetch, not the full
+  // user list.
+  readonly refreshPollMs = 30000;
+  private pollIntervalId: ReturnType<typeof setInterval> | null = null;
+  private readonly onWindowFocus = () => this.refreshSelectedUser();
+
   users: User[] = [];
   selectedUser: User | null = null;
   loading: boolean = false;
   errorMessage: string = '';
   reviewedQuiz: any = null;
+  showReviewModal: boolean = false;
   // `quiz.id` currently being reopened/revoked, so only that row's button
   // shows a pending state — see executeReopenQuiz()/executeRevokeReopen().
   reopeningQuizId: number | null = null;
   revokingQuizId: number | null = null;
-  private modalInstance: any = null;
-  // private confirmModalInstance: any = null;
-    showConfirmModal: boolean = false;
+  showConfirmModal: boolean = false;
   confirmAction: 'promote' | 'delete' | 'reopen-quiz' | 'revoke-reopen' | null = null;
   confirmUser: User | null = null;
   // Set alongside confirmUser when confirmAction is 'reopen-quiz' or
@@ -57,6 +65,59 @@ export class UserManagementComponent implements OnInit {
 
   ngOnInit() {
     this.loadUsers();
+
+    // Keeps the selected user's Reopen/Revoke buttons in sync with the
+    // server without the admin needing to reload the page: a student may
+    // complete or retake a quiz while this page is sitting open in another
+    // tab/window. Mirrors the mobile app's AppState/focusManager refetch —
+    // refetch immediately when the tab regains focus, plus a light poll as a
+    // fallback for admins who leave the tab focused and just watch it.
+    window.addEventListener('focus', this.onWindowFocus);
+    this.pollIntervalId = setInterval(() => this.refreshSelectedUser(), this.refreshPollMs);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('focus', this.onWindowFocus);
+    if (this.pollIntervalId !== null) {
+      clearInterval(this.pollIntervalId);
+      this.pollIntervalId = null;
+    }
+  }
+
+  // Re-fetches just the selected user (not the whole list) and refreshes
+  // both `selectedUser` and its entry in `users`, so the Reopen/Revoke
+  // buttons and the quizzes table reflect the latest server state. Public so
+  // tests can trigger it directly instead of faking a focus event/timer
+  // tick.
+  refreshSelectedUser(): void {
+    if (!this.selectedUser || !this.selectedUser.id) {
+      return;
+    }
+
+    // Capture the id up front: if the admin switches to a different user (or
+    // deselects) while this request is in flight, the response we get back
+    // is for the wrong user and must be discarded rather than applied.
+    const requestedUserId = this.selectedUser.id;
+
+    this.adminUserService.getUserById(requestedUserId).subscribe({
+      next: (updatedUser) => {
+        if (!this.selectedUser || this.selectedUser.id !== requestedUserId) {
+          return;
+        }
+
+        this.selectedUser = updatedUser;
+        const userIndex = this.users.findIndex(u => u.id === requestedUserId);
+        if (userIndex !== -1) {
+          this.users[userIndex] = updatedUser;
+        }
+      },
+      error: (error) => {
+        // Silent/background refresh — don't surface an alert or clobber the
+        // currently-displayed (still valid) user data over a transient
+        // network error.
+        this.logger.error('Error refreshing selected user', error);
+      }
+    });
   }
 
   loadUsers(): void {
@@ -226,25 +287,22 @@ export class UserManagementComponent implements OnInit {
     }
   }
 
+  // Uses the shared Angular `alpha-tronex-modal` component (state-driven via
+  // `showReviewModal`) rather than Bootstrap's JS modal API. The previous
+  // raw-Bootstrap version called `.hide()` without disposing the instance or
+  // cleaning up `.modal-backdrop` — if that cleanup doesn't complete, the
+  // backdrop is left sitting on top of the whole page, silently swallowing
+  // every click after it (including on the Reopen button, which looked like
+  // "the confirm modal doesn't open"). Routing this through the same
+  // component the confirm modal already uses avoids that class of bug
+  // entirely instead of just patching the cleanup.
   reviewQuiz(quiz: any): void {
     this.reviewedQuiz = quiz;
-    
-    // Use Bootstrap's modal API to show the modal
-    const modalElement = document.getElementById('quizReviewModal');
-    if (modalElement) {
-      // Dispose of existing instance if any
-      if (this.modalInstance) {
-        this.modalInstance.dispose();
-      }
-      this.modalInstance = new (window as any).bootstrap.Modal(modalElement);
-      this.modalInstance.show();
-    }
+    this.showReviewModal = true;
   }
 
-  closeModal(): void {
-    if (this.modalInstance) {
-      this.modalInstance.hide();
-    }
+  closeReviewModal(): void {
+    this.showReviewModal = false;
   }
 
   // A quiz stays reopened (one more attempt available) until the student
@@ -252,6 +310,24 @@ export class UserManagementComponent implements OnInit {
   // reopenedQuizIds again — see POST /api/quiz.
   isQuizReopened(quiz: any): boolean {
     return !!this.selectedUser?.reopenedQuizIds?.includes(quiz.id);
+  }
+
+  // `selectedUser.quizzes` has one row per completed attempt, so a quiz
+  // retaken twice appears three times, all sharing the same `quiz.id`. The
+  // Reopen/Revoke state (`reopenedQuizIds`) is per-quiz, not per-attempt, so
+  // without this check every row for that quiz would show (and act on) the
+  // same button in lockstep. Only the most recently completed attempt
+  // should offer Reopen/Revoke; earlier attempts stay review-only.
+  isLatestAttemptForQuiz(quiz: any): boolean {
+    const attempts = this.selectedUser?.quizzes?.filter(q => q.id === quiz.id) ?? [];
+    if (attempts.length <= 1) {
+      return true;
+    }
+
+    const latest = attempts.reduce((latestSoFar, candidate) =>
+      new Date(candidate.completedAt).getTime() >= new Date(latestSoFar.completedAt).getTime() ? candidate : latestSoFar
+    );
+    return latest === quiz;
   }
 
   // Opens the confirm modal rather than reopening immediately — a misclick

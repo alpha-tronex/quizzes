@@ -15,6 +15,10 @@ export class AlphaTronexModalComponent {
   @Input() disableClose = false;
   @Input() scrollToTopOnHide = false;
   @Input() scrollBehavior: ScrollBehavior = 'smooth';
+  // 'lg' widens the dialog and caps the body's height with its own internal
+  // scroll (Bootstrap's `.modal-lg .modal-dialog-scrollable`), for content
+  // too long to fit the default dialog — e.g. a multi-question quiz review.
+  @Input() size: 'default' | 'lg' = 'default';
   @Output() close = new EventEmitter<void>();
   @Output() confirm = new EventEmitter<void>();
 

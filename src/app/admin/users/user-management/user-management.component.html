@@ -159,7 +159,7 @@
                               Review
                             </button>
                             <button
-                              *ngIf="!isQuizReopened(quiz)"
+                              *ngIf="!isQuizReopened(quiz) && isLatestAttemptForQuiz(quiz)"
                               class="btn btn-sm btn-warning ms-1"
                               [disabled]="reopeningQuizId === quiz.id"
                               (click)="reopenQuiz(quiz)"
@@ -167,7 +167,7 @@
                               {{ reopeningQuizId === quiz.id ? 'Reopening…' : 'Reopen' }}
                             </button>
                             <button
-                              *ngIf="isQuizReopened(quiz)"
+                              *ngIf="isQuizReopened(quiz) && isLatestAttemptForQuiz(quiz)"
                               class="btn btn-sm btn-outline-secondary ms-1"
                               [disabled]="revokingQuizId === quiz.id"
                               (click)="revokeReopen(quiz)"
@@ -220,74 +220,71 @@
 </alpha-tronex-modal>
 
 <!-- Quiz Review Modal -->
-<div class="modal fade" id="quizReviewModal" tabindex="-1" aria-labelledby="quizReviewModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="quizReviewModalLabel">Quiz Review: {{ reviewedQuiz?.title }}</h5>
-        <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close"></button>
+<alpha-tronex-modal
+  [show]="showReviewModal"
+  [title]="'Quiz Review: ' + (reviewedQuiz?.title || '')"
+  type="info"
+  size="lg"
+  (close)="closeReviewModal()">
+  <ng-container *ngIf="reviewedQuiz">
+    <!-- Quiz Summary -->
+    <div class="card mb-3 bg-light">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-3 text-muted">Summary</h6>
+        <div class="row">
+          <div class="col-md-6 mb-2">
+            <strong>Student:</strong> {{ selectedUser?.fname }} {{ selectedUser?.lname }} ({{ selectedUser?.uname }})
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong>Date Completed:</strong> {{ formatDate(reviewedQuiz.completedAt) }}
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong>Score:</strong>
+            <span class="badge" [ngClass]="getScoreBadgeClass(reviewedQuiz.score, reviewedQuiz.totalQuestions)">
+              {{ reviewedQuiz.score }}/{{ reviewedQuiz.totalQuestions }}
+            </span>
+            <span class="ms-2">({{ ((reviewedQuiz.score / reviewedQuiz.totalQuestions) * 100).toFixed(1) }}%)</span>
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong>Time Taken:</strong> {{ formatDuration(reviewedQuiz.duration) }}
+          </div>
+        </div>
       </div>
-      <div class="modal-body" *ngIf="reviewedQuiz">
-        <!-- Quiz Summary -->
-        <div class="card mb-3 bg-light">
-          <div class="card-body">
-            <h6 class="card-subtitle mb-3 text-muted">Summary</h6>
-            <div class="row">
-              <div class="col-md-6 mb-2">
-                <strong>Student:</strong> {{ selectedUser?.fname }} {{ selectedUser?.lname }} ({{ selectedUser?.uname }})
-              </div>
-              <div class="col-md-6 mb-2">
-                <strong>Date Completed:</strong> {{ formatDate(reviewedQuiz.completedAt) }}
-              </div>
-              <div class="col-md-6 mb-2">
-                <strong>Score:</strong> 
-                <span class="badge" [ngClass]="getScoreBadgeClass(reviewedQuiz.score, reviewedQuiz.totalQuestions)">
-                  {{ reviewedQuiz.score }}/{{ reviewedQuiz.totalQuestions }}
-                </span>
-                <span class="ms-2">({{ ((reviewedQuiz.score / reviewedQuiz.totalQuestions) * 100).toFixed(1) }}%)</span>
-              </div>
-              <div class="col-md-6 mb-2">
-                <strong>Time Taken:</strong> {{ formatDuration(reviewedQuiz.duration) }}
-              </div>
-            </div>
+    </div>
+
+    <!-- Question-by-Question Review -->
+    <h6 class="mb-3">Question Details</h6>
+    <div class="card mb-3" *ngFor="let question of reviewedQuiz.questions; let i = index">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <h6 class="mb-0">Question {{ i + 1 }}</h6>
+          <span class="badge" [ngClass]="question.isCorrect ? 'bg-success' : 'bg-danger'">
+            {{ question.isCorrect ? 'Correct' : 'Incorrect' }}
+          </span>
+        </div>
+        <p class="mb-3">{{ question.question }}</p>
+
+        <div class="mb-2">
+          <strong>Student's Answer(s):</strong>
+          <div class="ms-3" [ngClass]="question.isCorrect ? 'text-success' : 'text-danger'">
+            <span *ngFor="let sel of question.selection; let last = last">
+              <small>{{ sel }}. {{ getAnswerText(question, sel) }}</small><span *ngIf="!last"><br></span>
+            </span>
           </div>
         </div>
 
-        <!-- Question-by-Question Review -->
-        <h6 class="mb-3">Question Details</h6>
-        <div class="card mb-3" *ngFor="let question of reviewedQuiz.questions; let i = index">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <h6 class="mb-0">Question {{ i + 1 }}</h6>
-              <span class="badge" [ngClass]="question.isCorrect ? 'bg-success' : 'bg-danger'">
-                {{ question.isCorrect ? 'Correct' : 'Incorrect' }}
-              </span>
-            </div>
-            <p class="mb-3">{{ question.question }}</p>
-            
-            <div class="mb-2">
-              <strong>Student's Answer(s):</strong>
-              <div class="ms-3" [ngClass]="question.isCorrect ? 'text-success' : 'text-danger'">
-                <span *ngFor="let sel of question.selection; let last = last">
-                  <small>{{ sel }}. {{ getAnswerText(question, sel) }}</small><span *ngIf="!last"><br></span>
-                </span>
-              </div>
-            </div>
-            
-            <div class="mb-0">
-              <strong>Correct Answer(s):</strong>
-              <div class="ms-3 text-success">
-                <span *ngFor="let cor of question.correct; let last = last">
-                  <small>{{ cor }}. {{ getAnswerText(question, cor) }}</small><span *ngIf="!last"><br></span>
-                </span>
-              </div>
-            </div>
+        <div class="mb-0">
+          <strong>Correct Answer(s):</strong>
+          <div class="ms-3 text-success">
+            <span *ngFor="let cor of question.correct; let last = last">
+              <small>{{ cor }}. {{ getAnswerText(question, cor) }}</small><span *ngIf="!last"><br></span>
+            </span>
           </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
-      </div>
     </div>
+  </ng-container>
+  <div modal-actions>
+    <button type="button" class="btn btn-secondary" (click)="closeReviewModal()">Close</button>
   </div>
-</div>
+</alpha-tronex-modal>
