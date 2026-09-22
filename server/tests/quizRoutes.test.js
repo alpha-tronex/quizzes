@@ -703,4 +703,38 @@ describe('GET /api/quiz/history/:username', () => {
         expect(res.status).toBe(404);
         expect(res.body.error.code).toBe('USER_NOT_FOUND');
     });
+
+    // Regression test for a real bug: the quizzes list screen joins live
+    // against Quiz.title, but the attempt stored on the user is a snapshot
+    // from whenever it was saved. Renaming a quiz after it's been taken used
+    // to leave history showing the old name while the quizzes list showed
+    // the new one for what was actually the same quiz.
+    test('reflects the quiz\'s current title, not the stale snapshot stored on the attempt', async () => {
+        await seedQuiz({ quizId: 5, title: 'Basic Algebra' });
+        const { token, user } = await createUser(User, {
+            username: 'renamedquiztaker',
+            quizzes: [{ id: 5, title: 'Islam 101.2', score: 1, totalQuestions: 1 }]
+        });
+
+        const res = await request(app)
+            .get(`/api/quiz/history/${user.username}`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.quizzes[0].title).toBe('Basic Algebra');
+    });
+
+    test('falls back to the stored snapshot title when the quiz has since been deleted', async () => {
+        const { token, user } = await createUser(User, {
+            username: 'deletedquiztaker',
+            quizzes: [{ id: 99, title: 'Retired Quiz', score: 1, totalQuestions: 1 }]
+        });
+
+        const res = await request(app)
+            .get(`/api/quiz/history/${user.username}`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.quizzes[0].title).toBe('Retired Quiz');
+    });
 });

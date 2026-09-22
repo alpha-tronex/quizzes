@@ -3,6 +3,7 @@ const ApiError = require('../utils/apiError');
 const { getActiveCohorts, hasAnyRealCohortMembership, getActiveGuestCohort } = require('../utils/cohortAccess');
 const { buildQuizStatusMap } = require('../utils/quizStatus');
 const { computeAuthoritativeScore } = require('../utils/quizScoring');
+const { withLiveTitles } = require('../utils/quizHistory');
 
 /**
  * `statusMap` (see quizStatus.js) is only built for students — admins see
@@ -208,7 +209,16 @@ module.exports = function(app, User, Quiz, Cohort) {
                 return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
             }
 
-            res.status(200).json({ quizzes: user.quizzes || [] });
+            // Join each attempt's title against the *current* Quiz collection
+            // rather than trusting the saved snapshot — see quizHistory.js for
+            // why the snapshot alone can go stale (quiz renamed after being
+            // taken).
+            const attempts = (user.quizzes || []).map((attempt) => attempt.toObject());
+            const quizIds = [...new Set(attempts.map((attempt) => attempt.id))];
+            const liveQuizzes = await Quiz.find({ quizId: { $in: quizIds } }, { quizId: 1, title: 1 });
+            const titleByQuizId = new Map(liveQuizzes.map((quiz) => [quiz.quizId, quiz.title]));
+
+            res.status(200).json({ quizzes: withLiveTitles(attempts, titleByQuizId) });
         } catch (err) {
             next(err);
         }
