@@ -8,7 +8,9 @@
     "test:watch": "jest --runInBand --watch",
     "start": "node server.js",
     "migrate:quizzes": "node scripts/migrate_quizzes_to_mongo.js",
-    "seed:guest": "node scripts/seed_guest_cohort.js"
+    "seed:guest": "node scripts/seed_guest_cohort.js",
+    "seed:stress": "node scripts/seed_stress_test.js",
+    "cleanup:stress": "node scripts/cleanup_stress_test.js"
   },
   "author": "",
   "license": "ISC",
