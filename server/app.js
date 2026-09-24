@@ -61,6 +61,14 @@ function createApp() {
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
 
+    // Static privacy policy page, served as plain HTML (not part of the
+    // Angular SPA) — needs a stable public URL for the App Store Connect
+    // "Privacy Policy URL" field. Registered before the Angular catch-all
+    // below so it isn't swallowed by that route.
+    app.get('/privacy', (req, res) => {
+        res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+    });
+
     // Setup authentication routes
     authRoutes(app, User);
 
