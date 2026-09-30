@@ -2,9 +2,10 @@ const bcrypt = require('bcrypt');
 const validators = require('../utils/validators');
 const { generateToken, verifyToken } = require('../middleware/authMiddleware');
 const ApiError = require('../utils/apiError');
+const { deleteUserCascade } = require('../utils/userDeletion');
 const saltRounds = 10;
 
-module.exports = function(app, User) {
+module.exports = function(app, User, Cohort) {
 
     app.route("/api/register")
         .post(async (req, res, next) => {
@@ -129,6 +130,17 @@ module.exports = function(app, User) {
 
                 if (!match) {
                     return next(ApiError.unauthorized('INVALID_CREDENTIALS', 'Invalid username or password'));
+                }
+
+                // Checked after the password match (not before) so a wrong
+                // password on an archived account still reports
+                // INVALID_CREDENTIALS rather than confirming the account's
+                // archived status to an unauthenticated caller.
+                if (foundUser.archived) {
+                    return next(ApiError.forbidden(
+                        'ACCOUNT_ARCHIVED',
+                        'This account has been archived. Contact your administrator.'
+                    ));
                 }
 
                 // Generate JWT token
@@ -267,6 +279,32 @@ module.exports = function(app, User) {
                 };
 
                 res.status(200).json(userObj);
+            } catch (err) {
+                next(err);
+            }
+        });
+
+    // Self-service account deletion — App Store Guideline 5.1.1(v) requires
+    // that any app supporting account creation let the user delete that
+    // account from inside the app, for every user, not just a subset (the
+    // "customer service resources only" exception is limited to a short
+    // list of highly-regulated industries, which this app isn't in). Scoped
+    // to `req.user.id` from the verified token, never a client-supplied id
+    // — unlike PUT /api/user/update, there's no id in the request body to
+    // trust or mistrust. Immediate and irreversible, matching Apple's "only
+    // offering to deactivate is insufficient" requirement; this is a
+    // distinct path from the admin's archive/unarchive toggle in
+    // adminUserRoutes.js, which is reversible and doesn't touch this route.
+    app.route("/api/account")
+        .delete(verifyToken, async (req, res, next) => {
+            try {
+                const deletedUser = await deleteUserCascade(req.user.id, User, Cohort);
+
+                if (!deletedUser) {
+                    return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
+                }
+
+                res.status(200).json({ message: 'Account deleted successfully' });
             } catch (err) {
                 next(err);
             }

@@ -1,4 +1,11 @@
-# Quick Deployment Guide - Render.com (FREE)
+> **Superseded by [../DEPLOY.md](../DEPLOY.md).** This app has been migrated
+> off Render onto a shared Hetzner VPS (Docker Compose), and is now live at
+> https://quizmaster.alphatronex.com. The Render service has been
+> decommissioned and `render.yaml` has already been removed from this repo —
+> follow `../DEPLOY.md` instead. Everything below is kept only as historical
+> reference.
+
+# Quick Deployment Guide - Render.com (FREE) — historical, see banner above
 
 ## Why Render?
 - ✅ Free tier available (no credit card required)

@@ -44,7 +44,18 @@ const userSchema = new mongoose.Schema({
     // attempt at, after they'd already completed (and thus locked) that
     // quiz — see server/utils/quizStatus.js. Consumed (removed) the next
     // time an attempt for that quizId is saved; see POST /api/quiz.
-    reopenedQuizIds: { type: [Number], default: [] }
+    reopenedQuizIds: { type: [Number], default: [] },
+    // Admin-only soft-delete: freezes the account (login rejected, see
+    // POST /api/login) while keeping the record — and its quiz history —
+    // intact for academic record-keeping. Distinct from the hard delete
+    // available both to the user themselves (DELETE /api/account) and to
+    // an admin (DELETE /api/admin/user/:id), which is irreversible and
+    // required by App Store Guideline 5.1.1(v); archiving is reversible
+    // (see DELETE /api/admin/user/:id/archive to unarchive) and is a
+    // separate admin housekeeping tool, not how account deletion requests
+    // are fulfilled.
+    archived: { type: Boolean, default: false },
+    archivedAt: { type: Date, default: null }
 });
 
 // Guard against OverwriteModelError when this module is required multiple times

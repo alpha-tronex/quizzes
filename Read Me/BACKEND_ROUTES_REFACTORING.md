@@ -13,15 +13,30 @@ server/routes/
   └── utilRoutes.js        (utilities)
 ```
 
-## New Structure
+## Current Structure
 ```
 server/routes/
-  ├── adminUserRoutes.js   (312 lines - admin user management)
-  ├── adminQuizRoutes.js   (221 lines - admin quiz file operations)
-  ├── quizRoutes.js        (80 lines - student quiz operations)
-  ├── authRoutes.js        (authentication)
-  └── utilRoutes.js        (utilities)
+  ├── adminUserRoutes.js    (admin user management + retake reopen/un-reopen)
+  ├── adminQuizRoutes.js    (admin quiz upload/list/delete — quizzes live in Mongo)
+  ├── adminCohortRoutes.js  (admin cohort CRUD)
+  ├── quizRoutes.js         (student quiz operations: list/get/submit/history)
+  ├── cohortRoutes.js       (student-facing "which cohort am I in" endpoint)
+  ├── authRoutes.js         (authentication)
+  └── utilRoutes.js         (utilities)
 ```
+
+`adminCohortRoutes.js` and `cohortRoutes.js` were added after the original
+refactor described below, once the cohort feature (students grouped into
+date-scoped cohorts that gate which quizzes they can see) shipped — see
+`server/models/Cohort.js` and `server/utils/cohortAccess.js`.
+
+Error handling was also centralized after the original refactor: every route
+now throws/passes an `ApiError` (`server/utils/apiError.js`) to `next()`
+instead of building its own response body, and
+`server/middleware/errorHandler.js` (registered last in `app.js`) is the
+single place that turns that into a `{ error: { code, message } }` response.
+This replaces the previously inconsistent mix of raw error dumps,
+`{ error: string }`, and `{ errors: string[] }` shapes.
 
 ## Route Mapping
 
@@ -38,6 +53,8 @@ server/routes/
 | DELETE | `/api/admin/user/:id/quizzes` | Delete all quizzes for a user | verifyToken, verifyAdmin |
 | DELETE | `/api/admin/user/:userId/quiz/:quizId` | Delete specific quiz from user | verifyToken, verifyAdmin |
 | DELETE | `/api/admin/quizzes/all-users-data` | Delete all quiz data from all users | verifyToken, verifyAdmin |
+| POST | `/api/admin/user/:userId/reopen-quiz/:quizId` | Grant one more attempt at an already-completed (locked) quiz | verifyToken, verifyAdmin |
+| DELETE | `/api/admin/user/:userId/reopen-quiz/:quizId` | Revoke an outstanding reopen grant | verifyToken, verifyAdmin |
 
 **Features**:
 - User CRUD operations with validation
@@ -45,6 +62,9 @@ server/routes/
 - User type management (promote/demote)
 - User quiz data management
 - Comprehensive validation using validators module
+- Quiz retake lock reopen/un-reopen: a quiz is locked for a student after
+  they complete it once (`server/utils/quizStatus.js`); these endpoints grant
+  or revoke a one-time reopen for a specific student/quiz pair
 
 ### Admin Quiz Routes (`adminQuizRoutes.js`)
 **Purpose**: Quiz file operations (upload, list, delete) for administrators
@@ -65,20 +85,41 @@ server/routes/
 - Comprehensive question validation
 
 ### Quiz Routes (`quizRoutes.js`)
-**Purpose**: Student-facing quiz operations (unchanged)
+**Purpose**: Student-facing quiz operations
 
 | Method | Endpoint | Description | Middleware |
 |--------|----------|-------------|------------|
-| GET | `/api/quizzes` | Get list of available quizzes | verifyToken |
-| GET | `/api/quiz` | Get specific quiz data | verifyToken |
-| POST | `/api/quiz` | Submit completed quiz | verifyToken |
-| GET | `/api/quiz/history/:username` | Get quiz history for user | verifyToken |
+| GET | `/api/quizzes` | List quizzes accessible to the caller's cohort(s), with taken/locked status | verifyToken |
+| GET | `/api/quiz` | Get a specific quiz's questions (cohort-checked) | verifyToken |
+| POST | `/api/quiz` | Submit a completed quiz attempt (cohort- and lock-checked) | verifyToken |
+| GET | `/api/quiz/history/:username` | Get quiz history for a user, with live-joined titles | verifyToken |
 
 **Features**:
-- Quiz listing with ID and title
+- Quiz listing filtered by the caller's active cohort(s) — see
+  `server/utils/cohortAccess.js`; admins see every quiz
 - Quiz data retrieval
-- Quiz submission and storage
-- User quiz history
+- Quiz submission and storage, with:
+  - server-side authoritative scoring — score/correctness is always
+    recomputed from the canonical `Quiz` document, never trusted from the
+    client (`server/utils/quizScoring.js`)
+  - retake lock enforcement — a completed quiz is locked until an admin
+    reopens it (`server/utils/quizStatus.js`)
+- User quiz history, with each attempt's `title` joined live against the
+  current `Quiz` collection at read time rather than a stale snapshot saved
+  at submission time (`server/utils/quizHistory.js`)
+
+### Cohort Routes (`cohortRoutes.js` / `adminCohortRoutes.js`)
+**Purpose**: Cohorts group students to a date-scoped set of quizzes and gate
+what a student can see in `/api/quizzes`/`/api/quiz`.
+
+| Method | Endpoint | Description | Middleware |
+|--------|----------|-------------|------------|
+| GET | `/api/cohort/mine` | The caller's current cohort name(s), or "Guest" if none | verifyToken |
+| GET | `/api/admin/cohorts` | List all cohorts | verifyToken, verifyAdmin |
+| POST | `/api/admin/cohorts` | Create a cohort | verifyToken, verifyAdmin |
+| GET | `/api/admin/cohorts/:id` | Get a cohort | verifyToken, verifyAdmin |
+| PUT | `/api/admin/cohorts/:id` | Update a cohort | verifyToken, verifyAdmin |
+| DELETE | `/api/admin/cohorts/:id` | Delete a cohort | verifyToken, verifyAdmin |
 
 ## Alignment with Frontend Services
 
@@ -143,31 +184,40 @@ All existing endpoints remain unchanged:
 - ✅ Middleware unchanged
 - ✅ Frontend code requires no changes
 
-### Server.js Updates
+### app.js (route wiring, current)
 ```javascript
-// Old
-const adminRoutes = require('./routes/adminRoutes.js');
-const quizUploadRoutes = require('./routes/quizUploadRoutes.js');
-adminRoutes(app, User);
-quizUploadRoutes(app);
+const authRoutes = require('./routes/authRoutes');
+const quizRoutes = require('./routes/quizRoutes');
+const cohortRoutes = require('./routes/cohortRoutes');
+const adminUserRoutes = require('./routes/adminUserRoutes');
+const adminQuizRoutes = require('./routes/adminQuizRoutes');
+const adminCohortRoutes = require('./routes/adminCohortRoutes');
+const utilRoutes = require('./routes/utilRoutes');
+const errorHandler = require('./middleware/errorHandler');
 
-// New
-const adminUserRoutes = require('./routes/adminUserRoutes.js');
-const adminQuizRoutes = require('./routes/adminQuizRoutes.js');
+authRoutes(app, User);
+quizRoutes(app, User, Quiz, Cohort);
+cohortRoutes(app, Cohort);
 adminUserRoutes(app, User);
-adminQuizRoutes(app);
+adminQuizRoutes(app, Quiz);
+adminCohortRoutes(app, Cohort, User, Quiz);
+utilRoutes(app);
+// ... Angular SPA catch-all ...
+app.use(errorHandler); // must be registered last
 ```
 
-## Testing Checklist
+(The `server.js` entrypoint just connects to MongoDB and calls the `app.js`
+factory — the network bootstrap and the route wiring are split so tests can
+exercise the app in-process via Supertest without a live port.)
 
-After refactoring, verify:
-- ✅ Server starts without errors
-- ✅ User management operations work (list, get, update, delete)
-- ✅ User type changes work (promote/demote)
-- ✅ Quiz upload works
-- ✅ Quiz file deletion works
-- ✅ User quiz data deletion works
-- ✅ Student quiz operations work (list, get, submit, history)
+## Testing
+
+The behavior described in this doc is covered by Jest + Supertest tests in
+`server/tests/` (run via `cd server && npm test`), including
+`quizRoutes.test.js`, `adminUserRoutes.test.js`, `adminQuizRoutes.test.js`,
+`adminCohortRoutes.test.js`, `cohortRoutes.test.js`, `authRoutes.test.js`,
+`authMiddleware.test.js`, `quizScoring.test.js`, `quizRegrade.test.js`, and
+`quizHistory.test.js`.
 
 ## Future Enhancements
 
@@ -175,9 +225,12 @@ Potential improvements for the route architecture:
 
 1. **Router-based approach**: Convert from `app.route()` to Express Router
 2. **Validation middleware**: Extract validation logic into separate middleware
-3. **Error handling middleware**: Centralized error handling
-4. **Rate limiting**: Add rate limiting for admin operations
-5. **Logging middleware**: Comprehensive request/response logging
-6. **API versioning**: Support for `/api/v1/` endpoints
-7. **OpenAPI documentation**: Auto-generated API documentation
-8. **Controller pattern**: Separate route handlers from business logic
+3. **Rate limiting**: Add rate limiting for admin operations and the login endpoint
+4. **Logging middleware**: Comprehensive request/response logging
+5. **API versioning**: Support for `/api/v1/` endpoints
+6. **OpenAPI documentation**: Auto-generated API documentation
+7. **Controller pattern**: Separate route handlers from business logic
+
+(Centralized error handling — previously listed here as a future item — has
+since shipped: see `server/middleware/errorHandler.js` and
+`server/utils/apiError.js`.)

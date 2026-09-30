@@ -70,7 +70,7 @@ function createApp() {
     });
 
     // Setup authentication routes
-    authRoutes(app, User);
+    authRoutes(app, User, Cohort);
 
     // Setup quiz routes (student-facing)
     quizRoutes(app, User, Quiz, Cohort);
@@ -79,7 +79,7 @@ function createApp() {
     cohortRoutes(app, Cohort);
 
     // Setup admin routes
-    adminUserRoutes(app, User);
+    adminUserRoutes(app, User, Cohort);
     adminQuizRoutes(app, Quiz);
     adminCohortRoutes(app, Cohort, User, Quiz);
 

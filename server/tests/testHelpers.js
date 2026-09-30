@@ -19,7 +19,9 @@ async function createUser(User, overrides = {}) {
         createdAt: new Date(),
         updatedAt: new Date(),
         quizzes: overrides.quizzes || [],
-        reopenedQuizIds: overrides.reopenedQuizIds || []
+        reopenedQuizIds: overrides.reopenedQuizIds || [],
+        archived: overrides.archived ?? false,
+        archivedAt: overrides.archivedAt ?? null
     });
 
     const token = generateToken(user);

@@ -140,7 +140,8 @@ repo matches what's actually live (matches the existing convention there).
 
 ## 10. After go-live
 
-- Decide whether to decommission the Render service (`render.yaml` in this
-  repo) or leave it as a fallback for a few days before deleting it.
+- Decommission the old Render service (`render.yaml` has already been
+  removed from this repo — see `Read Me/QUICK_DEPLOY.md`, superseded by this
+  file, for what that deployment looked like).
 - Update `hetzner-infra/hetzner.md`'s Quiz Master section with the actual
   cert expiry date Certbot reports.

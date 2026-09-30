@@ -1,6 +1,7 @@
 const request = require('supertest');
 const createApp = require('../app');
 const User = require('../models/User');
+const Cohort = require('../models/Cohort');
 const testDb = require('./testDb');
 const { createUser } = require('./testHelpers');
 
@@ -101,6 +102,24 @@ describe('POST /api/login', () => {
         expect(res.status).toBe(401);
         expect(res.body.error.code).toBe('INVALID_CREDENTIALS');
     });
+
+    test('rejects login for an archived account with correct credentials', async () => {
+        await createUser(User, { username: 'archivedlogin', password: 'correctpass', archived: true });
+
+        const res = await request(app).post('/api/login').send({ uname: 'archivedlogin', pass: 'correctpass' });
+
+        expect(res.status).toBe(403);
+        expect(res.body.error.code).toBe('ACCOUNT_ARCHIVED');
+    });
+
+    test('reports INVALID_CREDENTIALS (not archived status) for a wrong password on an archived account', async () => {
+        await createUser(User, { username: 'archivedwrongpass', password: 'realpassword', archived: true });
+
+        const res = await request(app).post('/api/login').send({ uname: 'archivedwrongpass', pass: 'nope' });
+
+        expect(res.status).toBe(401);
+        expect(res.body.error.code).toBe('INVALID_CREDENTIALS');
+    });
 });
 
 describe('PUT /api/user/update', () => {
@@ -173,5 +192,51 @@ describe('GET /api/users', () => {
         expect(res.status).toBe(200);
         expect(Array.isArray(res.body)).toBe(true);
         expect(res.body[0].password).toBeUndefined();
+    });
+});
+
+describe('DELETE /api/account', () => {
+    test('requires authentication', async () => {
+        const res = await request(app).delete('/api/account');
+        expect(res.status).toBe(401);
+    });
+
+    test('hard-deletes the authenticated user\'s own account', async () => {
+        const { token, user } = await createUser(User, { username: 'selfdelete' });
+
+        const res = await request(app).delete('/api/account').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(await User.findById(user._id)).toBeNull();
+    });
+
+    test('removes the deleted user from every cohort they belonged to', async () => {
+        const { token, user } = await createUser(User, { username: 'selfdeletecohort' });
+        const cohort = await Cohort.create({
+            name: 'Fall 2026',
+            startDate: new Date('2026-01-01'),
+            endDate: new Date('2026-12-31'),
+            students: [user._id]
+        });
+
+        const res = await request(app).delete('/api/account').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        const reloadedCohort = await Cohort.findById(cohort._id);
+        expect(reloadedCohort.students).not.toContainEqual(user._id);
+    });
+
+    test('ignores a spoofed id in the body and only deletes the token owner', async () => {
+        const { token, user } = await createUser(User, { username: 'selfdeleteA' });
+        const { user: otherUser } = await createUser(User, { username: 'selfdeleteB' });
+
+        const res = await request(app)
+            .delete('/api/account')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ id: otherUser._id.toString() });
+
+        expect(res.status).toBe(200);
+        expect(await User.findById(user._id)).toBeNull();
+        expect(await User.findById(otherUser._id)).not.toBeNull();
     });
 });

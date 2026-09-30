@@ -112,7 +112,7 @@ On manual logout:
 
 ### Key Files
 
-1. **`src/app/services/idle-timeout.service.ts`**
+1. **`src/app/core/services/idle-timeout.service.ts`**
    - Core idle timeout logic
    - Activity monitoring
    - Timer management
@@ -121,11 +121,11 @@ On manual logout:
    - Initializes idle monitoring on app start
    - Manages monitoring lifecycle
 
-3. **`src/app/services/login-service.ts`**
+3. **`src/app/core/services/login-service.ts`**
    - Tracks login state
    - Signals when to start/stop monitoring
 
-4. **`src/app/services/auth.interceptor.ts`**
+4. **`src/app/core/services/auth.interceptor.ts`**
    - Resets idle timer on API calls
    - Ensures continuous session during active API usage
 
@@ -221,7 +221,8 @@ npm run build
    - Works in conjunction with JWT token expiration
    - Two-layer protection:
      - Frontend: Idle timeout (30 min default)
-     - Backend: JWT expiration (24 hours)
+     - Backend: JWT expiration (`JWT_EXPIRES_IN`, 30 days by default — see
+       `server/middleware/authMiddleware.js`)
 
 4. **User Awareness**
    - Warning dialog alerts users
@@ -307,7 +308,7 @@ Potential improvements:
 ## Related Security Features
 
 The idle timeout works alongside:
-- **JWT Token Expiration** (24 hours)
+- **JWT Token Expiration** (`JWT_EXPIRES_IN`, 30 days by default)
 - **HTTPS encryption** (in production)
 - **Password hashing** (bcrypt)
 - **Role-based access control** (admin routes)

@@ -1,6 +1,7 @@
 const request = require('supertest');
 const createApp = require('../app');
 const User = require('../models/User');
+const Cohort = require('../models/Cohort');
 const testDb = require('./testDb');
 const { createUser } = require('./testHelpers');
 
@@ -293,5 +294,191 @@ describe('DELETE /api/admin/user/:id', () => {
 
         expect(res.status).toBe(200);
         expect(await User.findById(target._id)).toBeNull();
+    });
+
+    test('removes the deleted user from every cohort they belonged to', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+        const { user: target } = await createUser(User, { username: 'deletemecohort' });
+        const cohort = await Cohort.create({
+            name: 'Spring 2026',
+            startDate: new Date('2026-01-01'),
+            endDate: new Date('2026-06-01'),
+            students: [target._id]
+        });
+
+        const res = await request(app)
+            .delete(`/api/admin/user/${target._id}`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        const reloadedCohort = await Cohort.findById(cohort._id);
+        expect(reloadedCohort.students).not.toContainEqual(target._id);
+    });
+
+    test('404s for a nonexistent user', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+
+        const res = await request(app)
+            .delete('/api/admin/user/64b64b64b64b64b64b64b64b')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(404);
+        expect(res.body.error.code).toBe('USER_NOT_FOUND');
+    });
+
+    test('rejects a non-admin caller', async () => {
+        const { token } = await createUser(User, { type: 'student' });
+        const { user: target } = await createUser(User, { username: 'deleteunauthorized' });
+
+        const res = await request(app)
+            .delete(`/api/admin/user/${target._id}`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(403);
+        expect(await User.findById(target._id)).not.toBeNull();
+    });
+});
+
+describe('POST /api/admin/user/:id/archive', () => {
+    test('archives a user', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+        const { user: target } = await createUser(User, { username: 'archiveme' });
+
+        const res = await request(app)
+            .post(`/api/admin/user/${target._id}/archive`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.archived).toBe(true);
+        expect(res.body.archivedAt).toBeTruthy();
+
+        const reloaded = await User.findById(target._id);
+        expect(reloaded.archived).toBe(true);
+        expect(reloaded.archivedAt).toBeTruthy();
+    });
+
+    test('is idempotent when archiving an already-archived user', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+        const { user: target } = await createUser(User, { username: 'doublearchive', archived: true, archivedAt: new Date('2026-01-01') });
+
+        const res = await request(app)
+            .post(`/api/admin/user/${target._id}/archive`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.archived).toBe(true);
+        // The original archivedAt is preserved, not overwritten, on a no-op re-archive.
+        expect(new Date(res.body.archivedAt).toISOString()).toBe(new Date('2026-01-01').toISOString());
+    });
+
+    test('404s for a nonexistent user', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+
+        const res = await request(app)
+            .post('/api/admin/user/64b64b64b64b64b64b64b64b/archive')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(404);
+        expect(res.body.error.code).toBe('USER_NOT_FOUND');
+    });
+
+    test('rejects a non-admin caller', async () => {
+        const { token } = await createUser(User, { type: 'student' });
+        const { user: target } = await createUser(User, { username: 'archiveunauthorized' });
+
+        const res = await request(app)
+            .post(`/api/admin/user/${target._id}/archive`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(403);
+    });
+});
+
+describe('DELETE /api/admin/user/:id/archive (unarchive)', () => {
+    test('unarchives a user', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+        const { user: target } = await createUser(User, {
+            username: 'unarchiveme',
+            archived: true,
+            archivedAt: new Date()
+        });
+
+        const res = await request(app)
+            .delete(`/api/admin/user/${target._id}/archive`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.archived).toBe(false);
+        expect(res.body.archivedAt).toBeNull();
+
+        const reloaded = await User.findById(target._id);
+        expect(reloaded.archived).toBe(false);
+        expect(reloaded.archivedAt).toBeNull();
+    });
+
+    test('is idempotent when unarchiving a user who is not archived', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+        const { user: target } = await createUser(User, { username: 'doubleunarchive' });
+
+        const res = await request(app)
+            .delete(`/api/admin/user/${target._id}/archive`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.archived).toBe(false);
+    });
+
+    test('404s for a nonexistent user', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+
+        const res = await request(app)
+            .delete('/api/admin/user/64b64b64b64b64b64b64b64b/archive')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(404);
+        expect(res.body.error.code).toBe('USER_NOT_FOUND');
+    });
+
+    test('rejects a non-admin caller', async () => {
+        const { token } = await createUser(User, { type: 'student' });
+        const { user: target } = await createUser(User, {
+            username: 'unarchiveunauthorized',
+            archived: true,
+            archivedAt: new Date()
+        });
+
+        const res = await request(app)
+            .delete(`/api/admin/user/${target._id}/archive`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(403);
+    });
+});
+
+describe('GET /api/admin/users and GET /api/admin/user/:id archived fields', () => {
+    test('includes archived/archivedAt in the list response', async () => {
+        const { token } = await createUser(User, { username: 'listerAdmin', type: 'admin' });
+        const archivedAt = new Date();
+        await createUser(User, { username: 'archivedlistentry', archived: true, archivedAt });
+
+        const res = await request(app).get('/api/admin/users').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        const entry = res.body.find((u) => u.uname === 'archivedlistentry');
+        expect(entry.archived).toBe(true);
+        expect(entry.archivedAt).toBeTruthy();
+    });
+
+    test('includes archived/archivedAt in the detail response', async () => {
+        const { token } = await createUser(User, { type: 'admin' });
+        const { user: target } = await createUser(User, { username: 'archiveddetail', archived: true, archivedAt: new Date() });
+
+        const res = await request(app)
+            .get(`/api/admin/user/${target._id}`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.archived).toBe(true);
+        expect(res.body.archivedAt).toBeTruthy();
     });
 });

@@ -1,4 +1,14 @@
-# Quiz Master - Deployment Guide
+> **Superseded by [../DEPLOY.md](../DEPLOY.md).** This app no longer deploys
+> to Render/Heroku/Railway/DigitalOcean/AWS — it runs on a shared Hetzner VPS
+> via Docker Compose, at https://quizmaster.alphatronex.com. See
+> `../DEPLOY.md` for the current, accurate runbook. Everything below this
+> point is kept only as historical/reference material for the "Local Setup"
+> section; the platform-specific deployment options were never actually used
+> in production and are now out of date (e.g. quiz data lives in MongoDB, not
+> flat JSON files, and `JWT_SECRET` is a required env var not mentioned
+> below).
+
+# Quiz Master - Deployment Guide (historical — see banner above)
 
 ## Overview
 This is a full-stack quiz application with Angular frontend and Node.js/Express backend with MongoDB.
@@ -169,7 +179,10 @@ This is a full-stack quiz application with Angular frontend and Node.js/Express 
 - [ ] Build is successful (`npm run build`)
 - [ ] All dependencies are installed
 - [ ] Server starts without errors
-- [ ] Quiz data files exist in `server/quizzes/`
+- [ ] `JWT_SECRET` is set (server refuses to boot otherwise)
+- [ ] Quizzes exist in the `Quiz` MongoDB collection (quizzes are no longer
+      stored as flat `server/quizzes/*.json` files — see
+      `server/scripts/migrate_quizzes_to_mongo.js`)
 - [ ] Test login/register functionality
 - [ ] Test quiz taking and saving
 - [ ] Test quiz history view
@@ -183,6 +196,9 @@ This is a full-stack quiz application with Angular frontend and Node.js/Express 
 | `MONGODB_URI` | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/userDB` |
 | `PORT` | Server port | `3000` |
 | `NODE_ENV` | Environment mode | `production` |
+| `JWT_SECRET` | **Required.** Server refuses to start without it — no fallback secret | generate with `openssl rand -base64 48` |
+| `JWT_EXPIRES_IN` | Optional token lifetime, defaults to `30d` | `30d` |
+| `CORS_ORIGINS` | Optional, comma-separated browser origins allowed via CORS | unset = same-origin only |
 
 ---
 
@@ -199,8 +215,8 @@ This is a full-stack quiz application with Angular frontend and Node.js/Express 
 - Check logs: `heroku logs --tail` (for Heroku)
 
 **Quiz questions not loading:**
-- Ensure `server/quizzes/` directory has `.json` files
-- Check file permissions
+- Confirm quizzes exist in the `Quiz` MongoDB collection (not flat JSON files)
+- Check the MongoDB connection and permissions
 
 ---
 

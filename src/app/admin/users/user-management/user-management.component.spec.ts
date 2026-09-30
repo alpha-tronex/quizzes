@@ -5,6 +5,7 @@ import { of, throwError, Subject } from 'rxjs';
 
 import { UserManagementComponent } from './user-management.component';
 import { AdminUserService } from '@admin/services/admin-user.service';
+import { LoginService } from '@core/services/login-service';
 import { User } from '@models/users';
 
 describe('UserManagementComponent', () => {
@@ -215,6 +216,160 @@ describe('UserManagementComponent', () => {
       expect(component.revokingQuizId).toBeNull();
       expect(component.selectedUser!.reopenedQuizIds).toEqual([5]);
       expect(window.alert).toHaveBeenCalledWith('Failed to cancel reopen: User not found');
+    });
+  });
+
+  describe('archiveUser()', () => {
+    it('does nothing if the user has no id', () => {
+      spyOn(adminUserService, 'archiveUser');
+
+      component.archiveUser({ uname: 'student1' } as unknown as User);
+
+      expect(adminUserService.archiveUser).not.toHaveBeenCalled();
+      expect(component.showConfirmModal).toBe(false);
+    });
+
+    it('does nothing if the user is already archived', () => {
+      spyOn(adminUserService, 'archiveUser');
+
+      component.archiveUser({ id: 'u1', uname: 'student1', archived: true } as unknown as User);
+
+      expect(adminUserService.archiveUser).not.toHaveBeenCalled();
+      expect(component.showConfirmModal).toBe(false);
+    });
+
+    it('shows an informational modal instead of confirming when archiving yourself', () => {
+      const loginService = TestBed.inject(LoginService);
+      loginService.user = { id: 'u1' } as unknown as User;
+      spyOn(adminUserService, 'archiveUser');
+
+      component.archiveUser({ id: 'u1', uname: 'student1' } as unknown as User);
+
+      expect(adminUserService.archiveUser).not.toHaveBeenCalled();
+      expect(component.confirmAction).toBeNull();
+      expect(component.showConfirmModal).toBe(true);
+    });
+
+    it('opens the confirm modal without calling the service yet', () => {
+      spyOn(adminUserService, 'archiveUser');
+
+      component.archiveUser({ id: 'u1', uname: 'student1' } as unknown as User);
+
+      expect(adminUserService.archiveUser).not.toHaveBeenCalled();
+      expect(component.showConfirmModal).toBe(true);
+      expect(component.confirmAction).toBe('archive');
+      expect(component.confirmMessage).toContain('student1');
+    });
+
+    it('calls the service and marks the user archived once confirmed', () => {
+      const user = { id: 'u1', uname: 'student1', archived: false } as unknown as User;
+      component.selectedUser = user;
+      component.users = [user];
+      const archivedAt = '2026-09-29T00:00:00.000Z';
+      spyOn(adminUserService, 'archiveUser').and.returnValue(of({
+        message: 'User archived successfully', id: 'u1', archived: true, archivedAt
+      }));
+
+      component.archiveUser(user);
+      component.confirmActionExecute();
+
+      expect(adminUserService.archiveUser).toHaveBeenCalledWith('u1');
+      expect(component.selectedUser!.archived).toBe(true);
+      expect(component.selectedUser!.archivedAt).toBe(archivedAt as any);
+      expect(component.users[0].archived).toBe(true);
+      expect(component.archivingUserId).toBeNull();
+      expect(component.showConfirmModal).toBe(false);
+    });
+
+    it('clears the pending state and alerts on error', () => {
+      const user = { id: 'u1', uname: 'student1', archived: false } as unknown as User;
+      component.selectedUser = user;
+      spyOn(adminUserService, 'archiveUser').and.returnValue(throwError(() => 'Server error'));
+      spyOn(window, 'alert');
+
+      component.archiveUser(user);
+      component.confirmActionExecute();
+
+      expect(component.archivingUserId).toBeNull();
+      expect(component.selectedUser!.archived).toBe(false);
+      expect(window.alert).toHaveBeenCalledWith('Failed to archive user: Server error');
+    });
+  });
+
+  describe('unarchiveUser()', () => {
+    it('does nothing if the user has no id', () => {
+      spyOn(adminUserService, 'unarchiveUser');
+
+      component.unarchiveUser({ uname: 'student1', archived: true } as unknown as User);
+
+      expect(adminUserService.unarchiveUser).not.toHaveBeenCalled();
+      expect(component.showConfirmModal).toBe(false);
+    });
+
+    it('does nothing if the user is not currently archived', () => {
+      spyOn(adminUserService, 'unarchiveUser');
+
+      component.unarchiveUser({ id: 'u1', uname: 'student1', archived: false } as unknown as User);
+
+      expect(adminUserService.unarchiveUser).not.toHaveBeenCalled();
+      expect(component.showConfirmModal).toBe(false);
+    });
+
+    it('opens the confirm modal without calling the service yet', () => {
+      spyOn(adminUserService, 'unarchiveUser');
+
+      component.unarchiveUser({ id: 'u1', uname: 'student1', archived: true } as unknown as User);
+
+      expect(adminUserService.unarchiveUser).not.toHaveBeenCalled();
+      expect(component.showConfirmModal).toBe(true);
+      expect(component.confirmAction).toBe('unarchive');
+    });
+
+    it('calls the service and marks the user unarchived once confirmed', () => {
+      const user = { id: 'u1', uname: 'student1', archived: true, archivedAt: '2026-09-01T00:00:00.000Z' } as unknown as User;
+      component.selectedUser = user;
+      component.users = [user];
+      spyOn(adminUserService, 'unarchiveUser').and.returnValue(of({
+        message: 'User unarchived successfully', id: 'u1', archived: false, archivedAt: null
+      }));
+
+      component.unarchiveUser(user);
+      component.confirmActionExecute();
+
+      expect(adminUserService.unarchiveUser).toHaveBeenCalledWith('u1');
+      expect(component.selectedUser!.archived).toBe(false);
+      expect(component.selectedUser!.archivedAt).toBeNull();
+      expect(component.users[0].archived).toBe(false);
+      expect(component.archivingUserId).toBeNull();
+      expect(component.showConfirmModal).toBe(false);
+    });
+
+    it('clears the pending state and alerts on error', () => {
+      const user = { id: 'u1', uname: 'student1', archived: true } as unknown as User;
+      component.selectedUser = user;
+      spyOn(adminUserService, 'unarchiveUser').and.returnValue(throwError(() => 'Server error'));
+      spyOn(window, 'alert');
+
+      component.unarchiveUser(user);
+      component.confirmActionExecute();
+
+      expect(component.archivingUserId).toBeNull();
+      expect(component.selectedUser!.archived).toBe(true);
+      expect(window.alert).toHaveBeenCalledWith('Failed to unarchive user: Server error');
+    });
+  });
+
+  describe('getUserDisplayName()', () => {
+    it('appends [Archived] for an archived user', () => {
+      const user = { uname: 'student1', fname: 'Ada', lname: 'Lovelace', archived: true } as unknown as User;
+
+      expect(component.getUserDisplayName(user)).toBe('student1 (Ada Lovelace) [Archived]');
+    });
+
+    it('does not append [Archived] for a non-archived user', () => {
+      const user = { uname: 'student1', fname: 'Ada', lname: 'Lovelace', archived: false } as unknown as User;
+
+      expect(component.getUserDisplayName(user)).toBe('student1 (Ada Lovelace)');
     });
   });
 

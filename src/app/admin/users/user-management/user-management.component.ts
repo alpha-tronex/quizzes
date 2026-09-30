@@ -30,8 +30,11 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   // shows a pending state — see executeReopenQuiz()/executeRevokeReopen().
   reopeningQuizId: number | null = null;
   revokingQuizId: number | null = null;
+  // `user.id` currently being archived/unarchived, so the button shows a
+  // pending state — same rationale as reopeningQuizId/revokingQuizId.
+  archivingUserId: string | null = null;
   showConfirmModal: boolean = false;
-  confirmAction: 'promote' | 'delete' | 'reopen-quiz' | 'revoke-reopen' | null = null;
+  confirmAction: 'promote' | 'delete' | 'reopen-quiz' | 'revoke-reopen' | 'archive' | 'unarchive' | null = null;
   confirmUser: User | null = null;
   // Set alongside confirmUser when confirmAction is 'reopen-quiz' or
   // 'revoke-reopen' — the confirm modal only carries one payload object, so
@@ -150,7 +153,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   getUserDisplayName(user: User): string {
     const name = `${user.fname || ''} ${user.lname || ''}`.trim();
-    return name ? `${user.uname} (${name})` : user.uname;
+    const base = name ? `${user.uname} (${name})` : user.uname;
+    return user.archived ? `${base} [Archived]` : base;
   }
 
   changeUserType(user: User): void {
@@ -253,6 +257,108 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.logger.error('Error deleting user', error);
         alert('Failed to delete user: ' + error);
+      }
+    });
+  }
+
+  // Archives a user — an idempotent housekeeping action (blocks login,
+  // preserves data) distinct from deleteUser()'s irreversible hard-delete.
+  // Confirm-gated for the same reason every other destructive/blocking
+  // action on this page is: a misclick shouldn't silently lock a student
+  // out.
+  archiveUser(user: User): void {
+    if (!user || !user.id || user.archived) {
+      return;
+    }
+
+    const currentUser = this.loginService.user;
+    if (currentUser && currentUser.id === user.id) {
+      this.confirmUser = user;
+      this.confirmAction = null; // Informational only
+      this.confirmTitle = 'Cannot Archive Yourself';
+      this.confirmMessage = 'You cannot archive your own account while logged in.';
+      this.showConfirmModal = true;
+      return;
+    }
+
+    this.confirmUser = user;
+    this.confirmAction = 'archive';
+    this.confirmTitle = 'Archive User';
+    this.confirmMessage = `Archive user "${user.uname}"? They will no longer be able to log in, but their account and data will be preserved.`;
+    this.showConfirmModal = true;
+  }
+
+  private executeArchive(): void {
+    if (!this.confirmUser || !this.confirmUser.id) {
+      return;
+    }
+
+    const user = this.confirmUser;
+    this.archivingUserId = user.id;
+
+    this.adminUserService.archiveUser(user.id).subscribe({
+      next: (response) => {
+        if (this.selectedUser && this.selectedUser.id === user.id) {
+          this.selectedUser.archived = true;
+          this.selectedUser.archivedAt = response.archivedAt;
+        }
+        const userIndex = this.users.findIndex(u => u.id === user.id);
+        if (userIndex !== -1) {
+          this.users[userIndex].archived = true;
+          this.users[userIndex].archivedAt = response.archivedAt;
+        }
+        this.archivingUserId = null;
+        this.logger.info('User archived', { userId: user.id });
+      },
+      error: (error) => {
+        this.logger.error('Error archiving user', error);
+        alert('Failed to archive user: ' + error);
+        this.archivingUserId = null;
+      }
+    });
+  }
+
+  // Reverses archiveUser() — restores the user's ability to log in. No
+  // self-guard needed: an archived admin can't be logged in to click this in
+  // the first place.
+  unarchiveUser(user: User): void {
+    if (!user || !user.id || !user.archived) {
+      return;
+    }
+
+    this.confirmUser = user;
+    this.confirmAction = 'unarchive';
+    this.confirmTitle = 'Unarchive User';
+    this.confirmMessage = `Restore login access for user "${user.uname}"?`;
+    this.showConfirmModal = true;
+  }
+
+  private executeUnarchive(): void {
+    if (!this.confirmUser || !this.confirmUser.id) {
+      return;
+    }
+
+    const user = this.confirmUser;
+    this.archivingUserId = user.id;
+
+    this.adminUserService.unarchiveUser(user.id).subscribe({
+      next: () => {
+        if (this.selectedUser && this.selectedUser.id === user.id) {
+          this.selectedUser.archived = false;
+          this.selectedUser.archivedAt = null;
+        }
+        const userIndex = this.users.findIndex(u => u.id === user.id);
+        if (userIndex !== -1) {
+          this.users[userIndex].archived = false;
+          this.users[userIndex].archivedAt = null;
+        }
+        this.archivingUserId = null;
+        this.logger.info('User unarchived', { userId: user.id });
+      },
+      error: (error) => {
+        this.logger.error('Error unarchiving user', error);
+        alert('Failed to unarchive user: ' + error);
+        this.archivingUserId = null;
       }
     });
   }
@@ -448,6 +554,10 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       this.executeReopenQuiz();
     } else if (this.confirmAction === 'revoke-reopen') {
       this.executeRevokeReopen();
+    } else if (this.confirmAction === 'archive') {
+      this.executeArchive();
+    } else if (this.confirmAction === 'unarchive') {
+      this.executeUnarchive();
     }
     this.closeConfirmModal();
   }
@@ -456,6 +566,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     if (this.confirmAction === 'delete') return 'btn-danger';
     if (this.confirmAction === 'reopen-quiz') return 'btn-warning';
     if (this.confirmAction === 'revoke-reopen') return 'btn-secondary';
+    if (this.confirmAction === 'archive') return 'btn-warning';
+    if (this.confirmAction === 'unarchive') return 'btn-secondary';
     return 'btn-primary';
   }
 
@@ -463,6 +575,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     if (this.confirmAction === 'delete') return 'Delete';
     if (this.confirmAction === 'reopen-quiz') return 'Reopen';
     if (this.confirmAction === 'revoke-reopen') return 'Cancel Reopen';
+    if (this.confirmAction === 'archive') return 'Archive';
+    if (this.confirmAction === 'unarchive') return 'Unarchive';
     return 'Confirm';
   }
 

@@ -40,30 +40,39 @@
 ```
 server/
   middleware/
-    authMiddleware.js       # JWT verification logic
-  authRoutes.js             # Login/register endpoints (generates tokens)
-  quizRoutes.js             # Quiz endpoints (protected)
-  adminRoutes.js            # Admin endpoints (protected + admin check)
+    authMiddleware.js       # verifyToken / verifyAdmin / generateToken
+    errorHandler.js         # Centralized error handler (registered last in app.js)
+  routes/
+    authRoutes.js            # Login/register endpoints (generates tokens)
+    quizRoutes.js             # Student-facing quiz endpoints (protected)
+    cohortRoutes.js           # Student-facing "my cohort" endpoint (protected)
+    adminUserRoutes.js        # Admin user management (protected + admin check)
+    adminQuizRoutes.js        # Admin quiz upload/management (protected + admin check)
+    adminCohortRoutes.js      # Admin cohort CRUD (protected + admin check)
+  utils/
+    apiError.js              # ApiError class -> { error: { code, message } } responses
 
 src/app/
-  services/
+  core/services/
     auth.interceptor.ts     # Adds token to all requests
     login-service.ts        # Handles login/register
-  models/
-    users.ts                # User model with token field
-  app.module.ts             # Registers interceptor
+  app.module.ts             # Registers interceptor (LoginService/AuthInterceptor
+                             # are imported from '@core/services/...')
 ```
 
 ### Environment Setup
 
-**`.env` file** (in project root):
+**`.env` file** (in project root — see `.env.example`):
 ```env
 JWT_SECRET=your-super-secure-jwt-secret-key-change-this-in-production-12345
 MONGODB_URI=mongodb://localhost:27017/userDB
 PORT=3000
+# Optional, defaults to 30d if unset (see server/middleware/authMiddleware.js)
+JWT_EXPIRES_IN=30d
 ```
 
-⚠️ **Never commit real JWT secrets to git!**
+⚠️ **Never commit real JWT secrets to git!** The server now refuses to start
+at all if `JWT_SECRET` is unset — there is no default/fallback secret.
 
 ### How to Check if Auth is Working
 
@@ -95,8 +104,12 @@ PORT=3000
 - **Solution**: Verify user type is 'admin' in token payload
 - **Solution**: Login with admin credentials
 
+**Note**: all error responses (auth and otherwise) now use the shape
+`{ "error": { "code": "SOME_CODE", "message": "..." } }`, produced by
+`server/middleware/errorHandler.js` — not a raw string or an `errors` array.
+
 **Problem**: Token expired
-- **Solution**: Login again (tokens expire after 24 hours)
+- **Solution**: Login again (tokens expire after `JWT_EXPIRES_IN`, 30 days by default)
 - **Solution**: Consider implementing refresh token mechanism
 
 ### Adding New Protected Routes
@@ -123,16 +136,17 @@ app.get('/api/admin/my-route', verifyToken, verifyAdmin, (req, res) => {
 
 Development:
 - [x] JWT tokens generated on login/register
-- [x] Tokens include expiration (24h)
+- [x] Tokens include expiration (`JWT_EXPIRES_IN`, 30 days by default)
 - [x] Protected routes require valid token
 - [x] Admin routes require admin role
 - [x] Interceptor adds token automatically
 - [x] 401 responses trigger logout
+- [x] Server refuses to boot without `JWT_SECRET` set (no fallback secret)
 
-Production (TODO):
-- [ ] Strong JWT_SECRET (32+ random characters)
-- [ ] HTTPS enabled
-- [ ] CORS configured
+Production:
+- [x] Strong `JWT_SECRET` (generated with `openssl rand -base64 48`, see DEPLOY.md)
+- [x] HTTPS enabled (Certbot/nginx on Hetzner, see ../DEPLOY.md)
+- [x] CORS configured (same-origin only unless `CORS_ORIGINS` is set)
 - [ ] Rate limiting on login endpoint
 - [ ] Helmet.js for security headers
 - [ ] Regular dependency updates
@@ -142,6 +156,9 @@ Production (TODO):
 **Student Account**:
 - Can access: quiz routes, own user update
 - Cannot access: admin routes
+- Which quizzes show up in `/api/quizzes` depends on cohort membership (see
+  `server/utils/cohortAccess.js`) — a student with no real cohort falls back
+  to the seeded Guest cohort's 3 quizzes rather than seeing everything.
 
 **Admin Account**:
 - Can access: everything

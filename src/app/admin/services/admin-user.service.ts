@@ -76,6 +76,25 @@ export class AdminUserService {
     );
   }
 
+  // Archives a user — an idempotent housekeeping action distinct from
+  // deleteUser()'s hard-delete: the account and its data are preserved, but
+  // the server blocks that user from logging in (see POST
+  // /api/admin/user/:id/archive and authRoutes.js's login handler).
+  archiveUser(userId: string): Observable<any> {
+    return this.http.post(`/api/admin/user/${userId}/archive`, {}).pipe(
+      tap(() => this.logger.info('User archived', { userId })),
+      catchError((error) => this.handleError(error))
+    );
+  }
+
+  // Reverses archiveUser() — also idempotent server-side.
+  unarchiveUser(userId: string): Observable<any> {
+    return this.http.delete(`/api/admin/user/${userId}/archive`).pipe(
+      tap(() => this.logger.info('User unarchived', { userId })),
+      catchError((error) => this.handleError(error))
+    );
+  }
+
   // Server errors arrive as { error: { code, message, details? } } (see
   // server/utils/apiError.js), so `error.error?.error` is an object, not a
   // string — pull its `.message` out rather than surfacing "[object

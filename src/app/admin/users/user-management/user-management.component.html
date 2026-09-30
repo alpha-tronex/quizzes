@@ -96,27 +96,46 @@
                 </div>
                 
                 <div class="mb-2">
-                  <strong>Type:</strong> 
+                  <strong>Type:</strong>
                   <span class="badge" [ngClass]="selectedUser.type === 'admin' ? 'bg-danger' : 'bg-primary'">
                     {{ selectedUser.type || 'student' }}
                   </span>
-                  <a href="javascript:void(0)" 
-                     class="ms-2 text-decoration-none" 
+                  <a href="javascript:void(0)"
+                     class="ms-2 text-decoration-none"
                      (click)="changeUserType(selectedUser)"
                      title="Change user type">
                     <small>(change)</small>
                   </a>
+                  <span *ngIf="selectedUser.archived" class="badge bg-secondary ms-2" title="Blocked from logging in">
+                    Archived
+                  </span>
                 </div>
-                
+
                 <div class="mb-3 mt-3 d-flex gap-2 justify-content-center">
-                  <button 
-                    class="btn btn-sm btn-primary" 
+                  <button
+                    class="btn btn-sm btn-primary"
                     [routerLink]="['/admin/user-details', selectedUser.id]">
                     Edit User Details
                   </button>
-                  <button 
-                    class="btn btn-sm btn-danger" 
-                    style="margin-left: 5px;" 
+                  <button
+                    *ngIf="!selectedUser.archived"
+                    class="btn btn-sm btn-warning"
+                    [disabled]="archivingUserId === selectedUser.id"
+                    (click)="archiveUser(selectedUser)"
+                    title="Archive user (blocks login, preserves data)">
+                    {{ archivingUserId === selectedUser.id ? 'Archiving…' : 'Archive User' }}
+                  </button>
+                  <button
+                    *ngIf="selectedUser.archived"
+                    class="btn btn-sm btn-outline-secondary"
+                    [disabled]="archivingUserId === selectedUser.id"
+                    (click)="unarchiveUser(selectedUser)"
+                    title="Restore login access">
+                    {{ archivingUserId === selectedUser.id ? 'Unarchiving…' : 'Unarchive User' }}
+                  </button>
+                  <button
+                    class="btn btn-sm btn-danger"
+                    style="margin-left: 5px;"
                     (click)="deleteUser(selectedUser)"
                     title="Delete user">
                     Delete User

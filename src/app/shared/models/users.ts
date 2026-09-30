@@ -38,6 +38,13 @@ export class User {
     // quiz. See server/utils/quizStatus.js and admin-user.service.ts's
     // reopenQuiz().
     reopenedQuizIds?: number[];
+    // Soft-delete/housekeeping flag set by an admin (see
+    // admin-user.service.ts's archiveUser()/unarchiveUser()) — distinct from
+    // the self-service DELETE /api/account hard-delete a student triggers
+    // themselves. An archived user is blocked from logging in server-side
+    // but their data is preserved.
+    archived?: boolean;
+    archivedAt?: Date | null;
     token?: string; // JWT token for authentication
     createdAt: Date;
     updatedAt: Date;

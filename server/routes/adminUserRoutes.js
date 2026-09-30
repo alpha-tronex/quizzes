@@ -1,6 +1,7 @@
 const validators = require('../utils/validators');
 const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
 const ApiError = require('../utils/apiError');
+const { deleteUserCascade } = require('../utils/userDeletion');
 
 const emptyAddress = {
     street1: '', street2: '', street3: '', city: '', state: '', zipCode: '', country: ''
@@ -10,7 +11,7 @@ const emptyAddress = {
  * Admin User Routes
  * Handles all user management operations for administrators
  */
-module.exports = function(app, User) {
+module.exports = function(app, User, Cohort) {
 
     // Get all users (admin only)
     app.route("/api/admin/users")
@@ -27,7 +28,9 @@ module.exports = function(app, User) {
                     phone: user.phone || '',
                     type: user.type || 'student',
                     quizzes: user.quizzes || [],
-                    reopenedQuizIds: user.reopenedQuizIds || []
+                    reopenedQuizIds: user.reopenedQuizIds || [],
+                    archived: user.archived || false,
+                    archivedAt: user.archivedAt || null
                 }));
 
                 res.status(200).json(usersArray);
@@ -58,7 +61,9 @@ module.exports = function(app, User) {
                     type: user.type || 'student',
                     address: user.address || emptyAddress,
                     quizzes: user.quizzes || [],
-                    reopenedQuizIds: user.reopenedQuizIds || []
+                    reopenedQuizIds: user.reopenedQuizIds || [],
+                    archived: user.archived || false,
+                    archivedAt: user.archivedAt || null
                 });
             } catch (err) {
                 next(err);
@@ -170,12 +175,13 @@ module.exports = function(app, User) {
             }
         })
 
-        // Delete user (admin only)
+        // Delete user (admin only) — hard delete, same cascade cleanup as
+        // the user's own DELETE /api/account (routes/authRoutes.js).
         .delete(verifyToken, verifyAdmin, async (req, res, next) => {
             try {
                 const userId = req.params.id;
 
-                const deletedUser = await User.findByIdAndDelete(userId);
+                const deletedUser = await deleteUserCascade(userId, User, Cohort);
 
                 if (!deletedUser) {
                     return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
@@ -216,6 +222,71 @@ module.exports = function(app, User) {
                     email: updatedUser.email || '',
                     phone: updatedUser.phone || '',
                     type: updatedUser.type || 'student'
+                });
+            } catch (err) {
+                next(err);
+            }
+        });
+
+    // Archive a user (admin only) — reversible soft-delete: freezes the
+    // account (POST /api/login rejects it, see authRoutes.js) while keeping
+    // the user document, and their quiz history, intact. Distinct from
+    // DELETE /api/admin/user/:id (irreversible hard delete) and from the
+    // user's own DELETE /api/account (also irreversible) — archiving exists
+    // for admin housekeeping (e.g. a student leaves mid-course and the
+    // instructor wants to freeze rather than erase their record), not as a
+    // substitute for account-deletion requests. Idempotent, matching the
+    // reopen-quiz pattern above: archiving an already-archived user is a
+    // no-op rather than an error.
+    app.route("/api/admin/user/:id/archive")
+        .post(verifyToken, verifyAdmin, async (req, res, next) => {
+            try {
+                const userId = req.params.id;
+
+                const user = await User.findById(userId);
+                if (!user) {
+                    return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
+                }
+
+                if (!user.archived) {
+                    user.archived = true;
+                    user.archivedAt = new Date();
+                    await user.save();
+                }
+
+                res.status(200).json({
+                    message: 'User archived successfully',
+                    id: user._id,
+                    archived: user.archived,
+                    archivedAt: user.archivedAt
+                });
+            } catch (err) {
+                next(err);
+            }
+        })
+
+        // Unarchive a user, restoring normal login access. Idempotent, same
+        // as revoking a reopen grant above.
+        .delete(verifyToken, verifyAdmin, async (req, res, next) => {
+            try {
+                const userId = req.params.id;
+
+                const user = await User.findById(userId);
+                if (!user) {
+                    return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
+                }
+
+                if (user.archived) {
+                    user.archived = false;
+                    user.archivedAt = null;
+                    await user.save();
+                }
+
+                res.status(200).json({
+                    message: 'User unarchived successfully',
+                    id: user._id,
+                    archived: user.archived,
+                    archivedAt: user.archivedAt
                 });
             } catch (err) {
                 next(err);

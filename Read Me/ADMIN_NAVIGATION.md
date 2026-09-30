@@ -36,10 +36,17 @@ Provides contextual navigation showing the current location within the admin sec
 A card-based quick actions menu that provides fast access to all admin functions.
 
 **Menu Items**:
-1. **User Management** (Primary) - View, edit, and manage user accounts
+1. **User Management** (Primary) - View, edit, and manage user accounts,
+   including changing type, granting quiz retakes, archiving/unarchiving
+   (idempotent toggle that blocks/restores login without deleting data —
+   see `Read Me/SECURITY.md`'s "Account Deletion & Archival" section), and
+   hard-deleting an account
 2. **Create Quiz** (Success) - Create a new quiz from scratch
 3. **Upload Quiz** (Info) - Upload a quiz from a JSON file
 4. **Quiz Management** (Warning) - Delete quiz data and files
+5. **Cohort Management** - Create/edit cohorts and manage which students and
+   quizzes belong to each one (gates which quizzes a student can see; see
+   `server/utils/cohortAccess.js`)
 
 **Features**:
 - Color-coded cards for visual distinction
@@ -57,8 +64,12 @@ const routes: Routes = [
   { path: 'user-management', component: UserManagementComponent },
   { path: 'user-details/:id', component: UserDetailsComponent },
   { path: 'create-quiz', component: CreateQuizComponent },
+  { path: 'edit-quiz/:id', component: EditQuizComponent },
   { path: 'upload-quiz', component: UploadQuizComponent },
-  { path: 'quiz-management', component: QuizManagementComponent }
+  { path: 'quiz-management', component: QuizManagementComponent },
+  { path: 'cohort-management', component: CohortManagementComponent },
+  { path: 'create-cohort', component: CohortFormComponent },
+  { path: 'edit-cohort/:id', component: CohortFormComponent }
 ];
 ```
 
@@ -72,6 +83,7 @@ All admin pages now include the breadcrumb component at the top:
 - Create Quiz
 - Upload Quiz
 - Quiz Management
+- Cohort Management
 
 ## Usage
 
