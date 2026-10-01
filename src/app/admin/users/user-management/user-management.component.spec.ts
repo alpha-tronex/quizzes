@@ -435,7 +435,15 @@ describe('UserManagementComponent', () => {
     });
 
     it('polls refreshSelectedUser on an interval', fakeAsync(() => {
+      // The outer `beforeEach` calls `fixture.detectChanges()` (and so
+      // `ngOnInit`'s `setInterval`) outside of this `fakeAsync` zone, so
+      // `tick()` below can't see or advance that real timer — it only
+      // drives timers registered while a fakeAsync zone is active. Tear
+      // down and re-run `ngOnInit` here so the interval is actually
+      // registered inside the fake clock this test controls.
+      component.ngOnDestroy();
       spyOn(component, 'refreshSelectedUser');
+      component.ngOnInit();
 
       tick(component.refreshPollMs);
       expect(component.refreshSelectedUser).toHaveBeenCalledTimes(1);
