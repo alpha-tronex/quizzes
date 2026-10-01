@@ -2,6 +2,7 @@ const request = require('supertest');
 const createApp = require('../app');
 const User = require('../models/User');
 const Cohort = require('../models/Cohort');
+const AccountDeletionNotice = require('../models/AccountDeletionNotice');
 const testDb = require('./testDb');
 const { createUser } = require('./testHelpers');
 
@@ -238,5 +239,77 @@ describe('DELETE /api/account', () => {
         expect(res.status).toBe(200);
         expect(await User.findById(user._id)).toBeNull();
         expect(await User.findById(otherUser._id)).not.toBeNull();
+    });
+});
+
+describe('DELETE /api/account — cohort deletion notices', () => {
+    test('creates a notice when a real-cohort member deletes their account', async () => {
+        const { token, user } = await createUser(User, {
+            username: 'cohortleaver',
+            fname: 'Hasan',
+            lname: 'Test',
+            quizzes: [{ id: 0, title: 'Quiz A', score: 1, totalQuestions: 1 }]
+        });
+        await Cohort.create({
+            name: 'Fall 2026',
+            startDate: new Date('2026-01-01'),
+            endDate: new Date('2026-12-31'),
+            students: [user._id]
+        });
+
+        const res = await request(app).delete('/api/account').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        const notices = await AccountDeletionNotice.find({});
+        expect(notices).toHaveLength(1);
+        expect(notices[0]).toMatchObject({
+            studentUsername: 'cohortleaver',
+            studentFname: 'Hasan',
+            studentLname: 'Test',
+            cohortNames: ['Fall 2026'],
+            quizzesTakenCount: 1,
+            acknowledged: false
+        });
+        expect(notices[0].deletedAt).toBeInstanceOf(Date);
+    });
+
+    test('includes every real cohort the student belonged to', async () => {
+        const { token, user } = await createUser(User, { username: 'multicohortleaver' });
+        await Cohort.create({
+            name: 'Cohort A', startDate: new Date('2026-01-01'), endDate: new Date('2026-12-31'),
+            students: [user._id]
+        });
+        await Cohort.create({
+            name: 'Cohort B', startDate: new Date('2026-01-01'), endDate: new Date('2026-12-31'),
+            students: [user._id]
+        });
+
+        await request(app).delete('/api/account').set('Authorization', `Bearer ${token}`);
+
+        const [notice] = await AccountDeletionNotice.find({});
+        expect(notice.cohortNames.sort()).toEqual(['Cohort A', 'Cohort B']);
+    });
+
+    test('does not create a notice for a student with no cohort membership', async () => {
+        const { token } = await createUser(User, { username: 'nocohortleaver' });
+
+        const res = await request(app).delete('/api/account').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(await AccountDeletionNotice.find({})).toHaveLength(0);
+    });
+
+    test('does not create a notice for a student only in the Guest cohort', async () => {
+        const { token, user } = await createUser(User, { username: 'guestleaver' });
+        await Cohort.create({
+            name: 'Guest', isGuest: true,
+            startDate: new Date('2026-01-01'), endDate: new Date('2026-12-31'),
+            students: [user._id]
+        });
+
+        const res = await request(app).delete('/api/account').set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(await AccountDeletionNotice.find({})).toHaveLength(0);
     });
 });

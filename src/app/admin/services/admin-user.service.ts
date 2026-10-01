@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { User } from '@models/users';
+import { AccountDeletionNotice } from '@models/account-deletion-notice';
 import { LoggerService } from '@core/services/logger.service';
 
 @Injectable({
@@ -91,6 +92,25 @@ export class AdminUserService {
   unarchiveUser(userId: string): Observable<any> {
     return this.http.delete(`/api/admin/user/${userId}/archive`).pipe(
       tap(() => this.logger.info('User unarchived', { userId })),
+      catchError((error) => this.handleError(error))
+    );
+  }
+
+  // Account-deletion notices (see server/models/AccountDeletionNotice.js) —
+  // created when a student in a real (non-guest) cohort deletes their own
+  // account via DELETE /api/account. Defaults to unacknowledged-only, which
+  // is what the dashboard banner needs.
+  getAccountDeletionNotices(): Observable<AccountDeletionNotice[]> {
+    return this.http.get<AccountDeletionNotice[]>('/api/admin/account-deletion-notices').pipe(
+      catchError((error) => this.handleError(error))
+    );
+  }
+
+  // Idempotent server-side: acknowledging an already-acknowledged notice is
+  // a no-op that still returns 200, so this is safe to retry.
+  acknowledgeAccountDeletionNotice(noticeId: string): Observable<any> {
+    return this.http.post(`/api/admin/account-deletion-notices/${noticeId}/acknowledge`, {}).pipe(
+      tap(() => this.logger.info('Account deletion notice acknowledged', { noticeId })),
       catchError((error) => this.handleError(error))
     );
   }

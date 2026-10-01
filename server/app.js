@@ -11,6 +11,7 @@ const path = require('path');
 const User = require('./models/User');
 const Quiz = require('./models/Quiz');
 const Cohort = require('./models/Cohort');
+const AccountDeletionNotice = require('./models/AccountDeletionNotice');
 
 const authRoutes = require('./routes/authRoutes');
 const quizRoutes = require('./routes/quizRoutes');
@@ -70,7 +71,7 @@ function createApp() {
     });
 
     // Setup authentication routes
-    authRoutes(app, User, Cohort);
+    authRoutes(app, User, Cohort, AccountDeletionNotice);
 
     // Setup quiz routes (student-facing)
     quizRoutes(app, User, Quiz, Cohort);
@@ -79,7 +80,7 @@ function createApp() {
     cohortRoutes(app, Cohort);
 
     // Setup admin routes
-    adminUserRoutes(app, User, Cohort);
+    adminUserRoutes(app, User, Cohort, AccountDeletionNotice);
     adminQuizRoutes(app, Quiz);
     adminCohortRoutes(app, Cohort, User, Quiz);
 

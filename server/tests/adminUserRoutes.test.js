@@ -2,6 +2,7 @@ const request = require('supertest');
 const createApp = require('../app');
 const User = require('../models/User');
 const Cohort = require('../models/Cohort');
+const AccountDeletionNotice = require('../models/AccountDeletionNotice');
 const testDb = require('./testDb');
 const { createUser } = require('./testHelpers');
 
@@ -480,5 +481,123 @@ describe('GET /api/admin/users and GET /api/admin/user/:id archived fields', () 
         expect(res.status).toBe(200);
         expect(res.body.archived).toBe(true);
         expect(res.body.archivedAt).toBeTruthy();
+    });
+});
+
+describe('GET /api/admin/account-deletion-notices', () => {
+    test('requires admin', async () => {
+        const { token } = await createUser(User, { username: 'notadmin1' });
+
+        const res = await request(app)
+            .get('/api/admin/account-deletion-notices')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(403);
+    });
+
+    test('defaults to unacknowledged notices only, newest first', async () => {
+        const { token } = await createUser(User, { username: 'noticeadmin1', type: 'admin' });
+        await AccountDeletionNotice.create({
+            studentUsername: 'older', cohortNames: ['Cohort A'], deletedAt: new Date('2026-01-01'),
+            acknowledged: false
+        });
+        await AccountDeletionNotice.create({
+            studentUsername: 'newer', cohortNames: ['Cohort B'], deletedAt: new Date('2026-02-01'),
+            acknowledged: false
+        });
+        await AccountDeletionNotice.create({
+            studentUsername: 'alreadyseen', cohortNames: ['Cohort C'], deletedAt: new Date('2026-03-01'),
+            acknowledged: true, acknowledgedByUsername: 'someadmin', acknowledgedAt: new Date()
+        });
+
+        const res = await request(app)
+            .get('/api/admin/account-deletion-notices')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.map((n) => n.studentUsername)).toEqual(['newer', 'older']);
+    });
+
+    test('?acknowledged=all includes acknowledged notices too', async () => {
+        const { token } = await createUser(User, { username: 'noticeadmin2', type: 'admin' });
+        await AccountDeletionNotice.create({
+            studentUsername: 'seen', cohortNames: ['Cohort A'], deletedAt: new Date(),
+            acknowledged: true, acknowledgedByUsername: 'someadmin', acknowledgedAt: new Date()
+        });
+
+        const res = await request(app)
+            .get('/api/admin/account-deletion-notices?acknowledged=all')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toHaveLength(1);
+        expect(res.body[0].acknowledged).toBe(true);
+    });
+});
+
+describe('POST /api/admin/account-deletion-notices/:id/acknowledge', () => {
+    test('requires admin', async () => {
+        const { token } = await createUser(User, { username: 'notadmin2' });
+        const notice = await AccountDeletionNotice.create({
+            studentUsername: 'target', cohortNames: ['Cohort A'], deletedAt: new Date()
+        });
+
+        const res = await request(app)
+            .post(`/api/admin/account-deletion-notices/${notice._id}/acknowledge`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(403);
+    });
+
+    test('404s for a nonexistent notice', async () => {
+        const { token } = await createUser(User, { username: 'noticeadmin3', type: 'admin' });
+
+        const res = await request(app)
+            .post('/api/admin/account-deletion-notices/507f1f77bcf86cd799439011/acknowledge')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(404);
+    });
+
+    test('acknowledges a notice, recording who and when', async () => {
+        const { token } = await createUser(User, { username: 'ackadmin', type: 'admin' });
+        const notice = await AccountDeletionNotice.create({
+            studentUsername: 'target', cohortNames: ['Cohort A'], deletedAt: new Date()
+        });
+
+        const res = await request(app)
+            .post(`/api/admin/account-deletion-notices/${notice._id}/acknowledge`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.acknowledged).toBe(true);
+        expect(res.body.acknowledgedByUsername).toBe('ackadmin');
+
+        const reloaded = await AccountDeletionNotice.findById(notice._id);
+        expect(reloaded.acknowledged).toBe(true);
+        expect(reloaded.acknowledgedByUsername).toBe('ackadmin');
+        expect(reloaded.acknowledgedAt).toBeInstanceOf(Date);
+    });
+
+    test('is idempotent — acknowledging twice keeps the original acknowledgedAt/By', async () => {
+        const { token } = await createUser(User, { username: 'ackadmin2', type: 'admin' });
+        const notice = await AccountDeletionNotice.create({
+            studentUsername: 'target', cohortNames: ['Cohort A'], deletedAt: new Date()
+        });
+
+        await request(app)
+            .post(`/api/admin/account-deletion-notices/${notice._id}/acknowledge`)
+            .set('Authorization', `Bearer ${token}`);
+        const firstAck = await AccountDeletionNotice.findById(notice._id);
+
+        const { token: secondAdminToken } = await createUser(User, { username: 'ackadmin3', type: 'admin' });
+        const res = await request(app)
+            .post(`/api/admin/account-deletion-notices/${notice._id}/acknowledge`)
+            .set('Authorization', `Bearer ${secondAdminToken}`);
+
+        expect(res.status).toBe(200);
+        const reloaded = await AccountDeletionNotice.findById(notice._id);
+        expect(reloaded.acknowledgedByUsername).toBe(firstAck.acknowledgedByUsername);
+        expect(reloaded.acknowledgedAt).toEqual(firstAck.acknowledgedAt);
     });
 });

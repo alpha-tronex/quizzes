@@ -175,6 +175,21 @@ Both `User.archived`/`archivedAt` fields and `deleteUserCascade` are covered
 by Jest tests in `server/tests/authRoutes.test.js` and
 `server/tests/adminUserRoutes.test.js`.
 
+**Cohort admin notification.** If the student who self-deletes (mechanism
+#1 above) belonged to at least one real (non-guest) cohort, `DELETE
+/api/account` also creates an `AccountDeletionNotice`
+(`server/models/AccountDeletionNotice.js`) — a standalone snapshot (name,
+username, cohort name(s), quiz count, timestamp) for admins, since a cohort
+departure affects a real course roster. Guest/no-cohort deletions don't
+create one. This never delays or affects the deletion itself, which stays
+immediate; a notice-creation failure is logged and swallowed rather than
+surfaced to the student (see `server/utils/accountDeletionNotices.js`).
+Admins see unacknowledged notices as a banner on the Angular admin
+dashboard (`GET /api/admin/account-deletion-notices`); acknowledging one
+(`POST /api/admin/account-deletion-notices/:id/acknowledge`, idempotent)
+just flags it seen — the record itself is never deleted, so it doubles as
+a simple history log.
+
 ## Environment Variables
 
 Add to `.env` (or `server/.env.production` in production — see `.env.example`):

@@ -6,7 +6,14 @@ The admin section now has an improved navigation system with a dashboard, breadc
 ## Components
 
 ### 1. Admin Dashboard (`admin-dashboard/`)
-The dashboard serves as the admin landing page and displays key statistics:
+The dashboard serves as the admin landing page. Above the stats cards, it
+shows a dismissible banner for each unacknowledged account-deletion notice
+— created when a student in one of your real (non-guest) cohorts deletes
+their own account (see `Read Me/SECURITY.md`'s "Account Deletion &
+Archival" section). Clicking "Acknowledge" dismisses that banner; it
+doesn't undo anything, since the deletion itself already happened.
+
+It also displays key statistics:
 - **Total Users**: Count of all registered users
 - **Total Admins**: Count of users with admin privileges
 - **Total Students**: Count of regular student users

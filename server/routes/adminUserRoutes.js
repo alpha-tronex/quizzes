@@ -11,7 +11,7 @@ const emptyAddress = {
  * Admin User Routes
  * Handles all user management operations for administrators
  */
-module.exports = function(app, User, Cohort) {
+module.exports = function(app, User, Cohort, AccountDeletionNotice) {
 
     // Get all users (admin only)
     app.route("/api/admin/users")
@@ -287,6 +287,68 @@ module.exports = function(app, User, Cohort) {
                     id: user._id,
                     archived: user.archived,
                     archivedAt: user.archivedAt
+                });
+            } catch (err) {
+                next(err);
+            }
+        });
+
+    // Lists account-deletion notices (see models/AccountDeletionNotice.js
+    // and utils/accountDeletionNotices.js) — created whenever a student who
+    // belonged to a real (non-guest) cohort deletes their own account via
+    // DELETE /api/account. Defaults to unacknowledged-only, since that's
+    // what the admin dashboard's banner needs; pass ?acknowledged=all to see
+    // the full history (acknowledged notices are never deleted — see the
+    // model's doc comment on why "archiving" one just flips a flag).
+    app.route("/api/admin/account-deletion-notices")
+        .get(verifyToken, verifyAdmin, async (req, res, next) => {
+            try {
+                const filter = req.query.acknowledged === 'all' ? {} : { acknowledged: false };
+                const notices = await AccountDeletionNotice.find(filter).sort({ deletedAt: -1 });
+
+                res.status(200).json(notices.map((notice) => ({
+                    id: notice._id,
+                    studentUsername: notice.studentUsername,
+                    studentFname: notice.studentFname,
+                    studentLname: notice.studentLname,
+                    cohortNames: notice.cohortNames,
+                    quizzesTakenCount: notice.quizzesTakenCount,
+                    deletedAt: notice.deletedAt,
+                    acknowledged: notice.acknowledged,
+                    acknowledgedByUsername: notice.acknowledgedByUsername,
+                    acknowledgedAt: notice.acknowledgedAt
+                })));
+            } catch (err) {
+                next(err);
+            }
+        });
+
+    // Acknowledges a single notice (the admin dashboard banner's "Dismiss"/
+    // "Got it" action) — idempotent, same pattern as archive/reopen above:
+    // acknowledging an already-acknowledged notice is a no-op that still
+    // returns 200, not an error, and doesn't overwrite who/when it was
+    // first acknowledged.
+    app.route("/api/admin/account-deletion-notices/:id/acknowledge")
+        .post(verifyToken, verifyAdmin, async (req, res, next) => {
+            try {
+                const notice = await AccountDeletionNotice.findById(req.params.id);
+                if (!notice) {
+                    return next(ApiError.notFound('NOTICE_NOT_FOUND', 'Account deletion notice not found'));
+                }
+
+                if (!notice.acknowledged) {
+                    notice.acknowledged = true;
+                    notice.acknowledgedByUsername = req.user.username;
+                    notice.acknowledgedAt = new Date();
+                    await notice.save();
+                }
+
+                res.status(200).json({
+                    message: 'Notice acknowledged',
+                    id: notice._id,
+                    acknowledged: notice.acknowledged,
+                    acknowledgedByUsername: notice.acknowledgedByUsername,
+                    acknowledgedAt: notice.acknowledgedAt
                 });
             } catch (err) {
                 next(err);

@@ -35,6 +35,20 @@ async function hasAnyRealCohortMembership(userId, Cohort) {
     return Boolean(await Cohort.exists({ students: userId, isGuest: { $ne: true } }));
 }
 
+/**
+ * Names of every real (non-guest) cohort this student currently belongs to
+ * — membership, not activity, so this includes a not-yet-started or
+ * already-ended cohort (unlike getActiveCohorts above). Used by
+ * utils/accountDeletionNotices.js to decide whether a self-service account
+ * deletion is cohort-relevant and, if so, what to put in the notice — must
+ * be called before the student is removed from Cohort.students (e.g. by
+ * utils/userDeletion.js's deleteUserCascade), or it will always return [].
+ */
+async function getRealCohortNames(userId, Cohort) {
+    const cohorts = await Cohort.find({ students: userId, isGuest: { $ne: true } }, { name: 1 });
+    return cohorts.map((cohort) => cohort.name);
+}
+
 /** The single designated Guest cohort, if one exists and is currently active. */
 async function getActiveGuestCohort(Cohort) {
     const now = new Date();
@@ -45,5 +59,6 @@ module.exports = {
     GUEST_COHORT_NAME,
     getActiveCohorts,
     hasAnyRealCohortMembership,
-    getActiveGuestCohort
+    getActiveGuestCohort,
+    getRealCohortNames
 };

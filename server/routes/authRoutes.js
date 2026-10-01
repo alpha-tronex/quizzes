@@ -3,9 +3,11 @@ const validators = require('../utils/validators');
 const { generateToken, verifyToken } = require('../middleware/authMiddleware');
 const ApiError = require('../utils/apiError');
 const { deleteUserCascade } = require('../utils/userDeletion');
+const { getRealCohortNames } = require('../utils/cohortAccess');
+const { recordAccountDeletionIfCohortMember } = require('../utils/accountDeletionNotices');
 const saltRounds = 10;
 
-module.exports = function(app, User, Cohort) {
+module.exports = function(app, User, Cohort, AccountDeletionNotice) {
 
     app.route("/api/register")
         .post(async (req, res, next) => {
@@ -298,11 +300,22 @@ module.exports = function(app, User, Cohort) {
     app.route("/api/account")
         .delete(verifyToken, async (req, res, next) => {
             try {
+                // Captured *before* the cascade delete removes this student
+                // from every cohort's `students` array — see
+                // getRealCohortNames's doc comment.
+                const cohortNames = await getRealCohortNames(req.user.id, Cohort);
+
                 const deletedUser = await deleteUserCascade(req.user.id, User, Cohort);
 
                 if (!deletedUser) {
                     return next(ApiError.notFound('USER_NOT_FOUND', 'User not found'));
                 }
+
+                // Deliberately not awaited-and-surfaced as a failure: the
+                // account is already gone, so a notice-creation hiccup
+                // shouldn't turn this into a 500 for the student (see
+                // recordAccountDeletionIfCohortMember's doc comment).
+                await recordAccountDeletionIfCohortMember(deletedUser, cohortNames, AccountDeletionNotice);
 
                 res.status(200).json({ message: 'Account deleted successfully' });
             } catch (err) {
