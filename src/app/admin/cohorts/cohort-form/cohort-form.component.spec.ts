@@ -38,7 +38,7 @@ describe('CohortFormComponent', () => {
     quizzes: [{ id: 1, title: 'Fiqh Basics' }]
   };
 
-  function configure(routeParams: any = {}) {
+  function configure() {
     paramsSubject = new Subject();
 
     adminCohortServiceSpy = jasmine.createSpyObj('AdminCohortService', [

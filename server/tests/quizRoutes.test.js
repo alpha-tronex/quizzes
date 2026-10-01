@@ -48,6 +48,16 @@ describe('GET /api/quizzes', () => {
     test('lists quizzes as {id, title} summaries', async () => {
         await seedQuiz({ quizId: 0, title: 'Islam 101' });
         await seedQuiz({ quizId: 1, title: 'Islam 201' });
+        // A student with no real cohort falls back to the active Guest
+        // cohort (see cohortAccess.js) rather than seeing every quiz, so
+        // this test's user needs one covering both seeded quiz ids —
+        // otherwise it's actually exercising the Guest-fallback filter
+        // (covered separately below) instead of the taken/title mapping
+        // this test is meant to check.
+        await Cohort.create({
+            name: 'Guest', isGuest: true, startDate: daysFromNow(-1), endDate: daysFromNow(365),
+            students: [], quizzes: [0, 1]
+        });
         const { token } = await createUser(User);
 
         const res = await request(app).get('/api/quizzes').set('Authorization', `Bearer ${token}`);
@@ -63,6 +73,13 @@ describe('GET /api/quizzes', () => {
 describe('GET /api/quizzes — taken/locked status', () => {
     test('a never-taken quiz is neither taken nor locked', async () => {
         await seedQuiz({ quizId: 0, title: 'Fresh Quiz' });
+        // See the Guest-cohort comment on 'lists quizzes as {id, title}
+        // summaries' above — without this, a cohort-less student sees no
+        // quizzes at all and the assertion below fails on an empty array.
+        await Cohort.create({
+            name: 'Guest', isGuest: true, startDate: daysFromNow(-1), endDate: daysFromNow(365),
+            students: [], quizzes: [0]
+        });
         const { token } = await createUser(User, { username: 'freshtaker', type: 'student' });
 
         const res = await request(app).get('/api/quizzes').set('Authorization', `Bearer ${token}`);
@@ -73,6 +90,10 @@ describe('GET /api/quizzes — taken/locked status', () => {
 
     test('a completed quiz is taken and locked', async () => {
         await seedQuiz({ quizId: 0, title: 'Completed Quiz' });
+        await Cohort.create({
+            name: 'Guest', isGuest: true, startDate: daysFromNow(-1), endDate: daysFromNow(365),
+            students: [], quizzes: [0]
+        });
         const { token } = await createUser(User, {
             username: 'lockedtaker',
             type: 'student',
@@ -87,6 +108,10 @@ describe('GET /api/quizzes — taken/locked status', () => {
 
     test('a reopened quiz is taken but not locked', async () => {
         await seedQuiz({ quizId: 0, title: 'Reopened Quiz' });
+        await Cohort.create({
+            name: 'Guest', isGuest: true, startDate: daysFromNow(-1), endDate: daysFromNow(365),
+            students: [], quizzes: [0]
+        });
         const { token, user } = await createUser(User, {
             username: 'reopenedtaker',
             type: 'student',
@@ -219,6 +244,10 @@ describe('GET /api/quizzes — cohort filtering', () => {
 describe('GET /api/quiz', () => {
     test('gets the default quiz (id 0) when no id is given', async () => {
         await seedQuiz({ quizId: 0, title: 'Default Quiz' });
+        await Cohort.create({
+            name: 'Guest', isGuest: true, startDate: daysFromNow(-1), endDate: daysFromNow(365),
+            students: [], quizzes: [0]
+        });
         const { token } = await createUser(User);
 
         const res = await request(app).get('/api/quiz').set('Authorization', `Bearer ${token}`);
@@ -231,6 +260,10 @@ describe('GET /api/quiz', () => {
 
     test('gets a quiz by id, preserving the {id, title, questions} shape', async () => {
         await seedQuiz({ quizId: 5, title: 'Fiqh Basics' });
+        await Cohort.create({
+            name: 'Guest', isGuest: true, startDate: daysFromNow(-1), endDate: daysFromNow(365),
+            students: [], quizzes: [5]
+        });
         const { token } = await createUser(User);
 
         const res = await request(app).get('/api/quiz?id=5').set('Authorization', `Bearer ${token}`);

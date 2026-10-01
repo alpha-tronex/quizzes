@@ -7,7 +7,7 @@ import { ScrollService } from '@core/services/scroll.service';
   styleUrls: ['./alpha-tronex-modal.component.css'],
   standalone: false
 })
-export class AlphaTronexModalComponent {
+export class AlphaTronexModalComponent implements OnChanges {
   @Input() show = false;
   @Input() title = '';
   @Input() type: 'info' | 'warning' | 'danger' | 'success' | 'custom' = 'info';
