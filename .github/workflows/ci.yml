@@ -1,0 +1,101 @@
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Lint, typecheck, web tests, server tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install web dependencies
+        run: npm ci
+
+      - name: Install server dependencies
+        run: npm ci
+        working-directory: server
+
+      # Every check below runs even if an earlier one fails (`!cancelled()`),
+      # so a single push/PR surfaces every problem at once.
+      - name: Lint
+        if: ${{ !cancelled() }}
+        run: npm run lint
+
+      - name: Typecheck
+        if: ${{ !cancelled() }}
+        run: npm run typecheck
+
+      # ubuntu-latest ships Chrome, but it must run headless/no-sandbox in
+      # CI — see the ChromeHeadlessCI launcher added to karma.conf.js.
+      - name: Web unit tests (Angular / Karma)
+        if: ${{ !cancelled() }}
+        run: npx ng test --watch=false --browsers=ChromeHeadlessCI
+
+      # mongodb-memory-server downloads a real Mongo binary — GitHub-hosted
+      # runners have full internet access, unlike some restricted sandboxes,
+      # so this works here even where it can't run elsewhere.
+      - name: Server unit tests (Jest)
+        if: ${{ !cancelled() }}
+        run: npm test
+        working-directory: server
+
+  deploy:
+    name: Deploy to Hetzner
+    needs: checks
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - name: Check required secrets
+        run: |
+          missing=""
+          [ -z "${{ secrets.DEPLOY_SSH_KEY }}" ] && missing="$missing DEPLOY_SSH_KEY"
+          [ -z "${{ secrets.DEPLOY_HOST_KEY }}" ] && missing="$missing DEPLOY_HOST_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing required secret(s):$missing — add them under Settings -> Secrets and variables -> Actions"
+            exit 1
+          fi
+
+      - name: Deploy (runs deploy.sh on the server via a restricted forced-command key)
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST_KEY: ${{ secrets.DEPLOY_HOST_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_SSH_KEY" | base64 -d > ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_HOST_KEY" | tr -d '\r' > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/deploy_key ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key -o UserKnownHostsFile=~/.ssh/known_hosts alphathiam@5.161.104.5
+
+      - name: Smoke test production
+        run: |
+          for i in $(seq 1 12); do
+            if curl -fsS https://quizmaster.alphatronex.com/privacy > /dev/null; then
+              echo "Smoke test passed" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Smoke test failed — https://quizmaster.alphatronex.com/privacy did not respond after 60s"
+          exit 1

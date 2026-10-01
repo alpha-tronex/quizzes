@@ -31,6 +31,16 @@ module.exports = function (config) {
     logLevel: config.LOG_INFO,
     autoWatch: true,
     browsers: ['Chrome'],
-    singleRun: false
+    singleRun: false,
+    // Used by CI (`ng test --watch=false --browsers=ChromeHeadlessCI`) —
+    // GitHub Actions' ubuntu-latest runners ship Chrome but run headless/
+    // sandboxed, so --no-sandbox is required there. Local dev keeps using
+    // the default 'Chrome' launcher above.
+    customLaunchers: {
+      ChromeHeadlessCI: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox', '--disable-gpu']
+      }
+    }
   });
 };
