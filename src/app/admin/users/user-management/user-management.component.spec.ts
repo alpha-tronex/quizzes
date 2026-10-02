@@ -7,6 +7,7 @@ import { UserManagementComponent } from './user-management.component';
 import { AdminUserService } from '@admin/services/admin-user.service';
 import { LoginService } from '@core/services/login-service';
 import { User } from '@models/users';
+import { AccountDeletionNotice } from '@models/account-deletion-notice';
 
 describe('UserManagementComponent', () => {
   let component: UserManagementComponent;
@@ -495,6 +496,75 @@ describe('UserManagementComponent', () => {
 
     it('returns N/A when the question has no answers', () => {
       expect(component.getAnswerText({ answers: null }, 0)).toBe('N/A');
+    });
+  });
+
+  describe('account deletion notices', () => {
+    const sampleNotice: AccountDeletionNotice = {
+      id: 'n1',
+      studentUsername: 'hasan',
+      studentFname: 'Hasan',
+      studentLname: 'Test',
+      cohortNames: ['Fall 2026'],
+      quizzesTakenCount: 3,
+      deletedAt: new Date('2026-09-30'),
+      acknowledged: false,
+      acknowledgedByUsername: null,
+      acknowledgedAt: null
+    };
+
+    describe('loadDeletionNotices()', () => {
+      it('populates deletionNotices on success', () => {
+        spyOn(adminUserService, 'getAccountDeletionNotices').and.returnValue(of([sampleNotice]));
+
+        component.loadDeletionNotices();
+
+        expect(component.deletionNotices).toEqual([sampleNotice]);
+      });
+
+      it('logs and leaves the list empty on failure', () => {
+        spyOn(adminUserService, 'getAccountDeletionNotices').and.returnValue(throwError(() => 'Server error'));
+
+        component.loadDeletionNotices();
+
+        expect(component.deletionNotices).toEqual([]);
+      });
+    });
+
+    describe('acknowledgeNotice()', () => {
+      it('calls the service and removes the notice from the list on success', () => {
+        component.deletionNotices = [sampleNotice];
+        spyOn(adminUserService, 'acknowledgeAccountDeletionNotice').and.returnValue(of({ message: 'ok' }));
+
+        component.acknowledgeNotice(sampleNotice);
+
+        expect(adminUserService.acknowledgeAccountDeletionNotice).toHaveBeenCalledWith('n1');
+        expect(component.deletionNotices).toEqual([]);
+        expect(component.acknowledgingNoticeId).toBeNull();
+      });
+
+      it('clears the pending state and alerts on failure, leaving the notice in the list', () => {
+        component.deletionNotices = [sampleNotice];
+        spyOn(adminUserService, 'acknowledgeAccountDeletionNotice').and.returnValue(throwError(() => 'Boom'));
+        spyOn(window, 'alert');
+
+        component.acknowledgeNotice(sampleNotice);
+
+        expect(component.deletionNotices).toEqual([sampleNotice]);
+        expect(component.acknowledgingNoticeId).toBeNull();
+        expect(window.alert).toHaveBeenCalledWith('Failed to acknowledge notice: Boom');
+      });
+    });
+
+    describe('noticeStudentLabel()', () => {
+      it('includes the full name when present', () => {
+        expect(component.noticeStudentLabel(sampleNotice)).toBe('hasan (Hasan Test)');
+      });
+
+      it('falls back to just the username when both name fields are blank', () => {
+        expect(component.noticeStudentLabel({ ...sampleNotice, studentFname: '', studentLname: '' }))
+          .toBe('hasan');
+      });
     });
   });
 });

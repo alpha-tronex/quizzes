@@ -6,14 +6,7 @@ The admin section now has an improved navigation system with a dashboard, breadc
 ## Components
 
 ### 1. Admin Dashboard (`admin-dashboard/`)
-The dashboard serves as the admin landing page. Above the stats cards, it
-shows a dismissible banner for each unacknowledged account-deletion notice
-— created when a student in one of your real (non-guest) cohorts deletes
-their own account (see `Read Me/SECURITY.md`'s "Account Deletion &
-Archival" section). Clicking "Acknowledge" dismisses that banner; it
-doesn't undo anything, since the deletion itself already happened.
-
-It also displays key statistics:
+The dashboard serves as the admin landing page and displays key statistics:
 - **Total Users**: Count of all registered users
 - **Total Admins**: Count of users with admin privileges
 - **Total Students**: Count of regular student users
@@ -47,7 +40,11 @@ A card-based quick actions menu that provides fast access to all admin functions
    including changing type, granting quiz retakes, archiving/unarchiving
    (idempotent toggle that blocks/restores login without deleting data —
    see `Read Me/SECURITY.md`'s "Account Deletion & Archival" section), and
-   hard-deleting an account
+   hard-deleting an account. Also shows a dismissible banner above the
+   stats cards for each unacknowledged account-deletion notice — created
+   when a student in one of your real (non-guest) cohorts deletes their
+   own account. Clicking "Acknowledge" just dismisses the banner; the
+   deletion itself already happened and can't be undone.
 2. **Create Quiz** (Success) - Create a new quiz from scratch
 3. **Upload Quiz** (Info) - Upload a quiz from a JSON file
 4. **Quiz Management** (Warning) - Delete quiz data and files

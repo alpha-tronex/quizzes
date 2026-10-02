@@ -4,33 +4,6 @@
     
     <h2 class="mb-4">Admin Dashboard</h2>
 
-    <!-- Account-deletion notices: a student in one of your real (non-guest)
-         cohorts deleted their own account. Shown regardless of `loading`
-         (stats and notices load independently), dismissed one at a time via
-         Acknowledge. -->
-    <div
-      *ngFor="let notice of deletionNotices"
-      class="alert alert-warning text-start d-flex justify-content-between align-items-center mb-2"
-      role="alert">
-      <div>
-        <strong>{{ noticeStudentLabel(notice) }}</strong> deleted their account
-        on {{ notice.deletedAt | date:'mediumDate' }}.
-        <span *ngIf="notice.cohortNames?.length">
-          Cohort{{ notice.cohortNames.length > 1 ? 's' : '' }}: {{ notice.cohortNames.join(', ') }}.
-        </span>
-        <span *ngIf="notice.quizzesTakenCount">
-          {{ notice.quizzesTakenCount }} quiz{{ notice.quizzesTakenCount === 1 ? '' : 'zes' }} completed.
-        </span>
-      </div>
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-dark ms-3 flex-shrink-0"
-        [disabled]="acknowledgingNoticeId === notice.id"
-        (click)="acknowledgeNotice(notice)">
-        {{ acknowledgingNoticeId === notice.id ? 'Acknowledging…' : 'Acknowledge' }}
-      </button>
-    </div>
-
     <div *ngIf="loading" class="text-center py-5">
       <div class="spinner-border text-light" role="status">
         <span class="visually-hidden">Loading...</span>

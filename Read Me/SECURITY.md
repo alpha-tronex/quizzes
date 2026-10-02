@@ -184,8 +184,8 @@ departure affects a real course roster. Guest/no-cohort deletions don't
 create one. This never delays or affects the deletion itself, which stays
 immediate; a notice-creation failure is logged and swallowed rather than
 surfaced to the student (see `server/utils/accountDeletionNotices.js`).
-Admins see unacknowledged notices as a banner on the Angular admin
-dashboard (`GET /api/admin/account-deletion-notices`); acknowledging one
+Admins see unacknowledged notices as a banner on the Angular admin's User
+Management page (`GET /api/admin/account-deletion-notices`); acknowledging one
 (`POST /api/admin/account-deletion-notices/:id/acknowledge`, idempotent)
 just flags it seen — the record itself is never deleted, so it doubles as
 a simple history log.

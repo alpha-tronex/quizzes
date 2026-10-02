@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { User } from '@models/users';
+import { AccountDeletionNotice } from '@models/account-deletion-notice';
 import { AdminUserService } from '@admin/services/admin-user.service';
 import { LoginService } from '@core/services/login-service';
 import { LoggerService } from '@core/services/logger.service';
@@ -33,6 +34,16 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   // `user.id` currently being archived/unarchived, so the button shows a
   // pending state — same rationale as reopeningQuizId/revokingQuizId.
   archivingUserId: string | null = null;
+
+  // Unacknowledged "a cohort student deleted their own account" notices
+  // (see AdminUserService.getAccountDeletionNotices) — shown as a
+  // dismissible banner above the user selector. Loaded independently of
+  // loadUsers() so a failure here doesn't block the rest of the page.
+  deletionNotices: AccountDeletionNotice[] = [];
+  // `notice.id` currently being acknowledged, so only that banner's button
+  // shows a pending state — same pattern as archivingUserId above.
+  acknowledgingNoticeId: string | null = null;
+
   showConfirmModal: boolean = false;
   confirmAction: 'promote' | 'delete' | 'reopen-quiz' | 'revoke-reopen' | 'archive' | 'unarchive' | null = null;
   confirmUser: User | null = null;
@@ -68,6 +79,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadUsers();
+    this.loadDeletionNotices();
 
     // Keeps the selected user's Reopen/Revoke buttons in sync with the
     // server without the admin needing to reload the page: a student may
@@ -136,6 +148,42 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         this.logger.error('Error loading users', error);
         this.errorMessage = 'Failed to load users. Please try again.';
         this.loading = false;
+      }
+    });
+  }
+
+  loadDeletionNotices(): void {
+    this.adminUserService.getAccountDeletionNotices().subscribe({
+      next: (notices) => {
+        this.deletionNotices = notices;
+      },
+      error: (error) => {
+        this.logger.error('Error loading account deletion notices', error);
+      }
+    });
+  }
+
+  // Full name, falling back to the username alone when both name fields are
+  // blank — mirrors getUserDisplayName's rationale below.
+  noticeStudentLabel(notice: AccountDeletionNotice): string {
+    const name = `${notice.studentFname || ''} ${notice.studentLname || ''}`.trim();
+    return name ? `${notice.studentUsername} (${name})` : notice.studentUsername;
+  }
+
+  acknowledgeNotice(notice: AccountDeletionNotice): void {
+    this.acknowledgingNoticeId = notice.id;
+
+    this.adminUserService.acknowledgeAccountDeletionNotice(notice.id).subscribe({
+      next: () => {
+        // The banner only ever shows unacknowledged notices, so once one is
+        // acknowledged it's simply removed from view rather than re-fetched.
+        this.deletionNotices = this.deletionNotices.filter((n) => n.id !== notice.id);
+        this.acknowledgingNoticeId = null;
+      },
+      error: (error) => {
+        this.logger.error('Error acknowledging account deletion notice', error);
+        alert('Failed to acknowledge notice: ' + error);
+        this.acknowledgingNoticeId = null;
       }
     });
   }
