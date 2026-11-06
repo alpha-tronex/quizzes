@@ -73,7 +73,7 @@ export class CohortManagementComponent implements OnInit {
   formatDate(date: any): string {
     if (!date) return 'N/A';
     const d = new Date(date);
-    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
   }
 
   deleteCohort(cohort: Cohort): void {
